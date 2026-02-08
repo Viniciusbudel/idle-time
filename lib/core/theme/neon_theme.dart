@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 
@@ -30,46 +29,58 @@ class _NeonColors implements ThemeColors {
   const _NeonColors();
 
   @override
-  Color get primary => TimeFactoryColors.electricCyan;
+  Color get primary => const Color(0xFF00E5FF); // Bright Cyan
 
   @override
-  Color get secondary => TimeFactoryColors.hotMagenta;
+  Color get secondary => const Color(0xFFBD00FF); // Accent Purple
 
   @override
-  Color get background => TimeFactoryColors.voidBlack;
+  Color get background => const Color(0xFF0A0B1E); // Deep Dark Blue
 
   @override
-  Color get surface => TimeFactoryColors.surfaceGlass;
+  Color get surface => const Color(0xFF13162F); // Card Dark
 
   @override
-  Color get accent => TimeFactoryColors.electricCyan;
+  Color get accent => const Color(0xFF00E5FF); // Bright Cyan
 
   @override
   Color get textPrimary => Colors.white;
 
   @override
-  Color get textSecondary =>
-      TimeFactoryColors.electricCyan.withValues(alpha: 0.7);
+  Color get textSecondary => const Color(0xFF00E5FF).withValues(alpha: 0.7);
 
   @override
-  Color get glassBorder =>
-      TimeFactoryColors.electricCyan.withValues(alpha: 0.3);
+  Color get glassBorder => const Color(0xFF00E5FF).withValues(alpha: 0.5); // Neon Border
 
   @override
-  Color get success => TimeFactoryColors.acidGreen;
+  Color get success => const Color(0xFF00FF9D); // Accent Green
 
   @override
-  Color get error => TimeFactoryColors.hotMagenta;
+  Color get error => const Color(0xFFBD00FF);
 
   @override
-  Color get dockBackground =>
-      TimeFactoryColors.voidBlack.withValues(alpha: 0.8);
+  Color get dockBackground => const Color(0xFF13162F).withValues(alpha: 0.9); // Card Dark with opacity
 
   @override
-  Color get chaosButtonStart => TimeFactoryColors.hotMagenta;
+  Color get chaosButtonStart => const Color(0xFFBD00FF);
 
   @override
-  Color get chaosButtonEnd => TimeFactoryColors.deepPurple;
+  Color get chaosButtonEnd => const Color(0xFF0A0B1E);
+
+  @override
+  Color get rarityCommon => const Color(0xFFB0BEC5); // Silver/Gray
+
+  @override
+  Color get rarityRare => const Color(0xFF00BFFF); // Electric Blue
+
+  @override
+  Color get rarityEpic => const Color(0xFFE040FB); // Neon Purple
+
+  @override
+  Color get rarityLegendary => const Color(0xFFFFD740); // Gold
+
+  @override
+  Color get rarityParadox => const Color(0xFFFF1744); // Glitch Red
 }
 
 class _NeonAssets implements ThemeAssets {
@@ -107,7 +118,14 @@ class _NeonTypography implements ThemeTypography {
   TextStyle get titleLarge => TimeFactoryTextStyles.header;
 
   @override
+  TextStyle get titleMedium =>
+      TimeFactoryTextStyles.header.copyWith(fontSize: 18);
+
+  @override
   TextStyle get bodyMedium => TimeFactoryTextStyles.body;
+
+  @override
+  TextStyle get bodySmall => TimeFactoryTextStyles.body.copyWith(fontSize: 12);
 
   @override
   TextStyle get buttonText => TimeFactoryTextStyles.button;

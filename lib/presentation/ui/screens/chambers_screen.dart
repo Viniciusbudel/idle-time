@@ -41,79 +41,118 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
     );
   }
 
-  Widget _buildHeader(int idleCount, dynamic theme, BigInt chronoEnergy) {
+  Widget _buildHeader(int idleCount, NeonTheme theme, BigInt chronoEnergy) {
     final colors = theme.colors;
     final typography = theme.typography;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 8.0,
+      ),
       child: Row(
         children: [
-          // Icon
-          Icon(Icons.grid_view, color: colors.accent, size: 20),
-          const SizedBox(width: 12),
+          // Icon Button (Menu/Grid)
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              // hover effect simulation could go here
+            ),
+            child: Icon(Icons.grid_view, color: colors.primary, size: 28),
+          ),
 
-          // Title
+          const SizedBox(width: 8),
+
+          // Title with Glow
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('LOOP', style: typography.titleLarge.copyWith(height: 1.0)),
+              Text(
+                'LOOP',
+                style: typography.titleLarge.copyWith(
+                  height: 1.0,
+                  fontSize: 24,
+                  color: colors.primary,
+                  letterSpacing: 2.0,
+                  shadows: [
+                    Shadow(
+                      color: colors.primary.withValues(alpha: 0.7),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+              ),
               Text(
                 'CHAMBERS',
-                style: typography.titleLarge.copyWith(height: 1.0),
+                style: typography.titleLarge.copyWith(
+                  height: 1.0,
+                  fontSize: 24,
+                  color: colors.primary,
+                  letterSpacing: 2.0,
+                  shadows: [
+                    Shadow(
+                      color: colors.primary.withValues(alpha: 0.7),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
 
           const Spacer(),
 
-          // Idle workers badge
-          if (idleCount > 0)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: colors.accent.withValues(alpha: 0.2),
-                border: Border.all(color: colors.accent.withValues(alpha: 0.5)),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.person, color: colors.accent, size: 12),
-                  const SizedBox(width: 4),
-                  Text(
-                    '$idleCount IDLE',
-                    style: typography.bodyMedium.copyWith(
-                      fontSize: 10.0,
-                      color: colors.accent,
-                      fontWeight: FontWeight.bold,
-                    ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Idle workers badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.1),
+                  border: Border.all(
+                    color: colors.primary.withValues(alpha: 0.5),
                   ),
-                ],
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.person, color: colors.primary, size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$idleCount IDLE',
+                      style: typography.bodyMedium.copyWith(
+                        fontSize: 12.0,
+                        color: colors.primary,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-
-          // Version/Status (Replacing CE Indicator which is already in top bar usually, but keeping sticking to plan of matching TechScreen header structure.
-          // TechScreen has "SYS.pV2". Chambers had CE. I will keep CE as it's useful here or switch to a status text if CE is global.
-          // User said "use the tech layout as a example". Tech layout has a version number.
-          // But Chambers screen needs CE visibility? Actually CE is usually in a top status bar in these games.
-          // Let's stick to the visual style of TechScreen. TechScreen puts version there.
-          // However, the previous Chambers screen had CE. I will perform a safe compromise:
-          // I'll keep the CE indicator but style it like the version text or keep it as a badge if it fits the "Tech" aesthetic.
-          // Actually, looking at the ASCII Mockup in GDD, CE is in the top Status Bar.
-          // So the screen header might not need CE.
-          // I will replace CE with a "SYS.ACTIVE" or similar status to match TechScreen's "SYS.pV2" aesthetic,
-          // OR I will simply style the CE indicator to look better.
-          // The request said "use the tech layout as a example".
-          // Tech layout: Icon | Title/Subtitle | Spacer | Version
-          // I will do: Icon | LOOP/CHAMBERS | Spacer | Idle Badge | SYS.LC1 (Loop Chambers 1)
-          Text(
-            'SYS.LC1',
-            style: typography.bodyMedium.copyWith(
-              fontSize: 10.0,
-              color: colors.textSecondary,
-            ),
+              const SizedBox(height: 4),
+              // Version/System Tag
+              Text(
+                'SYS.LC1',
+                style: typography.bodyMedium.copyWith(
+                  fontSize: 10.0,
+                  color: colors.primary.withValues(alpha: 0.6),
+                  letterSpacing: 2.0,
+                ),
+              ),
+            ],
           ),
         ],
       ),

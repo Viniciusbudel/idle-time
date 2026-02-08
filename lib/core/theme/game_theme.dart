@@ -28,6 +28,13 @@ abstract class ThemeColors {
   Color get dockBackground;
   Color get chaosButtonStart;
   Color get chaosButtonEnd;
+
+  // Rarity Colors
+  Color get rarityCommon;
+  Color get rarityRare;
+  Color get rarityEpic;
+  Color get rarityLegendary;
+  Color get rarityParadox;
 }
 
 abstract class ThemeAssets {
@@ -46,7 +53,9 @@ abstract class ThemeAssets {
 abstract class ThemeTypography {
   String get fontFamily;
   TextStyle get titleLarge;
+  TextStyle get titleMedium;
   TextStyle get bodyMedium;
+  TextStyle get bodySmall;
   TextStyle get buttonText;
 }
 

@@ -52,6 +52,21 @@ class _SteampunkColors implements ThemeColors {
   Color get chaosButtonStart => const Color(0xFFB8860B); // Dark Goldenrod
   @override
   Color get chaosButtonEnd => const Color(0xFF8B4513); // Saddle Brown
+
+  @override
+  Color get rarityCommon => const Color(0xFFA1887F); // Bronze/Brown
+
+  @override
+  Color get rarityRare => const Color(0xFF4FC3F7); // Steam Blue
+
+  @override
+  Color get rarityEpic => const Color(0xFFAB47BC); // Royal Purple
+
+  @override
+  Color get rarityLegendary => const Color(0xFFFFCA28); // Brass/Gold
+
+  @override
+  Color get rarityParadox => const Color(0xFFD32F2F); // Crimson
 }
 
 class _SteampunkAssets implements ThemeAssets {
@@ -88,8 +103,19 @@ class _SteampunkTypography implements ThemeTypography {
   );
 
   @override
+  TextStyle get titleMedium => GoogleFonts.rye(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: const Color(0xFFF5E6D3),
+  );
+
+  @override
   TextStyle get bodyMedium =>
       GoogleFonts.courierPrime(fontSize: 14, color: const Color(0xFFA69B8F));
+
+  @override
+  TextStyle get bodySmall =>
+      GoogleFonts.courierPrime(fontSize: 12, color: const Color(0xFFA69B8F));
 
   @override
   TextStyle get buttonText => GoogleFonts.rye(

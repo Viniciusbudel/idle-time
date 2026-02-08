@@ -96,6 +96,8 @@ class _EraBackgroundAnimatorState extends State<EraBackgroundAnimator>
             secondaryColor: widget.secondaryColor,
             particles: _particles,
           ),
+          isComplex: widget.animationType != EraAnimationType.none,
+          willChange: true,
         );
       },
     );
@@ -181,14 +183,19 @@ class _EraAnimationPainter extends CustomPainter {
   }
 
   void _paintSparkles(Canvas canvas, Size size) {
-    // Sparkle effect
+    // Optimization: Batch drawing if possible, but opacity varies per particle.
+    // Group particles by approximate opacity for batching?
+    // For now, keep individual scaling/opacity but ensure efficient Paint reuse.
+
+    final paint = Paint()
+      ..color = primaryColor
+      ..style = PaintingStyle.fill;
+
     for (var p in particles) {
       final progress = (animationValue * p.speed + p.y) % 1.0;
       final opacity = (sin(progress * pi * 2) + 1) / 2 * p.opacity;
 
-      final paint = Paint()
-        ..color = primaryColor.withOpacity(opacity * 0.8)
-        ..style = PaintingStyle.fill;
+      paint.color = primaryColor.withOpacity(opacity * 0.8);
 
       canvas.drawCircle(
         Offset(p.x * size.width, p.y * size.height),

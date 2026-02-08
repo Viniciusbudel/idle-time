@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,10 +34,26 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
   late final TimeFactoryGame _game;
   int _selectedTab = 1; // Default to Factory (1)
 
+  // Chaos Button Randomization
+  final Random _rng = Random();
+  Alignment _chaosAlignment = Alignment.bottomRight;
+
   @override
   void initState() {
     super.initState();
     _game = TimeFactoryGame(ref);
+    _randomizeChaosPosition();
+  }
+
+  void _randomizeChaosPosition() {
+    // Avoid the very edges to prevent being unclickable or hidden by safe areas
+    // x: -0.8 to 0.8, y: -0.6 to 0.6 (avoid dock/header areas roughly)
+    setState(() {
+      _chaosAlignment = Alignment(
+        (_rng.nextDouble() * 1.6) - 0.8,
+        (_rng.nextDouble() * 1.2) - 0.6,
+      );
+    });
   }
 
   @override
@@ -163,31 +180,35 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
               child: SafeArea(child: SaveIndicator()),
             ),
 
-            // 8. Chaos Trigger Button
-            Positioned(
-              right: 16,
-              bottom: 220,
-              child: Consumer(
-                builder: (context, ref, child) {
-                  final paradoxLevel = ref.watch(
-                    gameStateProvider.select((s) => s.paradoxLevel),
-                  );
-                  final isChaosActive = ref.watch(
-                    gameStateProvider.select((s) => s.paradoxEventActive),
-                  );
+            // 8. Chaos Trigger Button (Factory Tab Only)
+            if (_selectedTab == 1)
+              Align(
+                alignment: _chaosAlignment,
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0), // Safety margin
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final paradoxLevel = ref.watch(
+                        gameStateProvider.select((s) => s.paradoxLevel),
+                      );
+                      final isChaosActive = ref.watch(
+                        gameStateProvider.select((s) => s.paradoxEventActive),
+                      );
 
-                  if (paradoxLevel < 0.8 || isChaosActive) {
-                    return const SizedBox.shrink();
-                  }
+                      if (paradoxLevel < 0.8 || isChaosActive) {
+                        return const SizedBox.shrink();
+                      }
 
-                  return ChaosButton(
-                    onPressed: () {
-                      ref.read(gameStateProvider.notifier).embraceChaos();
+                      return ChaosButton(
+                        onPressed: () {
+                          ref.read(gameStateProvider.notifier).embraceChaos();
+                          _randomizeChaosPosition(); // Move it for next time!
+                        },
+                      );
                     },
-                  );
-                },
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),

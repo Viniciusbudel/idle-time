@@ -7,7 +7,6 @@ import 'package:time_factory/presentation/state/tech_provider.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/presentation/ui/atoms/steampunk_button.dart';
 import 'package:time_factory/presentation/ui/atoms/steampunk_card.dart';
-import 'package:time_factory/presentation/ui/widgets/era_advance_button.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 
 /// Full Tech Screen - Steampunk Themed
@@ -29,12 +28,6 @@ class TechScreen extends ConsumerWidget {
           _buildHeader(theme),
 
           const SizedBox(height: AppSpacing.md),
-
-          // Era Advance Button
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: EraAdvanceButton(),
-          ),
 
           const SizedBox(height: AppSpacing.md),
 

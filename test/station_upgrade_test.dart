@@ -32,18 +32,18 @@ void main() {
         workerIds: [],
       );
 
-      // Base upgrade cost logic: 500 * (1.4 ^ level)
-      // Level 1: 500 * 1.4 = 700
+      // Base upgrade cost logic: 500 * (1.6 ^ level)
+      // Level 1: 500 * 1.6 = 800
       final baseCost = station.getUpgradeCost(discountMultiplier: 1.0);
-      expect(baseCost, BigInt.from(700));
+      expect(baseCost, BigInt.from(800));
 
       // With 50% discount
       final discountedCost = station.getUpgradeCost(discountMultiplier: 0.5);
-      expect(discountedCost, BigInt.from(350));
+      expect(discountedCost, BigInt.from(400));
 
       // With 10% discount (0.9 multiplier)
       final discountedCost2 = station.getUpgradeCost(discountMultiplier: 0.9);
-      expect(discountedCost2, BigInt.from(630)); // 700 * 0.9 = 630
+      expect(discountedCost2, BigInt.from(720)); // 800 * 0.9 = 720
     });
   });
 }

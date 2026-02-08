@@ -96,7 +96,7 @@ class Station {
   /// Upgrade cost with optional discount
   BigInt getUpgradeCost({double discountMultiplier = 1.0}) {
     final baseCost = _getBaseCost();
-    final multiplier = BigInt.from((1.4 * 100).toInt());
+    final multiplier = BigInt.from((1.6 * 100).toInt());
     BigInt cost = baseCost;
 
     for (int i = 0; i < level; i++) {
@@ -180,7 +180,7 @@ class StationFactory {
         baseCost = BigInt.from(25000);
     }
 
-    final multiplier = BigInt.from((1.4 * 100).toInt());
+    final multiplier = BigInt.from((1.8 * 100).toInt());
     for (int i = 0; i < ownedCount; i++) {
       baseCost = baseCost * multiplier ~/ BigInt.from(100);
     }
