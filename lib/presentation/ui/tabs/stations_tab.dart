@@ -91,7 +91,7 @@ class StationsTab extends ConsumerWidget {
             ),
           ],
         ),
-        Icon(Icons.factory, color: TimeFactoryColors.electricCyan, size: 28),
+        const Icon(Icons.factory, color: TimeFactoryColors.electricCyan, size: 28),
       ],
     );
   }
@@ -103,7 +103,7 @@ class StationsTab extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              Icon(Icons.factory_outlined, size: 48, color: Colors.white24),
+              const Icon(Icons.factory_outlined, size: 48, color: Colors.white24),
               const SizedBox(height: 16),
               Text(
                 'NO STATIONS ACTIVE',
@@ -155,7 +155,7 @@ class _StationCard extends ConsumerWidget {
               ),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.change_circle,
               color: TimeFactoryColors.electricCyan,
             ),

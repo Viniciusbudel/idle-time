@@ -52,7 +52,7 @@ class OfflineEarningsDialog extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'You were away for ${earnings.formattedDuration}',
-              style: TextStyle(fontSize: 12, color: Colors.white60),
+              style: const TextStyle(fontSize: 12, color: Colors.white60),
             ),
 
             const SizedBox(height: 24),
@@ -67,7 +67,7 @@ class OfflineEarningsDialog extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Text(
+                  const Text(
                     'CHRONO-ENERGY COLLECTED',
                     style: TextStyle(
                       fontSize: 10,
@@ -80,7 +80,7 @@ class OfflineEarningsDialog extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.bolt,
                         color: TimeFactoryColors.electricCyan,
                         size: 28,
@@ -128,7 +128,7 @@ class OfflineEarningsDialog extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'COLLECT',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,

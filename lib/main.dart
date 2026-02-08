@@ -86,8 +86,6 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
     }
 
     setState(() => _isLoading = false);
-
-    setState(() => _isLoading = false);
   }
 
   void _collectOfflineEarnings() {

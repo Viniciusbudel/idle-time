@@ -159,10 +159,10 @@ class StationCard extends ConsumerWidget {
                             fontSize: 18.0,
                             color: colors.accent, // Polished Brass
                             shadows: [
-                              Shadow(
+                              const Shadow(
                                 color: Colors.black,
                                 blurRadius: 2,
-                                offset: const Offset(1, 1),
+                                offset: Offset(1, 1),
                               ),
                             ],
                           ),

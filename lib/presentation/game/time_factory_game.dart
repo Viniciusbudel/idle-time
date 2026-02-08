@@ -50,8 +50,11 @@ class TimeFactoryGame extends FlameGame {
   }
 
   void handleReactorTap() {
-    final strength = ref.read(tapStrengthProvider);
-    ref.read(gameStateProvider.notifier).addChronoEnergy(strength);
+    // OLD: final strength = ref.read(tapStrengthProvider);
+    // OLD: ref.read(gameStateProvider.notifier).addChronoEnergy(strength);
+
+    // NEW: Centralized logic with Tech multipliers
+    final strength = ref.read(gameStateProvider.notifier).manualClick();
 
     // Visual Effects
     spawnTapEffect(size / 2);
@@ -97,8 +100,11 @@ class TimeFactoryGame extends FlameGame {
   }
 
   void _performAutoClick() {
-    final strength = ref.read(tapStrengthProvider);
-    ref.read(gameStateProvider.notifier).addChronoEnergy(strength);
+    // OLD: final strength = ref.read(tapStrengthProvider);
+    // OLD: ref.read(gameStateProvider.notifier).addChronoEnergy(strength);
+
+    // NEW: Use manualClick calculation so Piston buffs automation too
+    ref.read(gameStateProvider.notifier).manualClick();
 
     // Visuals: Throttle to avoid clutter.
     // Always show if rate is low (< 5/sec), otherwise random chance

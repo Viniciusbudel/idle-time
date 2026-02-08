@@ -5,6 +5,7 @@ import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/core/utils/number_formatter.dart';
 
 /// Gacha Screen - Temporal Rift Summoning Interface
 class GachaScreen extends ConsumerStatefulWidget {
@@ -39,7 +40,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
   Widget build(BuildContext context) {
     final timeShards = ref.watch(timeShardsProvider);
     // Force Neon Theme
-    final theme = NeonTheme();
+    final theme = const NeonTheme();
     final colors = theme.colors;
     // final typography = theme.typography; // Not used in this scoped block but available
 
@@ -78,13 +79,19 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
             ),
           ),
 
-          // Summon Button
+          // Summon Buttons Row
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: _buildSummonButton(timeShards, theme),
+            child: Row(
+              children: [
+                Expanded(child: _buildCellSummonButton(ref, theme)),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(child: _buildShardSummonButton(timeShards, theme)),
+              ],
+            ),
           ),
 
-          const SizedBox(height: 160), // For CommandDock
+          const SizedBox(height: 160),
         ],
       ),
     );
@@ -118,7 +125,10 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
 
           // Shards Counter (styled like TechScreen version/status but functional)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10.0,
+              vertical: 6.0,
+            ),
             decoration: BoxDecoration(
               color: colors.primary.withValues(alpha: 0.1),
               border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
@@ -251,30 +261,88 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
     );
   }
 
-  Widget _buildSummonButton(int timeShards, dynamic theme) {
+  Widget _buildCellSummonButton(WidgetRef ref, dynamic theme) {
+    final gameState = ref.watch(gameStateProvider);
     final colors = theme.colors;
     final typography = theme.typography;
-    final canSummon = timeShards >= 10 && !_isSummoning;
+
+    final currentEraId = gameState.currentEraId;
+    final hires = gameState.eraHires[currentEraId] ?? 0;
+    final maxHires = 5;
+    final isSoldOut = hires >= maxHires;
+
+    final currentEra = WorkerEra.values.firstWhere((e) => e.id == currentEraId);
+    final cost = currentEra.hireCost;
+    final canAfford = gameState.chronoEnergy >= cost;
+    final canHire = canAfford && !isSoldOut && !_isSummoning;
+
+    return GestureDetector(
+      onTap: canHire ? () => _performCellSummon(currentEra) : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        decoration: BoxDecoration(
+          color: canHire
+              ? colors.accent.withOpacity(0.2)
+              : Colors.grey.shade900,
+          borderRadius: BorderRadius.circular(theme.dimens.cornerRadius),
+          border: Border.all(color: canHire ? colors.accent : Colors.white10),
+        ),
+        child: Column(
+          children: [
+            Text(
+              isSoldOut ? 'SOLD OUT' : 'HIRE STAFF',
+              style: typography.buttonText.copyWith(
+                color: canHire ? colors.accent : Colors.grey,
+                fontSize: 14.0,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              isSoldOut
+                  ? '$hires/$maxHires HIRED'
+                  : '${NumberFormatter.formatCE(cost)} CE', // Requires number formatter import? No, passed via context? No. Add import.
+              style: typography.bodyMedium.copyWith(
+                color: canHire ? colors.textPrimary : Colors.grey,
+                fontSize: 10.0,
+              ),
+            ),
+            if (!isSoldOut)
+              Text(
+                '$hires/$maxHires',
+                style: typography.bodyMedium.copyWith(
+                  color: colors.textSecondary,
+                  fontSize: 10.0,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShardSummonButton(int timeShards, dynamic theme) {
+    final colors = theme.colors;
+    final typography = theme.typography;
+    final cost = 10;
+    final canSummon = timeShards >= cost && !_isSummoning;
 
     return GestureDetector(
       onTap: canSummon ? _performSummon : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
         decoration: BoxDecoration(
           gradient: canSummon
               ? LinearGradient(
-                  colors: [
-                    colors.primary, // Magenta
-                    colors.chaosButtonStart, // or similar
-                  ],
+                  colors: [colors.primary, colors.chaosButtonStart],
                 )
               : null,
-          color: canSummon ? null : Colors.grey.shade800,
+          color: canSummon ? null : Colors.grey.shade900,
           borderRadius: BorderRadius.circular(theme.dimens.cornerRadius),
-          border: kIsWeb
-              ? null
-              : Border.all(color: colors.glassBorder), // Optional border
+          border: Border.all(
+            color: canSummon ? colors.glassBorder : Colors.white10,
+          ),
           boxShadow: canSummon
               ? [
                   BoxShadow(
@@ -285,9 +353,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
                 ]
               : null,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
           children: [
             if (_isSummoning)
               SizedBox(
@@ -302,19 +368,56 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
               Icon(
                 Icons.auto_awesome,
                 color: canSummon ? colors.textPrimary : Colors.grey,
+                size: 20,
               ),
-            const SizedBox(width: 12),
+            const SizedBox(height: 4),
             Text(
-              _isSummoning ? 'OPENING RIFT...' : 'SUMMON (10 SHARDS)',
+              _isSummoning ? 'SUMMONING...' : 'RIFT SUMMON',
               style: typography.buttonText.copyWith(
                 color: canSummon ? colors.textPrimary : Colors.grey,
-                fontSize: 14.0,
+                fontSize: 12.0,
+              ),
+            ),
+            Text(
+              '$cost SHARDS',
+              style: typography.bodyMedium.copyWith(
+                color: canSummon ? colors.textSecondary : Colors.grey,
+                fontSize: 10.0,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _performCellSummon(WorkerEra era) async {
+    setState(() => _isSummoning = true);
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final success = ref.read(gameStateProvider.notifier).hireWorker(era);
+    // Logic to get the worker is tricky because hireWorker returns bool
+    // logic in provider:
+    // final worker = _hireWorkerUseCase.execute(era);
+    // We should probably change hireWorker to return Worker? or use a separate getter
+    // For now we can find the latest worker from the state if successful, or just show success msg.
+    // Actually, update hireWorker to return the Worker? would be better but it modifies state.
+    // Let's just find the worker joined.
+
+    // Hack: Get the worker with highest ID? or timestamp?
+    // Let's adjust hireWorker in GameStateNotifier later to return Worker?.
+    // For now, let's assume if success, we just show a generic "HIRED!" or find the latest from era.
+
+    Worker? hiredWorker;
+    if (success) {
+      final workers = ref.read(gameStateProvider).workers.values.toList();
+      hiredWorker = workers.last; // Assuming insertion order
+    }
+
+    setState(() {
+      _isSummoning = false;
+      _lastSummonedWorker = hiredWorker;
+    });
   }
 
   Future<void> _performSummon() async {

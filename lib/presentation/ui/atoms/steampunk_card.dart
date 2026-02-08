@@ -45,7 +45,7 @@ class SteampunkCard extends ConsumerWidget {
           ),
           // Inner highlight for metallic look
           BoxShadow(
-            color: colors!.accent.withValues(alpha: 0.1),
+            color: colors.accent.withValues(alpha: 0.1),
             offset: const Offset(-1, -1),
             blurRadius: 2,
             spreadRadius: 0,

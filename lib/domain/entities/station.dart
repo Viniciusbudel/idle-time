@@ -156,7 +156,11 @@ class StationFactory {
   }
 
   /// Get purchase cost for a station type
-  static BigInt getPurchaseCost(StationType type, int ownedCount) {
+  static BigInt getPurchaseCost(
+    StationType type,
+    int ownedCount, {
+    double discountMultiplier = 1.0,
+  }) {
     BigInt baseCost;
     switch (type) {
       case StationType.basicLoop:
@@ -174,6 +178,12 @@ class StationFactory {
     final multiplier = BigInt.from((1.4 * 100).toInt());
     for (int i = 0; i < ownedCount; i++) {
       baseCost = baseCost * multiplier ~/ BigInt.from(100);
+    }
+
+    // Apply discount
+    if (discountMultiplier < 1.0) {
+      final discount = BigInt.from((discountMultiplier * 100).toInt());
+      baseCost = baseCost * discount ~/ BigInt.from(100);
     }
 
     return baseCost;

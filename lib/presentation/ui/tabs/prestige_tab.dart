@@ -26,7 +26,7 @@ class PrestigeTab extends ConsumerWidget {
           borderColor: TimeFactoryColors.hotMagenta,
           child: Column(
             children: [
-              Icon(
+              const Icon(
                 Icons.auto_awesome,
                 size: 64,
                 color: TimeFactoryColors.hotMagenta,
@@ -110,7 +110,7 @@ class PrestigeTab extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text('PRESTIGE', style: TimeFactoryTextStyles.header),
-        Icon(
+        const Icon(
           Icons.military_tech,
           color: TimeFactoryColors.hotMagenta,
           size: 28,

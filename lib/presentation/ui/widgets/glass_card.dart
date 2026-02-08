@@ -49,8 +49,7 @@ class GlassCard extends ConsumerWidget {
       height: height,
       padding: padding ?? const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color:
-            backgroundColor ?? const Color(0xFF06121E).withValues(alpha: 0.4),
+        color: backgroundColor ?? const Color(0x6606121E), // 0.4 opacity
         borderRadius: effectiveRadius,
         border: Border.all(color: effectiveBorderColor, width: 1),
         boxShadow: [

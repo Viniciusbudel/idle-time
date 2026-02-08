@@ -32,7 +32,7 @@ class NeonChamberCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Force Neon Theme to align with "Tech Screen" aesthetic which uses NeonTheme
-    final theme = NeonTheme();
+    final theme = const NeonTheme();
     final colors = theme.colors;
     final typography = theme.typography;
 

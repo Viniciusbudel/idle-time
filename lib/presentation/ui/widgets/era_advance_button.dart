@@ -5,6 +5,7 @@ import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/services/era_progression_service.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/presentation/state/tech_provider.dart';
 
 class EraAdvanceButton extends ConsumerWidget {
   const EraAdvanceButton({super.key});
@@ -13,6 +14,7 @@ class EraAdvanceButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameStateProvider);
     final eraService = ref.watch(eraProgressionServiceProvider);
+    final isEraComplete = ref.watch(isEraCompleteProvider);
 
     final currentEraId = gameState.currentEraId;
     final nextEraId = eraService.getNextEra(currentEraId);
@@ -40,23 +42,24 @@ class EraAdvanceButton extends ConsumerWidget {
     }
 
     final canAfford = cost != null && gameState.chronoEnergy >= cost;
+    final isReady = canAfford && isEraComplete;
     final nextEraName = _getEraDisplayName(nextEraId);
 
     return GestureDetector(
-      onTap: canAfford ? () => eraService.advanceEra() : null,
+      onTap: isReady ? () => eraService.advanceEra() : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: canAfford
+          color: isReady
               ? TimeFactoryColors.electricCyan.withOpacity(0.1)
               : Colors.black54,
           border: Border.all(
-            color: canAfford ? TimeFactoryColors.electricCyan : Colors.white10,
+            color: isReady ? TimeFactoryColors.electricCyan : Colors.white10,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(8),
-          boxShadow: canAfford
+          boxShadow: isReady
               ? [
                   BoxShadow(
                     color: TimeFactoryColors.electricCyan.withOpacity(0.3),
@@ -72,14 +75,16 @@ class EraAdvanceButton extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: canAfford
+                color: isReady
                     ? TimeFactoryColors.electricCyan.withOpacity(0.2)
                     : Colors.white10,
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.history_edu,
-                color: canAfford
+                isEraComplete
+                    ? Icons.history_edu
+                    : Icons.lock_clock, // Lock icon if tech not done
+                color: isReady
                     ? TimeFactoryColors.electricCyan
                     : Colors.white24,
                 size: 24,
@@ -93,7 +98,7 @@ class EraAdvanceButton extends ConsumerWidget {
                   Text(
                     'ADVANCE TIMELINE',
                     style: TimeFactoryTextStyles.bodyMono.copyWith(
-                      color: canAfford
+                      color: isReady
                           ? TimeFactoryColors.electricCyan
                           : Colors.white38,
                       fontSize: 10,
@@ -104,10 +109,18 @@ class EraAdvanceButton extends ConsumerWidget {
                   Text(
                     nextEraName,
                     style: TimeFactoryTextStyles.header.copyWith(
-                      color: canAfford ? Colors.white : Colors.white24,
+                      color: isReady ? Colors.white : Colors.white24,
                       fontSize: 18,
                     ),
                   ),
+                  if (!isEraComplete)
+                    Text(
+                      'TECH INCOMPLETE',
+                      style: TimeFactoryTextStyles.bodyMono.copyWith(
+                        color: TimeFactoryColors.hotMagenta,
+                        fontSize: 10,
+                      ),
+                    ),
                 ],
               ),
             ),

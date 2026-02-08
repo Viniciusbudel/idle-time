@@ -94,7 +94,7 @@ class _ChaosButtonState extends ConsumerState<ChaosButton>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.warning_amber_rounded,
                         color: Colors.white,
                         size: 24,

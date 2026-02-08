@@ -100,7 +100,7 @@ class CommandCenterTab extends ConsumerWidget {
             ),
           ],
         ),
-        Icon(Icons.hub, color: TimeFactoryColors.electricCyan, size: 28),
+        const Icon(Icons.hub, color: TimeFactoryColors.electricCyan, size: 28),
       ],
     );
   }
@@ -114,7 +114,7 @@ class CommandCenterTab extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.person_off, size: 48, color: Colors.white24),
+          const Icon(Icons.person_off, size: 48, color: Colors.white24),
           const SizedBox(height: 16),
           Text(
             'NO UNITS DETECTED',

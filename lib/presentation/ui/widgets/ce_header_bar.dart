@@ -152,7 +152,7 @@ class _CenterDisplay extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.energy_savings_leaf,
                 size: 24,
                 color: TimeFactoryColors.electricCyan,

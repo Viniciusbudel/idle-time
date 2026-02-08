@@ -141,7 +141,7 @@ class ChronoEnergyDisplay extends StatelessWidget {
         : NumberFormatter.format(amount);
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xs,
       ),
@@ -169,7 +169,7 @@ class ChronoEnergyDisplay extends StatelessWidget {
                 width: large ? 32 : 24,
                 height: large ? 32 : 24,
               ),
-              SizedBox(width: AppSpacing.xs),
+              const SizedBox(width: AppSpacing.xs),
               Text(
                 formattedAmount,
                 style:

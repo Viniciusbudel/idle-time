@@ -266,11 +266,12 @@ class _SteampunkChamberCardState extends ConsumerState<SteampunkChamberCard>
     return Row(
       children: List.generate(totalSlots, (index) {
         final isUnlocked = index < unlockedSlots;
-        if (!isUnlocked)
+        if (!isUnlocked) {
           return Padding(
             padding: const EdgeInsets.only(right: 6),
             child: _buildLockedSlot(),
           );
+        }
         if (index < widget.assignedWorkers.length) {
           return Padding(
             padding: const EdgeInsets.only(right: 6),
@@ -302,7 +303,7 @@ class _SteampunkChamberCardState extends ConsumerState<SteampunkChamberCard>
             fit: BoxFit.cover,
           ),
         ),
-        child: Center(
+        child: const Center(
           child: Icon(Icons.person, size: 20, color: Colors.white70),
         ),
       ),

@@ -80,7 +80,7 @@ class TechTreeTab extends StatelessWidget {
             ),
           ],
         ),
-        Icon(Icons.memory, color: TimeFactoryColors.electricCyan, size: 28),
+        const Icon(Icons.memory, color: TimeFactoryColors.electricCyan, size: 28),
       ],
     );
   }

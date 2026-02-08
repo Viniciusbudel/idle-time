@@ -131,7 +131,7 @@ class DeployWorkerDialog extends ConsumerWidget {
                       alpha: 0.2,
                     ),
                     foregroundColor: TimeFactoryColors.hotMagenta,
-                    side: BorderSide(color: TimeFactoryColors.hotMagenta),
+                    side: const BorderSide(color: TimeFactoryColors.hotMagenta),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   onPressed: () {
@@ -177,7 +177,7 @@ class DeployWorkerDialog extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.factory_outlined, size: 48, color: Colors.white24),
+          const Icon(Icons.factory_outlined, size: 48, color: Colors.white24),
           const SizedBox(height: 12),
           Text(
             'NO STATIONS AVAILABLE',
@@ -228,7 +228,7 @@ class DeployWorkerDialog extends ConsumerWidget {
             color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
+          child: const Icon(
             Icons.settings_input_component,
             color: TimeFactoryColors.electricCyan,
           ),
@@ -248,7 +248,7 @@ class DeployWorkerDialog extends ConsumerWidget {
           ),
         ),
         trailing: isCurrentStation
-            ? Icon(Icons.check_circle, color: TimeFactoryColors.acidGreen)
+            ? const Icon(Icons.check_circle, color: TimeFactoryColors.acidGreen)
             : canDeploy
             ? ElevatedButton(
                 style: ElevatedButton.styleFrom(

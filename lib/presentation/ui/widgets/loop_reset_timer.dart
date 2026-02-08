@@ -67,17 +67,21 @@ class _LoopResetTimerState extends State<LoopResetTimer> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A1520).withValues(alpha: 0.9),
+        color: const Color(0xE60A1520), // 0.9 opacity
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
+          color: const Color(0x4D00FFFF), // Electric Cyan with 0.3 opacity
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Clock Icon
-          Icon(Icons.schedule, color: TimeFactoryColors.electricCyan, size: 16),
+          const Icon(
+            Icons.schedule,
+            color: TimeFactoryColors.electricCyan,
+            size: 16,
+          ),
           const SizedBox(width: 8),
 
           // Label

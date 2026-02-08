@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/domain/entities/tech_upgrade.dart';
 import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/domain/usecases/check_tech_completion_usecase.dart';
 
 /// Provider for the list of all tech upgrades
 final techProvider = StateNotifierProvider<TechNotifier, List<TechUpgrade>>((
@@ -68,49 +69,49 @@ class TechNotifier extends StateNotifier<List<TechUpgrade>> {
 
   // Calculate total bonuses
   double get efficiencyMultiplier {
-    final tech = state.firstWhere((t) => t.id == 'neural_sync');
-    return 1.0 + (tech.level * 0.1); // +10% per level
+    final gameState = ref.read(gameStateProvider);
+    return TechData.calculateEfficiencyMultiplier(gameState.techLevels);
   }
 
   double get timeWarpMultiplier {
-    final tech = state.firstWhere((t) => t.id == 'flux_capacitor');
-    return 1.0 + (tech.level * 0.05); // +5% per level
+    final gameState = ref.read(gameStateProvider);
+    return TechData.calculateTimeWarpMultiplier(gameState.techLevels);
   }
 
   int get automationLevel {
-    final tech = state.firstWhere((t) => t.id == 'auto_exoskeleton');
-    return tech.level;
+    // For now, mapping clockwork_metronome level to automation logic
+    final gameState = ref.read(gameStateProvider);
+    return gameState.techLevels['clockwork_metronome'] ?? 0;
   }
 }
 
 // Helper providers for specific boosts
 final efficiencyMultiplierProvider = Provider<double>((ref) {
-  final techs = ref.watch(techProvider);
-  final tech = techs.firstWhere(
-    (t) => t.id == 'neural_sync',
-    orElse: () => techs.first,
-  );
-  // Fallback if not found (shouldn't happen with correct IDs)
-  if (tech.id != 'neural_sync') return 1.0;
-  return 1.0 + (tech.level * 0.1);
+  final gameState = ref.watch(gameStateProvider);
+  return TechData.calculateEfficiencyMultiplier(gameState.techLevels);
 });
 
 final timeWarpMultiplierProvider = Provider<double>((ref) {
-  final techs = ref.watch(techProvider);
-  final tech = techs.firstWhere(
-    (t) => t.id == 'flux_capacitor',
-    orElse: () => techs.first,
-  );
-  if (tech.id != 'flux_capacitor') return 1.0;
-  return 1.0 + (tech.level * 0.05);
+  final gameState = ref.watch(gameStateProvider);
+  return TechData.calculateTimeWarpMultiplier(gameState.techLevels);
 });
 
 final automationLevelProvider = Provider<int>((ref) {
+  final gameState = ref.watch(gameStateProvider);
+  return gameState.techLevels['clockwork_metronome'] ?? 0;
+});
+
+// NEW: Filtered list for the current era
+final currentEraTechsProvider = Provider<List<TechUpgrade>>((ref) {
   final techs = ref.watch(techProvider);
-  final tech = techs.firstWhere(
-    (t) => t.id == 'auto_exoskeleton',
-    orElse: () => techs.first,
-  );
-  if (tech.id != 'auto_exoskeleton') return 0;
-  return tech.level;
+  final gameState = ref.watch(gameStateProvider);
+  return techs.where((t) => t.eraId == gameState.currentEraId).toList();
+});
+
+// NEW: Check if current era is complete
+
+final isEraCompleteProvider = Provider<bool>((ref) {
+  final gameState = ref.watch(gameStateProvider);
+  final useCase = CheckTechCompletionUseCase();
+  return useCase.execute(gameState, gameState.currentEraId);
 });

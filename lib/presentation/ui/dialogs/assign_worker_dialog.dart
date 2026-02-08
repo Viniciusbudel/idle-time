@@ -73,7 +73,7 @@ class AssignWorkerDialog extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.person_add,
                   color: TimeFactoryColors.electricCyan,
                   size: 24,
@@ -138,7 +138,7 @@ class AssignWorkerDialog extends StatelessWidget {
       padding: const EdgeInsets.all(32),
       child: Column(
         children: [
-          Icon(Icons.group_off, color: Colors.white24, size: 48),
+          const Icon(Icons.group_off, color: Colors.white24, size: 48),
           const SizedBox(height: 12),
           Text(
             'NO IDLE WORKERS',
@@ -197,7 +197,7 @@ class AssignWorkerDialog extends StatelessWidget {
                   color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
                 ),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.person,
                 color: TimeFactoryColors.electricCyan,
                 size: 28,
@@ -244,7 +244,7 @@ class AssignWorkerDialog extends StatelessWidget {
                 color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.arrow_forward,
                 color: TimeFactoryColors.electricCyan,
                 size: 20,

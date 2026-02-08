@@ -67,7 +67,7 @@ class GlassBottomDock extends ConsumerWidget {
                   onTap: () => onItemSelected(0),
                   activeColor: colors.accent,
                   inactiveColor: colors.textSecondary,
-                  fontFamily: theme?.typography.fontFamily,
+                  fontFamily: theme.typography.fontFamily,
                 ),
               ),
               Expanded(
@@ -78,7 +78,7 @@ class GlassBottomDock extends ConsumerWidget {
                   onTap: () => onItemSelected(1),
                   activeColor: colors.accent,
                   inactiveColor: colors.textSecondary,
-                  fontFamily: theme?.typography.fontFamily,
+                  fontFamily: theme.typography.fontFamily,
                 ),
               ),
               Expanded(
@@ -89,7 +89,7 @@ class GlassBottomDock extends ConsumerWidget {
                   onTap: () => onItemSelected(2),
                   activeColor: colors.chaosButtonStart, // Special highlight
                   inactiveColor: colors.textSecondary,
-                  fontFamily: theme?.typography.fontFamily,
+                  fontFamily: theme.typography.fontFamily,
                 ),
               ),
               Expanded(
@@ -100,7 +100,7 @@ class GlassBottomDock extends ConsumerWidget {
                   onTap: () => onItemSelected(3),
                   activeColor: colors.accent,
                   inactiveColor: colors.textSecondary,
-                  fontFamily: theme?.typography.fontFamily,
+                  fontFamily: theme.typography.fontFamily,
                 ),
               ),
               Expanded(
@@ -111,7 +111,7 @@ class GlassBottomDock extends ConsumerWidget {
                   onTap: () => onItemSelected(4),
                   activeColor: colors.accent,
                   inactiveColor: colors.textSecondary,
-                  fontFamily: theme?.typography.fontFamily,
+                  fontFamily: theme.typography.fontFamily,
                 ),
               ),
             ],

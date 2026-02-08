@@ -1,9 +1,7 @@
 import 'package:flame/components.dart';
-import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame_lottie/flame_lottie.dart';
 import 'package:flutter/services.dart';
-import 'package:lottie/lottie.dart';
 import 'package:time_factory/core/constants/game_assets.dart';
 import 'package:time_factory/presentation/game/time_factory_game.dart';
 

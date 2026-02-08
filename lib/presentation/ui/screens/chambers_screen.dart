@@ -19,7 +19,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameStateProvider);
     // Use Neon Theme explicitly
-    final theme = NeonTheme();
+    final theme = const NeonTheme();
 
     final allWorkers = gameState.workers.values.toList();
     final idleCount = allWorkers.where((w) => !w.isDeployed).length;

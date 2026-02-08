@@ -88,7 +88,7 @@ class WorkerAvatar extends PositionComponent with HasGameRef {
           style: TimeFactoryTextStyles.numbersSmall.copyWith(
             fontSize: 10,
             color: Colors.white,
-            shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+            shadows: [const Shadow(color: Colors.black, blurRadius: 4)],
           ),
         ),
         anchor: Anchor.center,

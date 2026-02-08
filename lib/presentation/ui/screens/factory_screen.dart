@@ -48,7 +48,7 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
     // Determine active theme based on tab:
     // Tab 1 (Factory) -> Era Theme (global)
     // All others -> Neon Theme (reverted)
-    final activeTheme = _selectedTab == 1 ? globalTheme : NeonTheme();
+    final activeTheme = _selectedTab == 1 ? globalTheme : const NeonTheme();
 
     // Listen to worker changes to sync with Flame, avoiding rebuilds
     ref.listen(gameStateProvider.select((s) => s.activeWorkers), (

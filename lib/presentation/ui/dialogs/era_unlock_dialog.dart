@@ -87,8 +87,8 @@ class EraUnlockDialog extends StatelessWidget {
                 // Gradient fade
                 Positioned.fill(
                   child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.vertical(
                         top: Radius.circular(12),
                       ),
                       gradient: LinearGradient(
@@ -110,7 +110,7 @@ class EraUnlockDialog extends StatelessWidget {
                     style: TimeFactoryTextStyles.headerSmall.copyWith(
                       color: Colors.white,
                       letterSpacing: 4,
-                      shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                      shadows: [const Shadow(color: Colors.black, blurRadius: 4)],
                     ),
                   ),
                 ),

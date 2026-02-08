@@ -58,7 +58,7 @@ class IdleWorkerPool extends StatelessWidget {
             // Header row
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.groups,
                   color: TimeFactoryColors.electricCyan,
                   size: 16,
@@ -189,7 +189,7 @@ class IdleWorkerPool extends StatelessWidget {
         child: DropdownButton<WorkerEra>(
           value: selectedEra,
           isDense: true,
-          icon: Icon(
+          icon: const Icon(
             Icons.keyboard_arrow_down,
             color: Colors.white54,
             size: 16,
@@ -250,7 +250,7 @@ class IdleWorkerPool extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            Icon(Icons.person_add, color: Colors.black, size: 16),
+            const Icon(Icons.person_add, color: Colors.black, size: 16),
           ],
         ),
       ),

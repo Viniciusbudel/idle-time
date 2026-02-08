@@ -16,9 +16,9 @@ class TechScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final techs = ref.watch(techProvider);
+    final techs = ref.watch(currentEraTechsProvider);
     // Force Neon Theme
-    final theme = NeonTheme();
+    final theme = const NeonTheme();
 
     return Container(
       color: Colors.transparent,
@@ -110,7 +110,7 @@ class _TechAugmentCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameStateProvider);
-    final theme = NeonTheme();
+    final theme = const NeonTheme();
     final colors = theme.colors;
     final typography = theme.typography;
 
@@ -328,6 +328,14 @@ class _TechAugmentCard extends ConsumerWidget {
         return Icons.bolt;
       case TechType.timeWarp:
         return Icons.shutter_speed;
+      case TechType.costReduction:
+        return Icons.price_change;
+      case TechType.offline:
+        return Icons.bedtime;
+      case TechType.clickPower:
+        return Icons.touch_app;
+      case TechType.eraUnlock:
+        return Icons.vpn_key;
     }
   }
 }

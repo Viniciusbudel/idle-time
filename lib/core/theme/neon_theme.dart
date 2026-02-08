@@ -5,6 +5,8 @@ import 'package:time_factory/core/theme/game_theme.dart';
 
 /// The classic Neon/Cyberpunk theme for the user interface
 class NeonTheme implements GameTheme {
+  const NeonTheme();
+
   @override
   String get id => 'neon';
 
