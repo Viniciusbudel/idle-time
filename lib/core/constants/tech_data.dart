@@ -14,10 +14,10 @@ class TechData {
       maxLevel: 10,
     ),
     TechUpgrade(
-      id: 'lubricated_gears',
-      name: 'Lubricated Gears',
-      description: 'A drop of oil saves an hour of toil.',
-      type: TechType.timeWarp, // Using timeWarp for speed
+      id: 'centrifugal_governor',
+      name: 'Centrifugal Governor',
+      description: 'The spinning balls of industry. Stabilizes steam flow.',
+      type: TechType.timeWarp,
       baseCost: BigInt.from(250),
       costMultiplier: 1.6,
       eraId: 'victorian',
@@ -25,9 +25,9 @@ class TechData {
     ),
     // Tier 2
     TechUpgrade(
-      id: 'brass_standardization',
-      name: 'Brass Standardization',
-      description: 'Interchangeable parts reduce costs.',
+      id: 'bessemer_process',
+      name: 'Bessemer Process',
+      description: 'The age of steel begins. Massive cost savings.',
       type: TechType.costReduction,
       baseCost: BigInt.from(500),
       costMultiplier: 1.4,
@@ -35,9 +35,9 @@ class TechData {
       maxLevel: 5,
     ),
     TechUpgrade(
-      id: 'clockwork_metronome',
-      name: 'Clockwork Metronome',
-      description: 'Rhythm improves automation.',
+      id: 'jacquard_punchcards',
+      name: 'Jacquard Punch-Cards',
+      description: 'The original industrial programming via looms.',
       type: TechType.automation,
       baseCost: BigInt.from(1000),
       costMultiplier: 1.5,
@@ -57,9 +57,9 @@ class TechData {
     ),
     // Capstone
     TechUpgrade(
-      id: 'difference_engine',
-      name: 'Difference Engine',
-      description: 'The future is automatic. Unlocks next Era.',
+      id: 'great_exhibition',
+      name: 'The Great Exhibition',
+      description: 'Showcase Victorian might. Unlocks next Era.',
       type: TechType.eraUnlock,
       baseCost: BigInt.from(10000),
       costMultiplier: 2.0,
@@ -68,9 +68,9 @@ class TechData {
     ),
     // Tier 2 - New add
     TechUpgrade(
-      id: 'steam_piston',
-      name: 'Steam-Powered Piston',
-      description: 'Why push when steam can shove?',
+      id: 'pneumatic_hammer',
+      name: 'Pneumatic Hammer',
+      description: 'Compressed air for maximum impact.',
       type: TechType.clickPower,
       baseCost: BigInt.from(750),
       costMultiplier: 1.5,
@@ -86,27 +86,26 @@ class TechData {
     final boilerLevel = techLevels['steam_boilers'] ?? 0;
     multiplier += boilerLevel * 0.1; // +10% per level
 
-    // Clockwork Metronome (Efficiency/Automation) - Adding small passive boost?
-    // The design said "Rhythm Bonus", maybe just raw efficiency for now
-    final metronomeLevel = techLevels['clockwork_metronome'] ?? 0;
-    multiplier += metronomeLevel * 0.05; // +5% per level
+    // Jacquard Punch-Cards (Efficiency/Automation)
+    final jacquardLevel = techLevels['jacquard_punchcards'] ?? 0;
+    multiplier += jacquardLevel * 0.05; // +5% per level
 
     return multiplier;
   }
 
   static double calculateTimeWarpMultiplier(Map<String, int> techLevels) {
     double multiplier = 1.0;
-    // Lubricated Gears - +5% per level (changed from 10% in description to balance)
-    final gearsLevel = techLevels['lubricated_gears'] ?? 0;
-    multiplier += gearsLevel * 0.05;
+    // Centrifugal Governor - +5% per level
+    final governorLevel = techLevels['centrifugal_governor'] ?? 0;
+    multiplier += governorLevel * 0.05;
     return multiplier;
   }
 
   static double calculateCostReductionMultiplier(Map<String, int> techLevels) {
     double multiplier = 1.0;
-    // Brass Standardization - Cost becomes (1.0 - (level * 0.05))
-    final brassLevel = techLevels['brass_standardization'] ?? 0;
-    multiplier -= brassLevel * 0.05;
+    // Bessemer Process - Cost becomes (1.0 - (level * 0.05))
+    final bessemerLevel = techLevels['bessemer_process'] ?? 0;
+    multiplier -= bessemerLevel * 0.05;
     return multiplier.clamp(0.1, 1.0); // Cap at 90% reduction
   }
 

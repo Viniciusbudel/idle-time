@@ -146,11 +146,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
     BigInt base = state.productionPerSecond ~/ BigInt.from(100);
     if (base < BigInt.one) base = BigInt.one;
 
-    // 2. Apply Tech Multiplier (Steam-Powered Piston)
-    final pistonLevel = state.techLevels['steam_piston'] ?? 0;
-    if (pistonLevel > 0) {
+    // 2. Apply Tech Multiplier (Pneumatic Hammer)
+    final hammerLevel = state.techLevels['pneumatic_hammer'] ?? 0;
+    if (hammerLevel > 0) {
       // +100% per level means multiplier = 1 + level
-      final multiplier = 1 + pistonLevel;
+      final multiplier = 1 + hammerLevel;
       base = base * BigInt.from(multiplier);
     }
 
