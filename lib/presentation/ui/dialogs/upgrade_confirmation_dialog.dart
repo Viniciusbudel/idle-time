@@ -11,6 +11,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
   final VoidCallback onConfirm;
   final String? title;
   final String? message;
+  final BigInt? costOverride;
 
   const UpgradeConfirmationDialog({
     super.key,
@@ -18,6 +19,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
     required this.onConfirm,
     this.title,
     this.message,
+    this.costOverride,
   });
 
   @override
@@ -117,7 +119,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
 
               // Cost
               Text(
-                'COST: ${NumberFormatter.format(station.upgradeCost)} CE',
+                'COST: ${NumberFormatter.format(costOverride ?? station.getUpgradeCost())} CE',
                 style: TimeFactoryTextStyles.numbers.copyWith(
                   color: TimeFactoryColors.hotMagenta,
                   fontSize: 18,

@@ -85,11 +85,6 @@ class _SteampunkButtonState extends ConsumerState<SteampunkButton>
     final dimens = theme.dimens;
     final isEnabled = widget.onPressed != null;
 
-    final baseColor = widget.isDestructive ? colors.error : colors.primary;
-    final accentColor = widget.isDestructive
-        ? Colors.red.shade300
-        : colors.accent;
-
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {

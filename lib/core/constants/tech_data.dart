@@ -46,12 +46,22 @@ class TechData {
     ),
     // Tier 3
     TechUpgrade(
-      id: 'analytical_engine',
-      name: 'Analytical Engine',
-      description: 'Calculating profits while you sleep.',
+      id: 'clockwork_arithmometer',
+      name: 'Clockwork Arithmometer',
+      description: 'A thunderous assembly of brass cogs and perforated cards that automates the ledger, continuing calculations even whilst the operator slumbers.',
       type: TechType.offline,
       baseCost: BigInt.from(5000),
       costMultiplier: 1.8,
+      eraId: 'victorian', // or 'steam_age'
+      maxLevel: 5,
+    ),
+    TechUpgrade(
+      id: 'pneumatic_hammer',
+      name: 'Pneumatic Hammer',
+      description: 'Compressed air for maximum impact.',
+      type: TechType.clickPower,
+      baseCost: BigInt.from(750),
+      costMultiplier: 1.5,
       eraId: 'victorian',
       maxLevel: 5,
     ),
@@ -67,16 +77,7 @@ class TechData {
       maxLevel: 1,
     ),
     // Tier 2 - New add
-    TechUpgrade(
-      id: 'pneumatic_hammer',
-      name: 'Pneumatic Hammer',
-      description: 'Compressed air for maximum impact.',
-      type: TechType.clickPower,
-      baseCost: BigInt.from(750),
-      costMultiplier: 1.5,
-      eraId: 'victorian',
-      maxLevel: 5,
-    ),
+
   ];
 
   static double calculateEfficiencyMultiplier(Map<String, int> techLevels) {

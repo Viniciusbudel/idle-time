@@ -93,14 +93,19 @@ class Station {
     );
   }
 
-  /// Upgrade cost
-  BigInt get upgradeCost {
+  /// Upgrade cost with optional discount
+  BigInt getUpgradeCost({double discountMultiplier = 1.0}) {
     final baseCost = _getBaseCost();
     final multiplier = BigInt.from((1.4 * 100).toInt());
     BigInt cost = baseCost;
 
     for (int i = 0; i < level; i++) {
       cost = cost * multiplier ~/ BigInt.from(100);
+    }
+
+    if (discountMultiplier < 1.0) {
+      final discount = BigInt.from((discountMultiplier * 100).toInt());
+      cost = cost * discount ~/ BigInt.from(100);
     }
 
     return cost;

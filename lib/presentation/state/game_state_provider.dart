@@ -343,10 +343,19 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final station = state.stations[stationId];
     if (station == null) return false;
 
-    // Check cost (pre-check for immediate feedback, though usecase validates too)
-    if (state.chronoEnergy < station.upgradeCost) return false;
+    final discount = TechData.calculateCostReductionMultiplier(
+      state.techLevels,
+    );
+    final cost = station.getUpgradeCost(discountMultiplier: discount);
 
-    state = _upgradeStationUseCase.execute(state, stationId);
+    // Check cost (pre-check for immediate feedback, though usecase validates too)
+    if (state.chronoEnergy < cost) return false;
+
+    state = _upgradeStationUseCase.execute(
+      state,
+      stationId,
+      discountMultiplier: discount,
+    );
     return true;
   }
 

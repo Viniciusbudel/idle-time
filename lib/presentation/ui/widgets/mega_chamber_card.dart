@@ -10,6 +10,8 @@ import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/presentation/ui/atoms/steampunk_button.dart';
 import 'package:time_factory/presentation/ui/atoms/steampunk_card.dart';
 import 'package:time_factory/presentation/ui/dialogs/upgrade_confirmation_dialog.dart';
+import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/core/constants/tech_data.dart';
 
 class MegaChamberCard extends ConsumerWidget {
   final Station station;
@@ -72,7 +74,7 @@ class MegaChamberCard extends ConsumerWidget {
           const SizedBox(height: AppSpacing.xl),
 
           // 5. Expand Button (Upgrade)
-          _buildUpgradeButton(context, theme, colors, typography),
+          _buildUpgradeButton(context, ref, theme, colors, typography),
         ],
       ),
     );
@@ -302,18 +304,32 @@ class MegaChamberCard extends ConsumerWidget {
 
   Widget _buildUpgradeButton(
     BuildContext context,
+    WidgetRef ref,
     NeonTheme theme,
     ThemeColors colors,
     ThemeTypography typography,
   ) {
+    // Calculate cost for label
+    final gameState = ref.watch(gameStateProvider);
+    final discount = TechData.calculateCostReductionMultiplier(
+      gameState.techLevels,
+    );
+    final cost = station.getUpgradeCost(discountMultiplier: discount);
+
     return SteampunkButton(
       themeOverride: theme,
-      label:
-          'EXPAND CHAMBER (${NumberFormatter.formatCE(station.upgradeCost)})',
+      label: 'EXPAND CHAMBER (${NumberFormatter.formatCE(cost)})',
       icon: Icons.upgrade,
       isPrimary: true,
       onPressed: () {
         if (onUpgrade != null) {
+          // Calculate discount from provider state
+          final gameState = ref.read(gameStateProvider);
+          final discount = TechData.calculateCostReductionMultiplier(
+            gameState.techLevels,
+          );
+          final cost = station.getUpgradeCost(discountMultiplier: discount);
+
           showDialog(
             context: context,
             builder: (context) => UpgradeConfirmationDialog(
@@ -321,7 +337,8 @@ class MegaChamberCard extends ConsumerWidget {
               onConfirm: onUpgrade!,
               title: "EXPAND CHAMBER?",
               message:
-                  "Expanding will increase worker capacity and efficiency.\n\nCost: ${NumberFormatter.formatCE(station.upgradeCost)} CE",
+                  "Expanding will increase worker capacity and efficiency.\n\nCost: ${NumberFormatter.formatCE(cost)} CE",
+              costOverride: cost,
             ),
           );
         }
