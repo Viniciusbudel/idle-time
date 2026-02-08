@@ -63,17 +63,28 @@ enum WorkerRarity {
 
 /// Station types available in the factory
 enum StationType {
-  basicLoop('basic_loop', 'Basic Loop Chamber', 1),
-  dualHelix('dual_helix', 'Dual Helix Chamber', 2),
-  paradoxAmplifier('paradox_amplifier', 'Paradox Amplifier', 0),
-  timeDistortion('time_distortion', 'Time Distortion Field', 1),
-  riftGenerator('rift_generator', 'Rift Generator', 1);
+  basicLoop('basic_loop', 'Basic Loop Chamber', 3, WorkerEra.victorian),
+  dualHelix('dual_helix', 'Dual Helix Chamber', 3, WorkerEra.roaring20s),
+  paradoxAmplifier(
+    'paradox_amplifier',
+    'Paradox Amplifier',
+    3,
+    WorkerEra.atomicAge,
+  ),
+  timeDistortion(
+    'time_distortion',
+    'Time Distortion Field',
+    3,
+    WorkerEra.cyberpunk80s,
+  ),
+  riftGenerator('rift_generator', 'Rift Generator', 3, WorkerEra.neoTokyo);
 
   final String id;
   final String displayName;
   final int workerSlots;
+  final WorkerEra era;
 
-  const StationType(this.id, this.displayName, this.workerSlots);
+  const StationType(this.id, this.displayName, this.workerSlots, this.era);
 }
 
 /// Resource types

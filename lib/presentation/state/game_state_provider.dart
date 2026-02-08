@@ -11,7 +11,9 @@ import '../../domain/usecases/summon_worker_usecase.dart';
 import '../../domain/usecases/merge_stations_usecase.dart';
 import '../../domain/usecases/production_loop_usecase.dart';
 import '../../domain/usecases/upgrade_station_usecase.dart';
+import '../../domain/usecases/check_tech_completion_usecase.dart';
 import '../../core/services/save_service.dart';
+import '../../core/constants/tech_data.dart';
 import 'dart:async';
 
 /// Main game state provider
@@ -136,18 +138,58 @@ class GameStateNotifier extends StateNotifier<GameState> {
     return true;
   }
 
+  /// PROCESSED: Manual Click Action
+  /// Returns the amount of CE generated
+  BigInt manualClick() {
+    // 1. Calculate Base Power
+    // Base is 1% of current production OR 1, whichever is higher
+    BigInt base = state.productionPerSecond ~/ BigInt.from(100);
+    if (base < BigInt.one) base = BigInt.one;
+
+    // 2. Apply Tech Multiplier (Steam-Powered Piston)
+    final pistonLevel = state.techLevels['steam_piston'] ?? 0;
+    if (pistonLevel > 0) {
+      // +100% per level means multiplier = 1 + level
+      final multiplier = 1 + pistonLevel;
+      base = base * BigInt.from(multiplier);
+    }
+
+    // 3. Add to state
+    addChronoEnergy(base);
+
+    return base;
+  }
+
   // ===== WORKERS =====
 
   /// Hire a new worker from a specific era (costs CE based on era)
+  /// Limited to 5 hires per era using Cells (CE)
   bool hireWorker(WorkerEra era) {
+    // Check limit
+    final currentHires = state.eraHires[era.id] ?? 0;
+    if (currentHires >= 5) return false;
+
     if (!spendChronoEnergy(era.hireCost)) return false;
 
     final worker = _hireWorkerUseCase.execute(era);
-    addWorker(worker);
+
+    // Add worker and increment hire count
+    final newWorkers = Map<String, Worker>.from(state.workers);
+    newWorkers[worker.id] = worker;
+
+    final newEraHires = Map<String, int>.from(state.eraHires);
+    newEraHires[era.id] = currentHires + 1;
+
+    state = state.copyWith(
+      workers: newWorkers,
+      totalWorkersPulled: state.totalWorkersPulled + 1,
+      eraHires: newEraHires,
+    );
     return true;
   }
 
   /// Summon a worker from the Temporal Rift (costs Time Shards)
+  /// Unlimited, does not count towards Cell limit
   Worker? summonWorker({int cost = 10, WorkerEra? targetEra}) {
     if (!spendTimeShards(cost)) return null;
 
@@ -254,10 +296,27 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   // ===== STATIONS =====
 
-  /// Purchase a new station (costs CE)
   bool purchaseStation(StationType type, [int? gridX, int? gridY]) {
-    final ownedCount = state.stations.length;
-    final cost = StationFactory.getPurchaseCost(type, ownedCount);
+    // Era-Specific Limit Check (Mega-Chamber: Max 1 per Era)
+    final stationEra = type.era;
+    final currentCount = state.getStationCountForEra(stationEra.id);
+    if (currentCount >= 1) return false;
+
+    // Use current count for cost scaling (per type or per era? Plan says per type usually,
+    // but maybe per era for floor scaling? Sticking to existing per-type scaling for now
+    // unless design changes, effectively capping cost scaling at 5th station)
+    final ownedCount = state.stations.values
+        .where((s) => s.type == type)
+        .length;
+
+    final discount = TechData.calculateCostReductionMultiplier(
+      state.techLevels,
+    );
+    final cost = StationFactory.getPurchaseCost(
+      type,
+      ownedCount,
+      discountMultiplier: discount,
+    );
 
     if (!spendChronoEnergy(cost)) return false;
 
@@ -384,11 +443,20 @@ class GameStateNotifier extends StateNotifier<GameState> {
     // Double check we can afford it (validation)
     if (state.chronoEnergy < cost) return;
 
+    // Check completion of current era
+    // Note: We assume UI passes the correct nextEraId. Verification is done here.
+    // For simplicity, we just check if the current era is complete.
+    final checkCompletion = CheckTechCompletionUseCase();
+    if (!checkCompletion.execute(state, state.currentEraId)) return;
+
     final newUnlocked = {...state.unlockedEras, nextEraId};
+    final newCompleted = {...state.completedEras, state.currentEraId};
+
     state = state.copyWith(
       chronoEnergy: state.chronoEnergy - cost,
       currentEraId: nextEraId,
       unlockedEras: newUnlocked,
+      completedEras: newCompleted,
     );
   }
 
@@ -400,6 +468,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
   }
 
   /// Update last tick time
+  /// Debug method to add currency
+  void debugAddCurrency(BigInt amount) {
+    addChronoEnergy(amount);
+  }
+
   void updateLastTickTime() {
     state = state.copyWith(lastTickTime: DateTime.now());
   }

@@ -8,16 +8,22 @@ class SteampunkButton extends ConsumerStatefulWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool isDestructive;
+  final bool isPrimary;
   final IconData? icon;
   final GameTheme? themeOverride;
+  final double? width;
+  final double? height;
 
   const SteampunkButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.isDestructive = false,
+    this.isPrimary = false,
     this.icon,
     this.themeOverride,
+    this.width,
+    this.height,
   });
 
   @override
@@ -94,13 +100,23 @@ class _SteampunkButtonState extends ConsumerState<SteampunkButton>
             onTapUp: _handleTapUp,
             onTapCancel: _handleTapCancel,
             child: Container(
+              width: widget.width,
+              height: widget.height,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(dimens.cornerRadius),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: isEnabled
-                      ? [accentColor, baseColor]
+                      ? (widget.isDestructive
+                            ? [Colors.red.shade300, colors.error]
+                            : widget.isPrimary
+                            ? [colors.accent, colors.primary]
+                            : [
+                                colors.primary.withValues(alpha: 0.5),
+                                colors.surface,
+                              ])
                       : [Colors.grey.shade700, Colors.grey.shade900],
                 ),
                 border: Border.all(

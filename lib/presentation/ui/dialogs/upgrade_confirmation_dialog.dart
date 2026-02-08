@@ -9,11 +9,15 @@ import 'package:time_factory/presentation/ui/widgets/glass_card.dart';
 class UpgradeConfirmationDialog extends StatelessWidget {
   final Station station;
   final VoidCallback onConfirm;
+  final String? title;
+  final String? message;
 
   const UpgradeConfirmationDialog({
     super.key,
     required this.station,
     required this.onConfirm,
+    this.title,
+    this.message,
   });
 
   @override
@@ -42,18 +46,20 @@ class UpgradeConfirmationDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'UPGRADE STATION',
+                title ?? 'UPGRADE STATION',
                 style: TimeFactoryTextStyles.header.copyWith(
                   color: TimeFactoryColors.electricCyan,
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.md),
 
               Text(
-                station.name,
+                message ?? station.name,
                 style: TimeFactoryTextStyles.body.copyWith(
                   color: Colors.white70,
                 ),
+                textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: AppSpacing.lg),
@@ -63,10 +69,8 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildStatBox('LEVEL', station.level.toString()),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                    ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     child: Icon(
                       Icons.arrow_forward,
                       color: TimeFactoryColors.electricCyan,
@@ -93,7 +97,11 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.xs),
-                  Icon(Icons.arrow_right_alt, color: Colors.white54, size: 16),
+                  const Icon(
+                    Icons.arrow_right_alt,
+                    color: Colors.white54,
+                    size: 16,
+                  ),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
                     '$nextBonus%',
@@ -123,7 +131,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
+                    child: const Text(
                       'CANCEL',
                       style: TextStyle(color: Colors.white54),
                     ),
@@ -137,7 +145,9 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                       backgroundColor: TimeFactoryColors.electricCyan
                           .withValues(alpha: 0.2),
                       foregroundColor: TimeFactoryColors.electricCyan,
-                      side: BorderSide(color: TimeFactoryColors.electricCyan),
+                      side: const BorderSide(
+                        color: TimeFactoryColors.electricCyan,
+                      ),
                     ),
                     child: const Text('CONFIRM'),
                   ),
