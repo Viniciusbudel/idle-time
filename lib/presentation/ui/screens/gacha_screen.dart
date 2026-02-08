@@ -5,7 +5,12 @@ import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:flame/game.dart';
+import 'package:time_factory/presentation/anim/portal_game.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
+
+import 'package:time_factory/presentation/ui/widgets/merge_effect_overlay.dart';
+import 'package:time_factory/presentation/ui/dialogs/worker_result_dialog.dart';
 
 /// Gacha Screen - Temporal Rift Summoning Interface
 class GachaScreen extends ConsumerStatefulWidget {
@@ -19,21 +24,16 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
     with SingleTickerProviderStateMixin {
   Worker? _lastSummonedWorker;
   bool _isSummoning = false;
-  late AnimationController _portalController;
+  bool _showSummonEffect = false;
+  late final PortalGame _portalGame; // Cached game instance
 
   @override
   void initState() {
     super.initState();
-    _portalController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _portalController.dispose();
-    super.dispose();
+    // Initialize the game once. Use a fixed color or Theme's primary if available here.
+    // Since we need Theme colors which might change (unlikely for now),
+    // we can grab the NeonTheme directly as it's forced in build anyway.
+    _portalGame = PortalGame(primaryColor: const NeonTheme().colors.primary);
   }
 
   @override
@@ -42,219 +42,149 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
     // Force Neon Theme
     final theme = const NeonTheme();
     final colors = theme.colors;
-    // final typography = theme.typography; // Not used in this scoped block but available
 
-    return Container(
-      color: Colors.transparent,
-      child: Column(
-        children: [
-          // Header
-          _buildHeader(theme, timeShards),
-
-          const SizedBox(height: AppSpacing.md),
-
-          // Main Content Area (Portal + Results)
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Main Portal Area
-                _buildPortal(colors),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Result Area
-                if (_lastSummonedWorker != null)
-                  _buildResultCard(_lastSummonedWorker!, theme)
-                else
-                  // Placeholder to keep layout stable or strict "Ready to Summon" text
-                  Text(
-                    'TEMPORAL RIFT STABLE',
-                    style: theme.typography.bodyMedium.copyWith(
-                      color: colors.textSecondary.withValues(alpha: 0.5),
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          // Summon Buttons Row
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
-              children: [
-                Expanded(child: _buildCellSummonButton(ref, theme)),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(child: _buildShardSummonButton(timeShards, theme)),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 160),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(dynamic theme, int timeShards) {
-    final colors = theme.colors;
-    final typography = theme.typography;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Row(
-        children: [
-          // Icon
-          Icon(Icons.nights_stay, color: colors.accent, size: 20.0),
-          const SizedBox(width: 12.0),
-
-          // Title
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Stack(
+      children: [
+        // 1. Background / Main Content
+        Container(
+          color:
+              Colors.transparent, // Background is handled by scaffold usually
+          child: Column(
             children: [
-              Text(
-                'TEMPORAL',
-                style: typography.titleLarge.copyWith(height: 1.0),
+              // Spacer for Header Overlay
+              const SizedBox(height: 65),
+
+              // Main Content Area (Portal centered)
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Enhanced Portal
+                      _buildPortal(colors),
+
+                      const SizedBox(height: AppSpacing.sm),
+
+                      // Status Text
+                      Text(
+                        'TEMPORAL RIFT ACTIVE',
+                        style: theme.typography.bodyMedium.copyWith(
+                          color: colors.primary.withValues(alpha: 0.7),
+                          letterSpacing: 3.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Summon workers from across time',
+                        style: theme.typography.bodySmall.copyWith(
+                          color: colors.textSecondary.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              Text('RIFT', style: typography.titleLarge.copyWith(height: 1.0)),
+
+              // Summon Buttons Row
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  children: [
+                    Expanded(child: _buildCellSummonButton(ref, theme)),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(child: _buildShardSummonButton(timeShards, theme)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 150), // Bottom padding
             ],
           ),
+        ),
 
-          const Spacer(),
-
-          // Shards Counter (styled like TechScreen version/status but functional)
-          Container(
+        // 2. Header Overlay (Compact)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 10.0,
-              vertical: 6.0,
-            ),
-            decoration: BoxDecoration(
-              color: colors.primary.withValues(alpha: 0.1),
-              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
-              borderRadius: BorderRadius.circular(4.0),
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.md,
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
-                  Icons.diamond_outlined,
-                  color: colors.primary, // Using primary/magenta for Shards
-                  size: 14.0,
-                ),
-                const SizedBox(width: 4.0),
-                Text(
-                  '$timeShards',
-                  style: typography.bodyMedium.copyWith(
-                    fontSize: 14.0,
-                    color: colors.primary,
-                    fontWeight: FontWeight.bold,
+                // Minimal Title - Empty to keep spacing if needed or just remove
+                const SizedBox(),
+
+                // Shard Counter Pill
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    border: Border.all(
+                      color: colors.primary.withValues(alpha: 0.3),
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.diamond, color: colors.primary, size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$timeShards',
+                        style: theme.typography.bodyMedium.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+
+        // 3. Summon Effect Overlay
+        if (_showSummonEffect)
+          Positioned.fill(
+            child: MergeEffectOverlay(
+              primaryColor: _lastSummonedWorker != null
+                  ? _getRarityColor(_lastSummonedWorker!.rarity, colors)
+                  : Colors.white,
+              onComplete: _onSummonAnimationComplete,
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildPortal(dynamic colors) {
-    return AnimatedBuilder(
-      animation: _portalController,
-      builder: (context, child) {
-        return Transform.rotate(
-          angle: _portalController.value * 2 * 3.14159,
-          child: Container(
-            width: 200.0,
-            height: 200.0,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  colors.primary, // e.g. Magenta/Purple
-                  colors.primary.withValues(alpha: 0.5),
-                  Colors.transparent,
-                ],
-                stops: const [0.3, 0.6, 1.0],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: colors.primary.withValues(alpha: 0.3),
-                  blurRadius: 30.0,
-                  spreadRadius: 5.0,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Icon(
-                Icons.all_inclusive,
-                size: 80.0,
-                color: Colors.white.withValues(alpha: 0.9),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildResultCard(Worker worker, dynamic theme) {
-    final colors = theme.colors;
-    final typography = theme.typography;
-    final rarityColor = _getRarityColor(worker.rarity, colors);
-
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      padding: const EdgeInsets.all(16.0),
+      width: 280.0, // Larger portal
+      height: 280.0,
       decoration: BoxDecoration(
-        color: colors.surface.withValues(alpha: 0.9),
-        border: Border.all(color: rarityColor, width: 2.0),
-        borderRadius: BorderRadius.circular(theme.dimens.cornerRadius),
+        shape: BoxShape.circle,
+        // Subtle outer glow
         boxShadow: [
           BoxShadow(
-            color: rarityColor.withValues(alpha: 0.3),
-            blurRadius: 20.0,
-            spreadRadius: 2.0,
+            color: colors.primary.withValues(alpha: 0.1),
+            blurRadius: 50,
+            spreadRadius: 10,
           ),
         ],
       ),
-      child: Row(
+      child: Stack(
         children: [
-          // Rarity Icon
-          Container(
-            width: 50.0,
-            height: 50.0,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: rarityColor.withValues(alpha: 0.2),
-              border: Border.all(color: rarityColor),
-            ),
-            child: Icon(Icons.person, color: rarityColor, size: 28.0),
-          ),
-          const SizedBox(width: 16.0),
-          // Worker Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  worker.displayName.toUpperCase(),
-                  style: typography.titleLarge.copyWith(
-                    color: rarityColor,
-                    fontSize: 16.0,
-                  ),
-                ),
-                const SizedBox(height: 4.0),
-                Text(
-                  '${worker.rarity.displayName} • ${worker.era.displayName}',
-                  style: typography.bodyMedium.copyWith(
-                    color: colors.textSecondary,
-                    fontSize: 12.0,
-                  ),
-                ),
-              ],
-            ),
+          // Flame Portal Game
+          Positioned.fill(
+            child: ClipOval(child: GameWidget(game: _portalGame)),
           ),
         ],
       ),
@@ -268,13 +198,24 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
 
     final currentEraId = gameState.currentEraId;
     final hires = gameState.eraHires[currentEraId] ?? 0;
-    final maxHires = 5;
-    final isSoldOut = hires >= maxHires;
 
+    // Unlimited hires, cost scales exponentially
     final currentEra = WorkerEra.values.firstWhere((e) => e.id == currentEraId);
-    final cost = currentEra.hireCost;
+
+    // Calculate cost using the notifier helper
+    // We need to access the notifier to calculate cost without modifying state
+    // But calculate method is in notifier class. We can access it via ref.read or just replicate logic for UI?
+    // Better to expose cost in state or a provider.
+    // For now, let's replicate logic or cast notifier.
+    // Actually, good practice is to have a selector or provider for "next cost".
+    // Let's use the notifier method directly if possible or replicate simple math:
+    // Cost = base * 1.05^hires
+    final cost = ref
+        .read(gameStateProvider.notifier)
+        .getNextWorkerCost(currentEra);
+
     final canAfford = gameState.chronoEnergy >= cost;
-    final canHire = canAfford && !isSoldOut && !_isSummoning;
+    final canHire = canAfford && !_isSummoning;
 
     return GestureDetector(
       onTap: canHire ? () => _performCellSummon(currentEra) : null,
@@ -283,7 +224,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         decoration: BoxDecoration(
           color: canHire
-              ? colors.accent.withOpacity(0.2)
+              ? colors.accent.withValues(alpha: 0.2)
               : Colors.grey.shade900,
           borderRadius: BorderRadius.circular(theme.dimens.cornerRadius),
           border: Border.all(color: canHire ? colors.accent : Colors.white10),
@@ -291,7 +232,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
         child: Column(
           children: [
             Text(
-              isSoldOut ? 'SOLD OUT' : 'HIRE STAFF',
+              'HIRE STAFF',
               style: typography.buttonText.copyWith(
                 color: canHire ? colors.accent : Colors.grey,
                 fontSize: 14.0,
@@ -299,22 +240,20 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
             ),
             const SizedBox(height: 4),
             Text(
-              isSoldOut
-                  ? '$hires/$maxHires HIRED'
-                  : '${NumberFormatter.formatCE(cost)} CE', // Requires number formatter import? No, passed via context? No. Add import.
+              '${NumberFormatter.formatCE(cost)} CE',
               style: typography.bodyMedium.copyWith(
                 color: canHire ? colors.textPrimary : Colors.grey,
                 fontSize: 10.0,
               ),
             ),
-            if (!isSoldOut)
-              Text(
-                '$hires/$maxHires',
-                style: typography.bodyMedium.copyWith(
-                  color: colors.textSecondary,
-                  fontSize: 10.0,
-                ),
+            Text(
+              // Show just the count without max limit
+              'Total Hired: $hires',
+              style: typography.bodyMedium.copyWith(
+                color: colors.textSecondary,
+                fontSize: 10.0,
               ),
+            ),
           ],
         ),
       ),
@@ -392,46 +331,63 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
   }
 
   Future<void> _performCellSummon(WorkerEra era) async {
+    // Check cost again (UI should prevent, but good practice)
+    final cost = ref.read(gameStateProvider.notifier).getNextWorkerCost(era);
+    final gameState = ref.read(gameStateProvider);
+
+    if (gameState.chronoEnergy < cost) return;
+
     setState(() => _isSummoning = true);
-    await Future.delayed(const Duration(milliseconds: 500));
 
-    final success = ref.read(gameStateProvider.notifier).hireWorker(era);
-    // Logic to get the worker is tricky because hireWorker returns bool
-    // logic in provider:
-    // final worker = _hireWorkerUseCase.execute(era);
-    // We should probably change hireWorker to return Worker? or use a separate getter
-    // For now we can find the latest worker from the state if successful, or just show success msg.
-    // Actually, update hireWorker to return the Worker? would be better but it modifies state.
-    // Let's just find the worker joined.
+    // hireWorker now returns Worker? directly
+    final worker = ref.read(gameStateProvider.notifier).hireWorker(era);
 
-    // Hack: Get the worker with highest ID? or timestamp?
-    // Let's adjust hireWorker in GameStateNotifier later to return Worker?.
-    // For now, let's assume if success, we just show a generic "HIRED!" or find the latest from era.
-
-    Worker? hiredWorker;
-    if (success) {
-      final workers = ref.read(gameStateProvider).workers.values.toList();
-      hiredWorker = workers.last; // Assuming insertion order
+    if (worker != null) {
+      _triggerSummonEffect(worker);
+    } else {
+      setState(() => _isSummoning = false);
     }
-
-    setState(() {
-      _isSummoning = false;
-      _lastSummonedWorker = hiredWorker;
-    });
   }
 
   Future<void> _performSummon() async {
-    setState(() => _isSummoning = true);
+    setState(() => _isSummoning = true); // Lock UI
 
-    // Brief animation delay
-    await Future.delayed(const Duration(milliseconds: 800));
-
+    // Perform logic
     final worker = ref.read(gameStateProvider.notifier).summonWorker(cost: 10);
 
+    if (worker != null) {
+      _triggerSummonEffect(worker);
+    } else {
+      setState(() => _isSummoning = false);
+    }
+  }
+
+  // Helper to manage the sequence: Animation -> Dialog
+  void _triggerSummonEffect(Worker worker) {
     setState(() {
-      _isSummoning = false;
       _lastSummonedWorker = worker;
+      _showSummonEffect = true;
     });
+  }
+
+  void _onSummonAnimationComplete() {
+    setState(() {
+      _showSummonEffect = false;
+      _isSummoning = false; // Unlock UI
+    });
+
+    _showResultDialog(_lastSummonedWorker!);
+  }
+
+  void _showResultDialog(Worker worker) {
+    showDialog(
+      context: context,
+      builder: (context) => WorkerResultDialog(
+        worker: worker,
+        title: 'HIRE SUCCESSFUL!',
+        buttonLabel: 'WELCOME',
+      ),
+    );
   }
 
   Color _getRarityColor(WorkerRarity rarity, dynamic colors) {
