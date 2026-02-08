@@ -4,6 +4,10 @@ enum TechType {
   automation, // Passive income boosts, auto-clickers
   efficiency, // Multipliers for stations/workers
   timeWarp, // Spiel speed, tick rate
+  costReduction, // NEW: Reduces station costs
+  offline, // NEW: Increases offline eff
+  clickPower, // NEW: Increases manual click CE
+  eraUnlock, // NEW: Gatekeeper tech
 }
 
 class TechUpgrade {
@@ -14,6 +18,7 @@ class TechUpgrade {
   final int maxLevel;
   final BigInt baseCost;
   final double costMultiplier; // e.g., 1.15 for 15% increase per level
+  final String eraId;
 
   // Current state
   final int level;
@@ -27,6 +32,7 @@ class TechUpgrade {
     this.maxLevel = 100,
     this.costMultiplier = 1.15,
     this.level = 0,
+    required this.eraId,
   });
 
   /// Calculate cost for next level
@@ -49,6 +55,7 @@ class TechUpgrade {
       maxLevel: maxLevel,
       costMultiplier: costMultiplier,
       level: level ?? this.level,
+      eraId: eraId,
     );
   }
 
@@ -61,6 +68,14 @@ class TechUpgrade {
         return 'Production: +${(level * 10)}%';
       case TechType.timeWarp:
         return 'Game Speed: +${(level * 5)}%';
+      case TechType.costReduction:
+        return 'Station Cost: -${(level * 5)}%';
+      case TechType.offline:
+        return 'Offline Eff: +${(level * 10)}%';
+      case TechType.clickPower:
+        return 'Click Power: +${(level * 100)}%';
+      case TechType.eraUnlock:
+        return 'Unlock Next Era';
     }
   }
 }

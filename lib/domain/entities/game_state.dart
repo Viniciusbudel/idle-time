@@ -13,11 +13,13 @@ class GameState {
   final bool paradoxEventActive;
   final DateTime? paradoxEventEndTime;
   final int prestigeLevel;
-  final Map<String, int> paradoxPointsSpent;
+  final Map<String, int> paradoxPointsSpent; // UpgradeID -> Level
   final int availableParadoxPoints;
   final Set<String> unlockedEras;
+  final Set<String> completedEras; // NEW: Eras where all tech is maxed
   final String currentEraId; // Track the currently active era
-  final Map<String, int> techLevels; // NEW: Track tech ID -> Level
+  final Map<String, int> techLevels; // Track tech ID -> Level
+  final Map<String, int> eraHires; // NEW: Track # of cell hires per era
   final DateTime? lastSaveTime;
   final DateTime? lastTickTime;
   final int totalPrestiges;
@@ -36,8 +38,10 @@ class GameState {
     this.paradoxPointsSpent = const {},
     this.availableParadoxPoints = 0,
     this.unlockedEras = const {'victorian'},
+    this.completedEras = const {}, // Default empty
     this.currentEraId = 'victorian',
     this.techLevels = const {}, // Default empty
+    this.eraHires = const {}, // Default empty
     this.lastSaveTime,
     this.lastTickTime,
     this.totalPrestiges = 0,
@@ -49,7 +53,7 @@ class GameState {
     // ... (existing starter code) ...
     // Create starter station
     const starterId = 'starter';
-    final starterStation = Station(
+    final starterStation = const Station(
       id: 'station_$starterId',
       type: StationType.basicLoop,
       gridX: 0,
@@ -76,8 +80,10 @@ class GameState {
       workers: {'worker_$starterId': starterWorker},
       stations: {'station_$starterId': starterStation},
       unlockedEras: {'victorian'},
+      completedEras: {},
       currentEraId: 'victorian',
       techLevels: {}, // Initial empty
+      eraHires: {}, // Initial empty
       lastSaveTime: DateTime.now(),
       lastTickTime: DateTime.now(),
     );
@@ -97,8 +103,10 @@ class GameState {
     Map<String, int>? paradoxPointsSpent,
     int? availableParadoxPoints,
     Set<String>? unlockedEras,
+    Set<String>? completedEras, // NEW
     String? currentEraId,
     Map<String, int>? techLevels, // NEW
+    Map<String, int>? eraHires, // NEW
     DateTime? lastSaveTime,
     DateTime? lastTickTime,
     int? totalPrestiges,
@@ -118,8 +126,10 @@ class GameState {
       availableParadoxPoints:
           availableParadoxPoints ?? this.availableParadoxPoints,
       unlockedEras: unlockedEras ?? this.unlockedEras,
+      completedEras: completedEras ?? this.completedEras,
       currentEraId: currentEraId ?? this.currentEraId,
       techLevels: techLevels ?? this.techLevels, // NEW
+      eraHires: eraHires ?? this.eraHires, // NEW
       lastSaveTime: lastSaveTime ?? this.lastSaveTime,
       lastTickTime: lastTickTime ?? this.lastTickTime,
       totalPrestiges: totalPrestiges ?? this.totalPrestiges,
@@ -226,8 +236,13 @@ class GameState {
   /// Get offline efficiency multiplier
   double get offlineEfficiency {
     const base = 0.7;
+    // Pardeox Upgrade
     final offlineBonusLevel = paradoxPointsSpent['offline_bonus'] ?? 0;
-    return base + (offlineBonusLevel * 0.1);
+
+    // Tech Upgrade (Analytical Engine)
+    final techBonusLevel = techLevels['analytical_engine'] ?? 0;
+
+    return base + (offlineBonusLevel * 0.1) + (techBonusLevel * 0.1);
   }
 
   /// Check if can afford purchase
@@ -253,6 +268,11 @@ class GameState {
   /// Check if can prestige
   bool get canPrestige => lifetimeChronoEnergy >= BigInt.from(1000000);
 
+  /// Get number of stations owned in a specific era
+  int getStationCountForEra(String eraId) {
+    return stations.values.where((s) => s.type.era.id == eraId).length;
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'chronoEnergy': chronoEnergy.toString(),
@@ -267,8 +287,10 @@ class GameState {
       'paradoxPointsSpent': paradoxPointsSpent,
       'availableParadoxPoints': availableParadoxPoints,
       'unlockedEras': unlockedEras.toList(),
+      'completedEras': completedEras.toList(),
       'currentEraId': currentEraId,
       'techLevels': techLevels,
+      'eraHires': eraHires,
       'lastSaveTime': lastSaveTime?.toIso8601String(),
       'lastTickTime': lastTickTime?.toIso8601String(),
       'totalPrestiges': totalPrestiges,
@@ -298,8 +320,10 @@ class GameState {
       ),
       availableParadoxPoints: map['availableParadoxPoints'] ?? 0,
       unlockedEras: Set<String>.from(map['unlockedEras'] ?? {'victorian'}),
+      completedEras: Set<String>.from(map['completedEras'] ?? {}),
       currentEraId: map['currentEraId'] ?? 'victorian',
       techLevels: Map<String, int>.from(map['techLevels'] ?? {}),
+      eraHires: Map<String, int>.from(map['eraHires'] ?? {}),
       lastSaveTime: map['lastSaveTime'] != null
           ? DateTime.parse(map['lastSaveTime'])
           : null,
