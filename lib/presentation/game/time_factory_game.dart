@@ -120,41 +120,32 @@ class TimeFactoryGame extends FlameGame {
     }
   }
 
-  /// Process one production tick
+  /// Process one production tick (Visuals only)
   void _processProductionTick(double dt) {
-    final gameState = ref.read(gameStateProvider);
+    // Note: Actual CE addition is now handled globally in GameStateNotifier
+    // We only use this for visual feedback if needed (e.g. particles)
 
-    // Calculate production for this tick
     final productionPerSecond = ref.read(productionPerSecondProvider);
 
     if (productionPerSecond > 0) {
-      // Accumulate fractional production
+      // Accumulate for visual spawn rate?
       _fractionalAccumulator += productionPerSecond * dt;
 
-      // When we have at least 1 CE, add to game state
+      // When we "visually" produce enough, maybe spawn a particle?
       if (_fractionalAccumulator >= 1.0) {
-        final amountToAdd = BigInt.from(_fractionalAccumulator.floor());
-        _fractionalAccumulator -= amountToAdd.toDouble();
-
-        ref.read(gameStateProvider.notifier).addChronoEnergy(amountToAdd);
+        final amountVisual = BigInt.from(_fractionalAccumulator.floor());
+        _fractionalAccumulator -= amountVisual.toDouble();
 
         // Spawn gain effect for significant amounts or occasionally
-        if (amountToAdd > BigInt.from(10) || Random().nextDouble() < 0.1) {
+        if (amountVisual > BigInt.from(10) || Random().nextDouble() < 0.1) {
           // We can spawn effects here if needed
+          // spawnResourceGainEffect(size / 2, amountVisual);
         }
       }
     }
 
-    // Update paradox level
-    final paradoxRate = gameState.paradoxPerSecond;
-    if (paradoxRate > 0) {
-      ref.read(gameStateProvider.notifier).updateParadox(paradoxRate * dt);
-    }
-
-    // Check era unlocks periodically (not every tick for performance)
-    if (Random().nextDouble() < 0.1) {
-      ref.read(gameStateProvider.notifier).checkEraUnlocks();
-    }
+    // Check era unlocks periodically (visual check or tooltip updates?)
+    // Logic is handled in provider, so we don't need to trigger checkEraUnlocks here
   }
 
   void syncWorkers(List<Worker> activeWorkers) {

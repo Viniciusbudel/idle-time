@@ -12,9 +12,11 @@ import '../../domain/usecases/merge_stations_usecase.dart';
 import '../../domain/usecases/production_loop_usecase.dart';
 import '../../domain/usecases/upgrade_station_usecase.dart';
 import '../../domain/usecases/check_tech_completion_usecase.dart';
+import '../../domain/usecases/merge_workers_usecase.dart';
 import '../../core/services/save_service.dart';
 import '../../core/constants/tech_data.dart';
 import 'dart:async';
+import 'dart:math';
 
 /// Main game state provider
 final gameStateProvider = StateNotifierProvider<GameStateNotifier, GameState>((
@@ -33,10 +35,16 @@ class GameStateNotifier extends StateNotifier<GameState> {
   final SummonWorkerUseCase _summonWorkerUseCase = SummonWorkerUseCase();
   final MergeStationsUseCase _mergeStationsUseCase = MergeStationsUseCase();
   final UpgradeStationUseCase _upgradeStationUseCase = UpgradeStationUseCase();
+  final MergeWorkersUseCase _mergeWorkersUseCase = MergeWorkersUseCase();
   final SaveService _saveService = SaveService();
+
+  final ProductionLoopUseCase _productionLoopUseCase = ProductionLoopUseCase();
 
   Timer? _autoSaveTimer;
   Timer? _tickTimer;
+
+  // Accumulator for fractional CE production
+  double _fractionalAccumulator = 0.0;
 
   GameStateNotifier() : super(GameState.initial()) {
     _init();
@@ -56,9 +64,33 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   void _startTickTimer() {
     _tickTimer?.cancel();
+    // Use 1 second tick for global production
     _tickTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _processGlobalProduction(1.0);
       _onTick();
     });
+  }
+
+  /// Process global production loop (CE, Paradox, etc)
+  void _processGlobalProduction(double dt) {
+    // 1. Calculate Tech Multiplier directly from state data
+    // This avoids needing 'ref' access or circular dependencies
+    final techMultiplier = TechData.calculateEfficiencyMultiplier(
+      state.techLevels,
+    );
+
+    // 2. Execute Production Loop
+    final result = _productionLoopUseCase.execute(
+      currentState: state,
+      dt: dt,
+      productionRate: state.productionPerSecond,
+      techMultiplier: techMultiplier,
+      currentFractionalAccumulator: _fractionalAccumulator,
+    );
+
+    // 3. Update State
+    state = result.newState;
+    _fractionalAccumulator = result.fractionalRemainder;
   }
 
   void _onTick() {
@@ -162,14 +194,21 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   // ===== WORKERS =====
 
-  /// Hire a new worker from a specific era (costs CE based on era)
-  /// Limited to 5 hires per era using Cells (CE)
-  bool hireWorker(WorkerEra era) {
-    // Check limit
+  // Helper to get next worker cost (Exponential)
+  BigInt getNextWorkerCost(WorkerEra era) {
     final currentHires = state.eraHires[era.id] ?? 0;
-    if (currentHires >= 5) return false;
+    // Base cost * 1.20^count (20% increase per hire)
+    // Using double for calculation then back to BigInt
+    final multiplier = pow(1.20, currentHires).toDouble();
+    final cost = (era.hireCost.toDouble() * multiplier).toInt();
+    return BigInt.from(cost);
+  }
 
-    if (!spendChronoEnergy(era.hireCost)) return false;
+  /// Hire a new worker from a specific era (costs CE based on era)
+  /// Unlimited hires, exponential cost
+  Worker? hireWorker(WorkerEra era) {
+    final cost = getNextWorkerCost(era);
+    if (!spendChronoEnergy(cost)) return null;
 
     final worker = _hireWorkerUseCase.execute(era);
 
@@ -177,6 +216,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final newWorkers = Map<String, Worker>.from(state.workers);
     newWorkers[worker.id] = worker;
 
+    final currentHires = state.eraHires[era.id] ?? 0;
     final newEraHires = Map<String, int>.from(state.eraHires);
     newEraHires[era.id] = currentHires + 1;
 
@@ -185,7 +225,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
       totalWorkersPulled: state.totalWorkersPulled + 1,
       eraHires: newEraHires,
     );
-    return true;
+    return worker;
   }
 
   /// Summon a worker from the Temporal Rift (costs Time Shards)
@@ -292,6 +332,40 @@ class GameStateNotifier extends StateNotifier<GameState> {
     newWorkers[workerId] = worker.copyWith(level: worker.level + 1);
     state = state.copyWith(workers: newWorkers);
     return true;
+  }
+
+  /// Merge 3 workers of the same era and rarity into 1 of the next rarity
+  MergeWorkersResult mergeWorkers(WorkerEra era, WorkerRarity rarity) {
+    // 1. Get available workers
+    final available = state.workers.values.toList();
+
+    // 2. Execute Use Case
+    final result = _mergeWorkersUseCase.execute(
+      availableWorkers: available,
+      targetEra: era,
+      targetRarity: rarity,
+    );
+
+    if (!result.success) {
+      return result;
+    }
+
+    // 3. Update State
+    final newWorkers = Map<String, Worker>.from(state.workers);
+
+    // Remove consumed
+    for (final id in result.consumedWorkerIds) {
+      newWorkers.remove(id);
+    }
+
+    // Add new worker
+    if (result.newWorker != null) {
+      newWorkers[result.newWorker!.id] = result.newWorker!;
+    }
+
+    // Update state
+    state = state.copyWith(workers: newWorkers);
+    return result;
   }
 
   // ===== STATIONS =====
