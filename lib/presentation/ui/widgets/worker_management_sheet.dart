@@ -162,7 +162,20 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet> {
         children: [
           Row(
             children: [
-              Icon(Icons.person, color: rarityColor),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: rarityColor.withOpacity(0.5)),
+                  image: DecorationImage(
+                    image: AssetImage(
+                      'assets/images/workers/worker_victorian_${rarity.id}.png',
+                    ),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -314,7 +327,15 @@ class _MergeResultDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(Icons.person, color: rarityColor, size: 40),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/workers/worker_victorian_${worker.rarity.id}.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(Icons.person, color: rarityColor, size: 40);
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Text(

@@ -20,7 +20,7 @@ class ResourceAppBar extends ConsumerWidget {
 
     return Container(
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + AppSpacing.sm,
+        top: MediaQuery.of(context).padding.top + AppSpacing.md,
         left: AppSpacing.md,
         right: AppSpacing.md,
         bottom: AppSpacing.md,

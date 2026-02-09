@@ -23,14 +23,7 @@ class ThemeBackground extends ConsumerWidget {
     }
 
     // Default fallback to static image
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage(theme.assets.mainBackground),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: child,
-    );
+    return Container();
+
   }
 }

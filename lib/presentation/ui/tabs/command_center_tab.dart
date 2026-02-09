@@ -49,6 +49,7 @@ class CommandCenterTab extends ConsumerWidget {
                 role: worker.displayName,
                 efficiency: 0.75 + (worker.level * 0.05).clamp(0.0, 0.25),
                 status: _getWorkerStatus(worker),
+                rarity: worker.rarity,
                 onUpgrade: () {
                   // Upgrade logic
                 },

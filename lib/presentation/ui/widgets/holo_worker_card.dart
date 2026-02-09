@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/presentation/ui/widgets/cyber_button.dart';
 
 /// A worker card matching the HTML reference design.
@@ -13,6 +14,7 @@ class HoloWorkerCard extends StatelessWidget {
   final VoidCallback? onUpgrade;
   final String? actionLabel; // "UPGRADE", "REPAIR", "ASSIGN"
   final Color? accentColor; // Override accent, otherwise derived from status
+  final WorkerRarity rarity; // Added to determine avatar image
 
   const HoloWorkerCard({
     super.key,
@@ -20,6 +22,7 @@ class HoloWorkerCard extends StatelessWidget {
     required this.role,
     required this.efficiency,
     required this.status,
+    required this.rarity,
     this.onUpgrade,
     this.actionLabel,
     this.accentColor,
@@ -73,23 +76,35 @@ class HoloWorkerCard extends StatelessWidget {
   }
 
   Widget _buildAvatarBox(Color statusColor) {
+    // Construct asset path
+    final imagePath = 'assets/images/workers/worker_victorian_${rarity.id}.png';
+
     return SizedBox(
       width: 56,
       height: 56,
       child: Stack(
         children: [
-          // Base image placeholder
+          // Base image
           Container(
             decoration: BoxDecoration(
               color: Colors.black,
               border: Border.all(color: statusColor.withValues(alpha: 0.5)),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Center(
-              child: Icon(
-                Icons.person_outline,
-                color: statusColor.withValues(alpha: 0.6),
-                size: 28,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Center(
+                    child: Icon(
+                      Icons.person_outline,
+                      color: statusColor.withValues(alpha: 0.6),
+                      size: 28,
+                    ),
+                  );
+                },
               ),
             ),
           ),
