@@ -7,8 +7,9 @@ import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/enums.dart';
+import 'package:time_factory/presentation/game/components/steampunk_worker_painter.dart';
 
-class WorkerAvatar extends PositionComponent with HasGameRef {
+class WorkerAvatar extends PositionComponent with HasGameReference {
   final Worker worker;
   final Random _rng = Random();
 
@@ -29,7 +30,7 @@ class WorkerAvatar extends PositionComponent with HasGameRef {
         anchor: Anchor.center,
         position: size / 2,
         paint: Paint()
-          ..color = rarityColor.withOpacity(0.15)
+          ..color = rarityColor.withValues(alpha: 0.15)
           ..style = PaintingStyle.fill
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
       )..add(
@@ -53,7 +54,7 @@ class WorkerAvatar extends PositionComponent with HasGameRef {
         anchor: Anchor.center,
         position: size / 2,
         paint: Paint()
-          ..color = rarityColor.withOpacity(0.5)
+          ..color = rarityColor.withValues(alpha: 0.5)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5,
       )..add(
@@ -64,21 +65,41 @@ class WorkerAvatar extends PositionComponent with HasGameRef {
       ),
     );
 
-    // 3. Inner Core (The "Worker")
-    add(
-      CircleComponent(
-        radius: 10,
-        anchor: Anchor.center,
-        position: size / 2,
-        paint: Paint()
-          ..color = rarityColor
-          ..style = PaintingStyle.fill
-          ..shader = RadialGradient(
-            colors: [Colors.white, rarityColor],
-            stops: const [0.2, 1.0],
-          ).createShader(Rect.fromCircle(center: Offset.zero, radius: 10)),
-      ),
-    );
+    // 3. Inner Core (The "Worker" Image)
+    // Load sprite based on rarity (and era eventually)
+    // Format: worker_victorian_<rarity>.png
+    final rarityId = worker.rarity.id;
+    // For now we only have victorian images, so we use 'victorian' hardcoded or fallback
+    // In future: 'worker_${eraId}_$rarityId.png'
+    final imagePath = 'workers/worker_victorian_$rarityId.png';
+
+    try {
+      final sprite = await game.loadSprite(imagePath);
+      add(
+        SpriteComponent(
+          sprite: sprite,
+          size: Vector2.all(28), // Fits inside the 40x40 area
+          anchor: Anchor.center,
+          position: size / 2,
+          paint: Paint()
+            ..filterQuality = FilterQuality.medium, // Better scaling
+        ),
+      );
+    } catch (e) {
+      debugPrint('Failed to load worker sprite: $imagePath');
+      // Fallback to Steampunk Neon Procedural Icon
+      add(
+        CustomPainterComponent(
+          painter: SteampunkWorkerPainter(
+            rarity: worker.rarity,
+            neonColor: rarityColor,
+          ),
+          size: Vector2.all(40),
+          anchor: Anchor.center,
+          position: size / 2,
+        ),
+      );
+    }
 
     // 4. Era Year Label (Floating)
     add(
@@ -149,7 +170,7 @@ class WorkerAvatar extends PositionComponent with HasGameRef {
               speed: Vector2(0, -10), // slowly rise
               child: CircleParticle(
                 radius: 1.0,
-                paint: Paint()..color = rarityColor.withOpacity(0.4),
+                paint: Paint()..color = rarityColor.withValues(alpha: 0.4),
               ),
             );
           },

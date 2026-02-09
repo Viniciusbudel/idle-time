@@ -3,6 +3,7 @@ import '../../../../core/theme/neon_theme.dart';
 import '../../../../core/theme/game_theme.dart';
 import '../../../../domain/entities/worker.dart';
 import '../../../../domain/entities/enums.dart';
+import '../../game/components/steampunk_worker_painter.dart';
 
 class WorkerResultDialog extends StatelessWidget {
   final Worker worker;
@@ -64,7 +65,20 @@ class WorkerResultDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(Icons.person, color: rarityColor, size: 40),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/workers/worker_victorian_${worker.rarity.id}.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return CustomPaint(
+                      painter: SteampunkWorkerPainter(
+                        rarity: worker.rarity,
+                        neonColor: rarityColor,
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Text(
