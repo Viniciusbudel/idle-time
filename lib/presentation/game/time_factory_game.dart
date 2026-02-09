@@ -8,6 +8,7 @@ import 'package:time_factory/presentation/game/components/particle_effects/ce_ga
 import 'package:time_factory/presentation/game/components/particle_effects/tap_effect.dart';
 import 'package:time_factory/presentation/game/components/reactor_component.dart';
 import 'package:time_factory/presentation/game/components/worker_avatar.dart';
+import 'package:time_factory/presentation/game/components/hiring_effect_component.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/production_provider.dart';
 import 'package:time_factory/presentation/state/tech_provider.dart';
@@ -16,6 +17,7 @@ class TimeFactoryGame extends FlameGame {
   final WidgetRef ref;
 
   final Map<String, WorkerAvatar> _workerComponents = {};
+  final Set<String> _pendingWorkerIds = {};
 
   // Production tick system
   double _accumulator = 0.0;
@@ -45,8 +47,8 @@ class TimeFactoryGame extends FlameGame {
       //add(await FallbackReactor.create(300));
     }
 
-    // Initial Spawn
-    _syncWorkers(ref.read(gameStateProvider).activeWorkers);
+    // Initial Spawn (No animation)
+    _syncWorkers(ref.read(gameStateProvider).activeWorkers, animate: false);
   }
 
   void handleReactorTap() {
@@ -148,11 +150,11 @@ class TimeFactoryGame extends FlameGame {
     // Logic is handled in provider, so we don't need to trigger checkEraUnlocks here
   }
 
-  void syncWorkers(List<Worker> activeWorkers) {
-    _syncWorkers(activeWorkers);
+  void syncWorkers(List<Worker> activeWorkers, {bool animate = false}) {
+    _syncWorkers(activeWorkers, animate: animate);
   }
 
-  void _syncWorkers(List<Worker> activeWorkers) {
+  void _syncWorkers(List<Worker> activeWorkers, {bool animate = false}) {
     final activeIds = activeWorkers.map((w) => w.id).toSet();
 
     // Remove workers no longer active
@@ -166,20 +168,43 @@ class TimeFactoryGame extends FlameGame {
 
     // Add new workers
     for (final worker in activeWorkers) {
-      if (!_workerComponents.containsKey(worker.id)) {
-        // Random position
-        final x = size.x * 0.1 + Random().nextDouble() * (size.x * 0.8);
-        final y =
-            size.y * 0.4 +
-            Random().nextDouble() * (size.y * 0.4); // Bottom half mostly
+      // Skip if already exists or is currently animating
+      if (_workerComponents.containsKey(worker.id) ||
+          _pendingWorkerIds.contains(worker.id)) {
+        continue;
+      }
 
-        final component = WorkerAvatar(worker: worker)
-          ..position = Vector2(x, y);
+      // Random position
+      final x = size.x * 0.1 + Random().nextDouble() * (size.x * 0.8);
+      final y =
+          size.y * 0.4 +
+          Random().nextDouble() * (size.y * 0.4); // Bottom half mostly
+      final position = Vector2(x, y);
 
-        add(component);
-        _workerComponents[worker.id] = component;
+      if (animate) {
+        _pendingWorkerIds.add(worker.id);
+        add(
+          HiringEffectComponent(
+            worker: worker,
+            position: position,
+            onSpawnWorker: () {
+              _pendingWorkerIds.remove(worker.id);
+              _addWorkerAvatar(worker, position);
+            },
+          ),
+        );
+      } else {
+        _addWorkerAvatar(worker, position);
       }
     }
+  }
+
+  void _addWorkerAvatar(Worker worker, Vector2 position) {
+    if (_workerComponents.containsKey(worker.id)) return; // Safety check
+
+    final component = WorkerAvatar(worker: worker)..position = position;
+    add(component);
+    _workerComponents[worker.id] = component;
   }
 
   void spawnTapEffect(Vector2 position) {

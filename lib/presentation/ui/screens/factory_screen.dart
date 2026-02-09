@@ -73,7 +73,7 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
       next,
     ) {
       if (_game.isMounted) {
-        _game.syncWorkers(next);
+        _game.syncWorkers(next, animate: true);
       }
     });
 
@@ -102,7 +102,7 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
+        statusBarColor: Colors.black,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
       ),

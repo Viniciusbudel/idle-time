@@ -9,7 +9,7 @@ import 'package:flame/game.dart';
 import 'package:time_factory/presentation/anim/portal_game.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
 
-import 'package:time_factory/presentation/ui/widgets/merge_effect_overlay.dart';
+import 'package:time_factory/presentation/ui/widgets/void_hiring_overlay.dart';
 import 'package:time_factory/presentation/ui/dialogs/worker_result_dialog.dart';
 
 /// Gacha Screen - Temporal Rift Summoning Interface
@@ -153,13 +153,9 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
 
         // 3. Summon Effect Overlay
         if (_showSummonEffect)
-          Positioned.fill(
-            child: MergeEffectOverlay(
-              primaryColor: _lastSummonedWorker != null
-                  ? _getRarityColor(_lastSummonedWorker!.rarity, colors)
-                  : Colors.white,
-              onComplete: _onSummonAnimationComplete,
-            ),
+          VoidHiringOverlay(
+            rarity: _lastSummonedWorker?.rarity ?? WorkerRarity.common,
+            onComplete: _onSummonAnimationComplete,
           ),
       ],
     );
@@ -388,21 +384,6 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
         buttonLabel: 'WELCOME',
       ),
     );
-  }
-
-  Color _getRarityColor(WorkerRarity rarity, dynamic colors) {
-    switch (rarity) {
-      case WorkerRarity.common:
-        return Colors.grey;
-      case WorkerRarity.rare:
-        return Colors.blue;
-      case WorkerRarity.epic:
-        return colors.primary; // Magenta
-      case WorkerRarity.legendary:
-        return colors.accent; // Gold/Yellow
-      case WorkerRarity.paradox:
-        return colors.error; // Red/Crimson
-    }
   }
 }
 
