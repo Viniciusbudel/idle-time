@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
-import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/presentation/utils/localization_extensions.dart';
 
 /// Dialog to deploy a worker to a station
 class DeployWorkerDialog extends ConsumerWidget {
@@ -63,14 +64,11 @@ class DeployWorkerDialog extends ConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: _getEraColor(worker.era).withValues(alpha: 0.2),
+                    color: worker.era.color.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: _getEraColor(worker.era),
-                      width: 1,
-                    ),
+                    border: Border.all(color: worker.era.color, width: 1),
                   ),
-                  child: Icon(Icons.person, color: _getEraColor(worker.era)),
+                  child: Icon(Icons.person, color: worker.era.color),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -85,7 +83,7 @@ class DeployWorkerDialog extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        '${worker.era.displayName} • Lv.${worker.level}',
+                        '${worker.era.localizedName(context)} • Lv.${worker.level}',
                         style: TimeFactoryTextStyles.bodyMono.copyWith(
                           fontSize: 11,
                           color: Colors.white54,
@@ -95,9 +93,15 @@ class DeployWorkerDialog extends ConsumerWidget {
                   ),
                 ),
                 if (worker.isDeployed)
-                  _buildStatusBadge('DEPLOYED', TimeFactoryColors.acidGreen)
+                  _buildStatusBadge(
+                    AppLocalizations.of(context)!.statusDeployed,
+                    TimeFactoryColors.acidGreen,
+                  )
                 else
-                  _buildStatusBadge('IDLE', TimeFactoryColors.voltageYellow),
+                  _buildStatusBadge(
+                    AppLocalizations.of(context)!.statusIdle,
+                    TimeFactoryColors.voltageYellow,
+                  ),
               ],
             ),
           ),
@@ -107,7 +111,7 @@ class DeployWorkerDialog extends ConsumerWidget {
           // Station list
           Flexible(
             child: stations.isEmpty
-                ? _buildNoStations()
+                ? _buildNoStations(context)
                 : ListView.builder(
                     shrinkWrap: true,
                     padding: const EdgeInsets.all(16),
@@ -141,7 +145,7 @@ class DeployWorkerDialog extends ConsumerWidget {
                     Navigator.of(context).pop();
                   },
                   child: Text(
-                    'RECALL WORKER',
+                    AppLocalizations.of(context)!.recallWorker,
                     style: TimeFactoryTextStyles.button,
                   ),
                 ),
@@ -172,7 +176,7 @@ class DeployWorkerDialog extends ConsumerWidget {
     );
   }
 
-  Widget _buildNoStations() {
+  Widget _buildNoStations(BuildContext context) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -180,14 +184,14 @@ class DeployWorkerDialog extends ConsumerWidget {
           const Icon(Icons.factory_outlined, size: 48, color: Colors.white24),
           const SizedBox(height: 12),
           Text(
-            'NO STATIONS AVAILABLE',
+            AppLocalizations.of(context)!.noStationsAvailable,
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               color: Colors.white38,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Build stations in the Factory tab',
+            AppLocalizations.of(context)!.buildStationsToStart,
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               fontSize: 11,
               color: Colors.white24,
@@ -201,7 +205,7 @@ class DeployWorkerDialog extends ConsumerWidget {
   Widget _buildStationTile(
     BuildContext context,
     WidgetRef ref,
-    Station station,
+    dynamic station,
   ) {
     final isCurrentStation = worker.deployedStationId == station.id;
     final canDeploy = station.canAddWorker && !isCurrentStation;
@@ -264,10 +268,10 @@ class DeployWorkerDialog extends ConsumerWidget {
                       .deployWorker(worker.id, station.id);
                   Navigator.of(context).pop();
                 },
-                child: const Text('DEPLOY'),
+                child: Text(AppLocalizations.of(context)!.deploy),
               )
             : Text(
-                'FULL',
+                AppLocalizations.of(context)!.full,
                 style: TimeFactoryTextStyles.bodyMono.copyWith(
                   fontSize: 11,
                   color: TimeFactoryColors.hotMagenta,
@@ -275,23 +279,5 @@ class DeployWorkerDialog extends ConsumerWidget {
               ),
       ),
     );
-  }
-
-  Color _getEraColor(dynamic era) {
-    // Return era-based color
-    switch (era.id) {
-      case 'victorian':
-        return const Color(0xFFD4AF37); // Gold
-      case 'roaring_20s':
-        return const Color(0xFFFFD700); // Bright gold
-      case 'atomic_age':
-        return const Color(0xFF00FF00); // Green
-      case 'cyberpunk_80s':
-        return TimeFactoryColors.hotMagenta;
-      case 'neo_tokyo':
-        return TimeFactoryColors.electricCyan;
-      default:
-        return TimeFactoryColors.electricCyan;
-    }
   }
 }
