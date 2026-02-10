@@ -48,7 +48,8 @@ class TechData {
     TechUpgrade(
       id: 'clockwork_arithmometer',
       name: 'Clockwork Arithmometer',
-      description: 'A thunderous assembly of brass cogs and perforated cards that automates the ledger, continuing calculations even whilst the operator slumbers.',
+      description:
+          'A thunderous assembly of brass cogs and perforated cards that automates the ledger, continuing calculations even whilst the operator slumbers.',
       type: TechType.offline,
       baseCost: BigInt.from(5000),
       costMultiplier: 1.8,
@@ -66,18 +67,75 @@ class TechData {
       maxLevel: 5,
     ),
     // Capstone
+    // TechUpgrade(
+    //   id: 'great_exhibition',
+    //   name: 'The Great Exhibition',
+    //   description: 'Showcase Victorian might. Unlocks next Era.',
+    //   type: TechType.eraUnlock,
+    //   baseCost: BigInt.from(10000),
+    //   costMultiplier: 2.0,
+    //   eraId: 'victorian',
+    //   maxLevel: 1,
+    // ),
+
+    // ================= ROARING 20s (1920s) =================
+
+    // Tier 1
     TechUpgrade(
-      id: 'great_exhibition',
-      name: 'The Great Exhibition',
-      description: 'Showcase Victorian might. Unlocks next Era.',
+      id: 'ticker_tape',
+      name: 'Ticker Tape Feed',
+      description:
+          'Real-time data for real-time profits. Accelerates decision making.',
+      type: TechType.efficiency,
+      baseCost: BigInt.from(50000), // 50K
+      costMultiplier: 1.6,
+      eraId: 'roaring_20s',
+      maxLevel: 10,
+    ),
+    TechUpgrade(
+      id: 'assembly_line',
+      name: 'Assembly Line Protocol',
+      description:
+          'Fordist efficiency. Standardized parts reduce costs massively.',
+      type: TechType.costReduction,
+      baseCost: BigInt.from(150000), // 150K
+      costMultiplier: 1.5,
+      eraId: 'roaring_20s',
+      maxLevel: 5,
+    ),
+    // Tier 2
+    TechUpgrade(
+      id: 'radio_broadcast',
+      name: 'Radio Broadcasting',
+      description:
+          'Reaching workers in their homes. Productivity never sleeps.',
+      type: TechType.offline,
+      baseCost: BigInt.from(300000), // 300K
+      costMultiplier: 1.7,
+      eraId: 'roaring_20s',
+      maxLevel: 5,
+    ),
+    TechUpgrade(
+      id: 'jazz_improvisation',
+      name: 'Jazz Improvisation',
+      description: 'Chaotic rhythm increases manual input efficiency.',
+      type: TechType.clickPower,
+      baseCost: BigInt.from(500000), // 500K
+      costMultiplier: 1.6,
+      eraId: 'roaring_20s',
+      maxLevel: 10,
+    ),
+    // Capstone
+    TechUpgrade(
+      id: 'manhattan_project',
+      name: 'The Manhattan Project',
+      description: 'Splitting the atom... and time. Unlocks Atomic Age.',
       type: TechType.eraUnlock,
-      baseCost: BigInt.from(10000),
+      baseCost: BigInt.from(10000000), // 10M
       costMultiplier: 2.0,
-      eraId: 'victorian',
+      eraId: 'roaring_20s',
       maxLevel: 1,
     ),
-    // Tier 2 - New add
-
   ];
 
   static double calculateEfficiencyMultiplier(Map<String, int> techLevels) {
@@ -90,6 +148,11 @@ class TechData {
     // Jacquard Punch-Cards (Efficiency/Automation)
     final jacquardLevel = techLevels['jacquard_punchcards'] ?? 0;
     multiplier += jacquardLevel * 0.05; // +5% per level
+
+    // ROARING 20s
+    // Ticker Tape Feed - +15% per level
+    final tickerLevel = techLevels['ticker_tape'] ?? 0;
+    multiplier += tickerLevel * 0.15;
 
     return multiplier;
   }
@@ -107,6 +170,12 @@ class TechData {
     // Bessemer Process - Cost becomes (1.0 - (level * 0.05))
     final bessemerLevel = techLevels['bessemer_process'] ?? 0;
     multiplier -= bessemerLevel * 0.05;
+
+    // ROARING 20s
+    // Assembly Line - Cost becomes (Current - (level * 0.08))
+    final assemblyLevel = techLevels['assembly_line'] ?? 0;
+    multiplier -= assemblyLevel * 0.08;
+
     return multiplier.clamp(0.1, 1.0); // Cap at 90% reduction
   }
 
@@ -115,8 +184,20 @@ class TechData {
   ) {
     double multiplier = 1.0;
     // Analytical Engine - +10% per level
-    final engineLevel = techLevels['analytical_engine'] ?? 0;
+    final engineLevel =
+        techLevels['analytical_engine'] ??
+        0; // Note: accessing undefined ID if not added, but safe with ?? 0
     multiplier += engineLevel * 0.1;
+
+    // Clockwork Arithmometer
+    final clockworkLevel = techLevels['clockwork_arithmometer'] ?? 0;
+    multiplier += clockworkLevel * 0.1;
+
+    // ROARING 20s
+    // Radio Broadcasting - +15% per level
+    final radioLevel = techLevels['radio_broadcast'] ?? 0;
+    multiplier += radioLevel * 0.15;
+
     return multiplier;
   }
 }
