@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/station.dart';
-import 'package:time_factory/presentation/ui/widgets/mega_chamber_card.dart';
+import 'package:time_factory/presentation/ui/organisms/mega_chamber_card.dart';
 
 void main() {
   testWidgets('MegaChamberCard displays critical stats', (
