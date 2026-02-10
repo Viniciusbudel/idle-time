@@ -36,13 +36,14 @@ class GameConstants {
   /// CE required to unlock each era
   static const Map<String, int> eraUnlockThresholds = {
     'victorian': 0, // Unlocked by default
-    'roaring_20s': 1000, // 1K CE
-    'atomic_age': 100000, // 100K CE
-    'cyberpunk_80s': 10000000, // 10M CE
-    'neo_tokyo': 1000000000, // 1B CE
-    'post_singularity': 100000000000, // 100B CE
-    'ancient_rome': 10000000000000, // 10T CE
-    'far_future': 1000000000000000, // 1Qa CE
+    'roaring_20s': 1000000, // 1M CE
+    'atomic_age': 1000000000, // 1B CE
+    'cyberpunk_80s': 1000000000000, // 1T CE
+    'neo_tokyo': 100000000000000, // 100T CE
+    'post_singularity': 10000000000000000, // 10Qa CE
+    'ancient_rome': 1000000000000000000, // 1Qi CE
+    'far_future':
+        -1, // Unattainable for now (Requires BigInt beyond 64-bit safe range in simple int map, logic handles BigInt elsewhere)
   };
 
   // ===== ERA ORDER =====
