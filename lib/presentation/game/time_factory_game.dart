@@ -39,7 +39,10 @@ class TimeFactoryGame extends FlameGame {
 
     // Add Reactor (Centered)
     try {
-      add(await ReactorComponent.create(300)); // Size 300x300
+      final currentEraId = ref.read(gameStateProvider).currentEraId;
+      add(
+        await ReactorComponent.create(300, eraId: currentEraId),
+      ); // Size 300x300
     } catch (e, stack) {
       debugPrint('CRITICAL: Lottie Reactor failed to load!');
       debugPrint('Error: $e');
@@ -213,5 +216,19 @@ class TimeFactoryGame extends FlameGame {
 
   void spawnResourceGainEffect(Vector2 position, BigInt amount) {
     add(CEGainParticle(position: position, amount: amount));
+  }
+
+  /// Change the reactor visual based on era
+  Future<void> updateEra(String eraId) async {
+    // Remove old reactor
+    children.whereType<ReactorComponent>().forEach((c) => c.removeFromParent());
+
+    // Add new reactor
+    try {
+      add(await ReactorComponent.create(300, eraId: eraId));
+    } catch (e) {
+      debugPrint('Failed to load new era reactor: $e');
+      // Fallback to default if needed, or retry logic
+    }
   }
 }
