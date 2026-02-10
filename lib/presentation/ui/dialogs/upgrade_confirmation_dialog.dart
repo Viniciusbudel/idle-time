@@ -4,7 +4,8 @@ import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/domain/entities/station.dart';
-import 'package:time_factory/presentation/ui/widgets/glass_card.dart';
+import 'package:time_factory/presentation/ui/molecules/glass_card.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 
 class UpgradeConfirmationDialog extends StatelessWidget {
   final Station station;
@@ -48,7 +49,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                title ?? 'UPGRADE STATION',
+                title ?? AppLocalizations.of(context)!.upgradeStation,
                 style: TimeFactoryTextStyles.header.copyWith(
                   color: TimeFactoryColors.electricCyan,
                 ),
@@ -89,7 +90,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Production Bonus: ',
+                    '${AppLocalizations.of(context)!.productionBonus}: ',
                     style: TimeFactoryTextStyles.bodySmall,
                   ),
                   Text(
@@ -133,9 +134,9 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text(
-                      'CANCEL',
-                      style: TextStyle(color: Colors.white54),
+                    child: Text(
+                      AppLocalizations.of(context)!.cancel,
+                      style: const TextStyle(color: Colors.white54),
                     ),
                   ),
                   ElevatedButton(
@@ -151,7 +152,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                         color: TimeFactoryColors.electricCyan,
                       ),
                     ),
-                    child: const Text('CONFIRM'),
+                    child: Text(AppLocalizations.of(context)!.confirm),
                   ),
                 ],
               ),

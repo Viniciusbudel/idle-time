@@ -49,10 +49,10 @@ enum WorkerEra {
 /// Worker rarity tiers
 enum WorkerRarity {
   common('common', 'Common', 1.0),
-  rare('rare', 'Rare', 1.5),
-  epic('epic', 'Epic', 2.0),
-  legendary('legendary', 'Legendary', 3.0),
-  paradox('paradox', 'Paradox', 5.0);
+  rare('rare', 'Rare', 4.0),
+  epic('epic', 'Epic', 16.0),
+  legendary('legendary', 'Legendary', 64.0),
+  paradox('paradox', 'Paradox', 256.0);
 
   final String id;
   final String displayName;

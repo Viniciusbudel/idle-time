@@ -4,7 +4,7 @@ import 'package:time_factory/core/constants/game_assets.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/theme/era_theme.dart';
-import 'package:time_factory/presentation/ui/widgets/glass_card.dart';
+import 'package:time_factory/presentation/ui/molecules/glass_card.dart';
 
 class EraUnlockDialog extends StatelessWidget {
   final EraTheme eraTheme;

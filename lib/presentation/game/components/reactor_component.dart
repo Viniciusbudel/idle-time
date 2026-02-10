@@ -40,8 +40,13 @@ class ReactorComponent extends LottieComponent
     // );
   }
 
-  static Future<ReactorComponent> create(double size) async {
-    final composition = await AssetLottie(GameAssets.lottieReactor).load();
+  static Future<ReactorComponent> create(double size, {String? eraId}) async {
+    final asset = eraId == 'roaring_20s'
+        ? GameAssets
+              .lottieSteamPunkReactor // This is the Art Deco / Machine Age reactor
+        : GameAssets.lottieReactor; // Default / Victorian
+
+    final composition = await AssetLottie(asset).load();
     return ReactorComponent(composition, size: Vector2.all(size));
   }
 }

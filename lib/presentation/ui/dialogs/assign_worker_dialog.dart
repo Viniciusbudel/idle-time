@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/presentation/utils/localization_extensions.dart';
 
 /// Dialog for selecting an idle worker to assign to a station slot
 class AssignWorkerDialog extends StatelessWidget {
@@ -84,14 +88,16 @@ class AssignWorkerDialog extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'ASSIGN WORKER',
+                        AppLocalizations.of(context)!.assignWorker,
                         style: TimeFactoryTextStyles.header.copyWith(
                           fontSize: 16,
                           color: Colors.white,
                         ),
                       ),
                       Text(
-                        'Select a unit for ${station.name}',
+                        AppLocalizations.of(
+                          context,
+                        )!.selectUnitFor(station.name),
                         style: TimeFactoryTextStyles.bodyMono.copyWith(
                           fontSize: 11,
                           color: Colors.white54,
@@ -113,7 +119,7 @@ class AssignWorkerDialog extends StatelessWidget {
 
           // Worker list
           if (idleWorkers.isEmpty)
-            _buildEmptyState()
+            _buildEmptyState(context)
           else
             Flexible(
               child: ListView.builder(
@@ -133,7 +139,7 @@ class AssignWorkerDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -141,7 +147,7 @@ class AssignWorkerDialog extends StatelessWidget {
           const Icon(Icons.group_off, color: Colors.white24, size: 48),
           const SizedBox(height: 12),
           Text(
-            'NO IDLE WORKERS',
+            AppLocalizations.of(context)!.noIdleWorkers,
             style: TimeFactoryTextStyles.header.copyWith(
               fontSize: 14,
               color: Colors.white38,
@@ -149,7 +155,7 @@ class AssignWorkerDialog extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Hire more units to assign',
+            AppLocalizations.of(context)!.hireMoreToAssign,
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               fontSize: 12,
               color: Colors.white24,
@@ -183,6 +189,7 @@ class AssignWorkerDialog extends StatelessWidget {
             Container(
               width: 48,
               height: 48,
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -197,10 +204,12 @@ class AssignWorkerDialog extends StatelessWidget {
                   color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
                 ),
               ),
-              child: const Icon(
-                Icons.person,
-                color: TimeFactoryColors.electricCyan,
-                size: 28,
+              child: SvgPicture.asset(
+                WorkerIconHelper.getIconPath(worker.era, worker.rarity),
+                colorFilter: const ColorFilter.mode(
+                  TimeFactoryColors.electricCyan,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
 
@@ -228,7 +237,12 @@ class AssignWorkerDialog extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       _buildTag(
-                        worker.era.displayName.toUpperCase(),
+                        worker.rarity.localizedName(context).toUpperCase(),
+                        worker.rarity.color,
+                      ),
+                      const SizedBox(width: 6),
+                      _buildTag(
+                        worker.era.localizedName(context).toUpperCase(),
                         TimeFactoryColors.voltageYellow,
                       ),
                     ],

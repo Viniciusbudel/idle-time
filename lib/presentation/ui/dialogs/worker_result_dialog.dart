@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/neon_theme.dart';
 import '../../../../core/theme/game_theme.dart';
 import '../../../../domain/entities/worker.dart';
 import '../../../../domain/entities/enums.dart';
-import '../../game/components/steampunk_worker_painter.dart';
+import '../../../../core/utils/worker_icon_helper.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/presentation/utils/localization_extensions.dart';
 
 class WorkerResultDialog extends StatelessWidget {
   final Worker worker;
-  final String title;
-  final String buttonLabel;
+  final String? title;
+  final String? buttonLabel;
 
   const WorkerResultDialog({
     super.key,
     required this.worker,
-    this.title = 'SUCCESS!',
-    this.buttonLabel = 'EXCELLENT',
+    this.title,
+    this.buttonLabel,
   });
 
   @override
@@ -45,7 +48,7 @@ class WorkerResultDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              title,
+              title ?? AppLocalizations.of(context)!.mergeSuccessful,
               style: typography.titleLarge.copyWith(color: colors.accent),
               textAlign: TextAlign.center,
             ),
@@ -66,17 +69,12 @@ class WorkerResultDialog extends StatelessWidget {
                 ],
               ),
               child: ClipOval(
-                child: Image.asset(
-                  'assets/images/workers/worker_victorian_${worker.rarity.id}.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return CustomPaint(
-                      painter: SteampunkWorkerPainter(
-                        rarity: worker.rarity,
-                        neonColor: rarityColor,
-                      ),
-                    );
-                  },
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SvgPicture.asset(
+                    WorkerIconHelper.getIconPath(worker.era, worker.rarity),
+                    //colorFilter: ColorFilter.mode(rarityColor, BlendMode.srcIn),
+                  ),
                 ),
               ),
             ),
@@ -88,14 +86,16 @@ class WorkerResultDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '${worker.rarity.displayName} Unit',
+              AppLocalizations.of(
+                context,
+              )!.unit(worker.rarity.localizedName(context)),
               style: typography.bodyMedium.copyWith(
                 color: colors.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'PROD: ${worker.baseProduction}',
+              '${AppLocalizations.of(context)!.production}: ${worker.baseProduction}',
               style: typography.bodyMedium.copyWith(color: colors.textPrimary),
             ),
             const SizedBox(height: 24),
@@ -105,7 +105,9 @@ class WorkerResultDialog extends StatelessWidget {
                 foregroundColor: Colors.black, // Contrast
               ),
               onPressed: () => Navigator.pop(context),
-              child: Text(buttonLabel),
+              child: Text(
+                buttonLabel ?? AppLocalizations.of(context)!.excellent,
+              ),
             ),
           ],
         ),

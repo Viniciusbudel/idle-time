@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/services/save_service.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/theme_provider.dart';
 import 'package:time_factory/presentation/ui/dialogs/offline_dialog.dart';
 import 'package:time_factory/domain/entities/offline_earnings.dart';
-import 'package:time_factory/presentation/ui/screens/factory_screen.dart';
+import 'package:time_factory/presentation/ui/pages/factory_screen.dart';
 import 'package:time_factory/domain/usecases/calculate_offline_earnings_usecase.dart';
 
 void main() async {
@@ -40,6 +42,13 @@ class TimeFactoryApp extends ConsumerWidget {
           fontFamily: theme.typography.fontFamily,
         ),
       ),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en'), Locale('pt')],
       home: const _AppLoader(),
     );
   }
@@ -100,17 +109,19 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: Colors.black,
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: TimeFactoryColors.electricCyan),
-              SizedBox(height: 16),
+              const CircularProgressIndicator(
+                color: TimeFactoryColors.electricCyan,
+              ),
+              const SizedBox(height: 16),
               Text(
-                'Loading Timeline...',
-                style: TextStyle(
+                AppLocalizations.of(context)!.loadingTimeline,
+                style: const TextStyle(
                   color: Colors.white60,
                   fontSize: 12,
                   letterSpacing: 2,

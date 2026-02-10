@@ -334,6 +334,31 @@ class GameStateNotifier extends StateNotifier<GameState> {
     return true;
   }
 
+  /// Refit a worker to the current era's technology
+  /// This updates the worker's era to currentEraId, increasing their production
+  bool refitWorkerEra(String workerId) {
+    final worker = state.workers[workerId];
+    if (worker == null) return false;
+
+    final currentEra = WorkerEra.values.firstWhere(
+      (e) => e.id == state.currentEraId,
+    );
+    if (worker.era == currentEra) return false;
+
+    // Cost to refit: 10x current level upgrade cost
+    final cost = worker.upgradeCost * BigInt.from(10);
+    if (!spendChronoEnergy(cost)) return false;
+
+    final newWorkers = Map<String, Worker>.from(state.workers);
+    newWorkers[workerId] = worker.copyWith(
+      era: currentEra,
+      // Increase base production significantly as it "evolves"
+      baseProduction: worker.baseProduction * BigInt.from(2),
+    );
+    state = state.copyWith(workers: newWorkers);
+    return true;
+  }
+
   /// Merge 3 workers of the same era and rarity into 1 of the next rarity
   MergeWorkersResult mergeWorkers(WorkerEra era, WorkerRarity rarity) {
     // 1. Get available workers

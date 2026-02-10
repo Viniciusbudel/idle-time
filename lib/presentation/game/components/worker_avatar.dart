@@ -2,12 +2,15 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/particles.dart';
+import 'package:flame_svg/flame_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/presentation/game/components/steampunk_worker_painter.dart';
+import 'package:time_factory/presentation/game/components/art_deco_worker_painter.dart';
 
 class WorkerAvatar extends PositionComponent with HasGameReference {
   final Worker worker;
@@ -65,35 +68,48 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
       ),
     );
 
-    // 3. Inner Core (The "Worker" Image)
-    // Load sprite based on rarity (and era eventually)
-    // Format: worker_victorian_<rarity>.png
-    final rarityId = worker.rarity.id;
-    // For now we only have victorian images, so we use 'victorian' hardcoded or fallback
-    // In future: 'worker_${eraId}_$rarityId.png'
-    final imagePath = 'workers/worker_victorian_$rarityId.png';
+    // 3. Inner Core (The "Worker" SVG Icon)
+    // Use SVG icon from assets/images/icons/
+    // Example: assets/images/icons/victorian-icon-rare.svg
+    final iconPath = WorkerIconHelper.getIconPath(worker.era, worker.rarity);
 
     try {
-      final sprite = await game.loadSprite(imagePath);
+      // Load SVG using flame_svg
+      final svg = await Svg.load(iconPath);
+
       add(
-        SpriteComponent(
-          sprite: sprite,
-          size: Vector2.all(28), // Fits inside the 40x40 area
+        SvgComponent(
+          svg: svg,
+          size: Vector2.all(32),
           anchor: Anchor.center,
           position: size / 2,
           paint: Paint()
-            ..filterQuality = FilterQuality.medium, // Better scaling
+            ..colorFilter = ColorFilter.mode(rarityColor, BlendMode.srcIn),
         ),
       );
     } catch (e) {
-      debugPrint('Failed to load worker sprite: $imagePath');
-      // Fallback to Steampunk Neon Procedural Icon
+      debugPrint(
+        'Warning: Failed to load SVG icon for ${worker.era.displayName} ${worker.rarity.displayName} Worker ($iconPath): $e',
+      );
+
+      // Fallback to Procedural Icon based on Era
+      final CustomPainter painter;
+      if (worker.era == WorkerEra.roaring20s) {
+        painter = ArtDecoWorkerPainter(
+          rarity: worker.rarity,
+          neonColor: rarityColor,
+        );
+      } else {
+        // Default to Steampunk (Victorian)
+        painter = SteampunkWorkerPainter(
+          rarity: worker.rarity,
+          neonColor: rarityColor,
+        );
+      }
+
       add(
         CustomPainterComponent(
-          painter: SteampunkWorkerPainter(
-            rarity: worker.rarity,
-            neonColor: rarityColor,
-          ),
+          painter: painter,
           size: Vector2.all(40),
           anchor: Anchor.center,
           position: size / 2,
