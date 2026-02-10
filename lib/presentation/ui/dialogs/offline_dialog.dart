@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/offline_earnings.dart';
-import 'package:time_factory/presentation/ui/widgets/glass_card.dart';
-import 'package:time_factory/presentation/ui/widgets/animated_number.dart';
+import 'package:time_factory/presentation/ui/molecules/glass_card.dart';
+import 'package:time_factory/presentation/ui/atoms/animated_number.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 
 /// Dialog shown when returning after being offline
 /// Shows CE earned while away
@@ -43,7 +44,7 @@ class OfflineEarningsDialog extends StatelessWidget {
           children: [
             // Header
             Text(
-              'WELCOME BACK',
+              AppLocalizations.of(context)!.welcomeBack,
               style: TimeFactoryTextStyles.headerSmall.copyWith(
                 color: TimeFactoryColors.electricCyan,
                 letterSpacing: 4,
@@ -51,7 +52,7 @@ class OfflineEarningsDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'You were away for ${earnings.formattedDuration}',
+              AppLocalizations.of(context)!.awayFor(earnings.formattedDuration),
               style: const TextStyle(fontSize: 12, color: Colors.white60),
             ),
 
@@ -67,9 +68,9 @@ class OfflineEarningsDialog extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text(
-                    'CHRONO-ENERGY COLLECTED',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.ceCollected,
+                    style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: Colors.white38,
@@ -103,7 +104,9 @@ class OfflineEarningsDialog extends StatelessWidget {
 
             // Efficiency note
             Text(
-              '${(earnings.efficiency * 100).toInt()}% offline efficiency',
+              AppLocalizations.of(context)!.offlineEfficiency(
+                (earnings.efficiency * 100).toInt().toString(),
+              ),
               style: TextStyle(
                 fontSize: 11,
                 color: TimeFactoryColors.acidGreen.withValues(alpha: 0.8),
@@ -128,9 +131,9 @@ class OfflineEarningsDialog extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'COLLECT',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.collect,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     letterSpacing: 2,
                   ),
