@@ -1,4 +1,5 @@
 import 'enums.dart';
+import 'worker_name_registry.dart';
 
 /// Represents a temporal worker from a specific era
 class Worker {
@@ -51,18 +52,37 @@ class Worker {
 
   /// Calculate current production rate
   BigInt get currentProduction {
-    // base × level × era × rarity
-    final levelMultiplier = BigInt.from((1.0 + (level - 1) * 0.2) * 100);
-    final eraMultiplier = BigInt.from(era.multiplier * 100);
-    final rarityMultiplier = BigInt.from(rarity.productionMultiplier * 100);
+    // 1. Determine level growth and multiplier based on Rarity
+    double growthPerLevel;
+    switch (rarity) {
+      case WorkerRarity.common:
+        growthPerLevel = 0.05;
+        break;
+      case WorkerRarity.rare:
+        growthPerLevel = 0.10;
+        break;
+      case WorkerRarity.epic:
+        growthPerLevel = 0.20;
+        break;
+      case WorkerRarity.legendary:
+        growthPerLevel = 0.35;
+        break;
+      case WorkerRarity.paradox:
+        growthPerLevel = 0.60;
+        break;
+    }
 
-    return baseProduction *
-        levelMultiplier ~/
-        BigInt.from(100) *
-        eraMultiplier ~/
-        BigInt.from(100) *
-        rarityMultiplier ~/
-        BigInt.from(100);
+    // multiplier = 1.0 + (level - 1) * growth
+    final levelGrowthMultiplier = 1.0 + (level - 1) * growthPerLevel;
+
+    // Total = base × levelGrowthMultiplier × eraMultiplier × rarityMultiplier
+    final baseValue = baseProduction.toDouble();
+    final eraMult = era.multiplier;
+    final rarityMult = rarity.productionMultiplier;
+
+    final total = baseValue * levelGrowthMultiplier * eraMult * rarityMult;
+
+    return BigInt.from(total.round());
   }
 
   /// Calculate upgrade cost
@@ -127,9 +147,9 @@ class WorkerFactory {
     return Worker(
       id: 'worker_${_idCounter}_${DateTime.now().millisecondsSinceEpoch}',
       era: era,
-      baseProduction: BigInt.from(1 * era.multiplier.toInt()),
+      baseProduction: BigInt.from(10), // Unified base production
       rarity: rarity,
-      name: name,
+      name: name ?? WorkerNameRegistry.getName(era, rarity),
       specialAbility: specialAbility,
     );
   }
