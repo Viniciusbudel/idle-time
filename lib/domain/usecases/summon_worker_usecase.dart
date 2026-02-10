@@ -23,16 +23,14 @@ class SummonWorkerUseCase {
     WorkerEra? targetEra,
   }) {
     final rarity = _rollRarity();
-    final era = targetEra ?? _rollEra(state.unlockedEraEnums);
+    final era =
+        targetEra ??
+        WorkerEra.values.firstWhere(
+          (e) => e.id == state.currentEraId,
+          orElse: () => WorkerEra.victorian,
+        );
 
-    final worker = Worker(
-      id: 'worker_${DateTime.now().millisecondsSinceEpoch}_${_random.nextInt(9999)}',
-      name: _generateName(era, rarity),
-      era: era,
-      rarity: rarity,
-      level: 1,
-      baseProduction: _calculateBaseProduction(era, rarity),
-    );
+    final worker = WorkerFactory.create(era: era, rarity: rarity);
 
     final newWorkers = Map<String, Worker>.from(state.workers);
     newWorkers[worker.id] = worker;
@@ -57,47 +55,5 @@ class SummonWorkerUseCase {
       }
     }
     return WorkerRarity.common;
-  }
-
-  /// Roll for era from unlocked eras
-  WorkerEra _rollEra(List<WorkerEra> unlockedEras) {
-    if (unlockedEras.isEmpty) return WorkerEra.victorian;
-    return unlockedEras[_random.nextInt(unlockedEras.length)];
-  }
-
-  /// Generate a thematic worker name
-  String _generateName(WorkerEra era, WorkerRarity rarity) {
-    const prefixes = {
-      WorkerRarity.common: ['Novice', 'Trainee', 'Cadet'],
-      WorkerRarity.rare: ['Skilled', 'Adept', 'Specialist'],
-      WorkerRarity.epic: ['Expert', 'Master', 'Elite'],
-      WorkerRarity.legendary: ['Chrono', 'Temporal', 'Legendary'],
-      WorkerRarity.paradox: ['Paradox', 'Anomaly', 'Singularity'],
-    };
-
-    const suffixes = {
-      WorkerEra.victorian: ['Clocksmith', 'Engineer', 'Tinkerer'],
-      WorkerEra.roaring20s: ['Bootlegger', 'Industrialist', 'Inventor'],
-      WorkerEra.atomicAge: ['Scientist', 'Physicist', 'Technician'],
-      WorkerEra.cyberpunk80s: ['Hacker', 'Runner', 'Synth'],
-      WorkerEra.neoTokyo: ['Operator', 'Ghost', 'Netrunner'],
-      WorkerEra.postSingularity: ['AI-7', 'Unit-X', 'CORE'],
-      WorkerEra.ancientRome: ['Gladiator', 'Senator', 'Legionnaire'],
-      WorkerEra.farFuture: ['Archon', 'Watcher', 'Prime'],
-    };
-
-    final prefix = prefixes[rarity]![_random.nextInt(prefixes[rarity]!.length)];
-    final suffix = suffixes[era]![_random.nextInt(suffixes[era]!.length)];
-
-    return '$prefix $suffix';
-  }
-
-  /// Calculate base production based on era and rarity
-  BigInt _calculateBaseProduction(WorkerEra era, WorkerRarity rarity) {
-    // Base from era
-    final eraBase = era.multiplier * 10;
-    // Multiplied by rarity
-    final rarityMult = rarity.productionMultiplier;
-    return BigInt.from((eraBase * rarityMult).toInt());
   }
 }
