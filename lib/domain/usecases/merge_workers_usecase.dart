@@ -21,12 +21,10 @@ class MergeWorkersUseCase {
     required WorkerEra targetEra,
     required WorkerRarity targetRarity,
   }) {
-    // 1. Filter workers by era, rarity, and NOT deployed
     final candidates = availableWorkers.where((w) {
       return w.era == targetEra && w.rarity == targetRarity && !w.isDeployed;
     }).toList();
 
-    // 2. Check if we have at least 3
     if (candidates.length < 3) {
       return MergeWorkersResult(
         success: false,
@@ -35,25 +33,70 @@ class MergeWorkersUseCase {
       );
     }
 
-    // 3. Select first 3
     final consumed = candidates.take(3).toList();
-    final consumedIds = consumed.map((w) => w.id).toList();
+    return _doMerge(consumed, targetEra, targetRarity);
+  }
 
-    // 4. Determine next rarity
-    final nextRarity = _getNextRarity(targetRarity);
-    if (nextRarity == null) {
+  /// Merge specific workers by ID (for manual selection)
+  MergeWorkersResult executeWithIds({
+    required List<Worker> allWorkers,
+    required List<String> workerIds,
+  }) {
+    if (workerIds.length < 3) {
       return MergeWorkersResult(
         success: false,
-        error: "Cannot merge ${targetRarity.displayName} workers further.",
+        error: "Select 3 workers to merge.",
       );
     }
 
-    // 5. Create new worker
+    final selected = <Worker>[];
+    for (final id in workerIds.take(3)) {
+      final w = allWorkers.where((w) => w.id == id).firstOrNull;
+      if (w == null) {
+        return MergeWorkersResult(success: false, error: "Worker not found.");
+      }
+      if (w.isDeployed) {
+        return MergeWorkersResult(
+          success: false,
+          error: "${w.displayName} is deployed. Recall first.",
+        );
+      }
+      selected.add(w);
+    }
+
+    // Validate all same era + rarity
+    final era = selected.first.era;
+    final rarity = selected.first.rarity;
+    if (selected.any((w) => w.era != era || w.rarity != rarity)) {
+      return MergeWorkersResult(
+        success: false,
+        error: "All 3 workers must be the same era and rarity.",
+      );
+    }
+
+    return _doMerge(selected, era, rarity);
+  }
+
+  MergeWorkersResult _doMerge(
+    List<Worker> consumed,
+    WorkerEra era,
+    WorkerRarity rarity,
+  ) {
+    final consumedIds = consumed.map((w) => w.id).toList();
+
+    final nextRarity = _getNextRarity(rarity);
+    if (nextRarity == null) {
+      return MergeWorkersResult(
+        success: false,
+        error: "Cannot merge ${rarity.displayName} workers further.",
+      );
+    }
+
     final newWorker = WorkerFactory.create(
-      era: targetEra,
+      era: era,
       rarity: nextRarity,
-      name: null, // Factory will generate default
-      specialAbility: null, // Factory might generate
+      name: null,
+      specialAbility: null,
     );
 
     return MergeWorkersResult(

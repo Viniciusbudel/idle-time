@@ -13,6 +13,7 @@ import '../../domain/usecases/production_loop_usecase.dart';
 import '../../domain/usecases/upgrade_station_usecase.dart';
 import '../../domain/usecases/check_tech_completion_usecase.dart';
 import '../../domain/usecases/merge_workers_usecase.dart';
+import '../../domain/entities/prestige_upgrade.dart';
 import '../../core/services/save_service.dart';
 import '../../core/constants/tech_data.dart';
 import 'dart:async';
@@ -79,16 +80,39 @@ class GameStateNotifier extends StateNotifier<GameState> {
       state.techLevels,
     );
 
-    // 2. Execute Production Loop
+    // 2. Calculate Time Warp Multiplier (Speed)
+    // Increases the effective delta time for all calculations
+    final timeWarpMultiplier = TechData.calculateTimeWarpMultiplier(
+      state.techLevels,
+    );
+    final effectiveDt = dt * timeWarpMultiplier;
+
+    // 3. Calculate Auto-Collect (Automation)
+    // Generates passive "manual clicks" based on automation level
+    final automationLevel = TechData.calculateAutomationLevel(state.techLevels);
+    BigInt? additionalProduction;
+
+    if (automationLevel > 0) {
+      final baseManualClick = _calculateManualClickValue();
+      // Auto-click amount = Base Click Value * Clicks/Sec * Delta Time
+      // We use effectiveDt here too so automation also speeds up with Time Warp?
+      // Design decision: Yes, Time Warp speeds up EVERYTHING.
+      additionalProduction = BigInt.from(
+        baseManualClick.toDouble() * automationLevel * effectiveDt,
+      );
+    }
+
+    // 4. Execute Production Loop
     final result = _productionLoopUseCase.execute(
       currentState: state,
-      dt: dt,
+      dt: effectiveDt, // Use effective delta time
       productionRate: state.productionPerSecond,
       techMultiplier: techMultiplier,
       currentFractionalAccumulator: _fractionalAccumulator,
+      additionalProduction: additionalProduction,
     );
 
-    // 3. Update State
+    // 5. Update State
     state = result.newState;
     _fractionalAccumulator = result.fractionalRemainder;
   }
@@ -173,21 +197,35 @@ class GameStateNotifier extends StateNotifier<GameState> {
   /// PROCESSED: Manual Click Action
   /// Returns the amount of CE generated
   BigInt manualClick() {
+    final base = _calculateManualClickValue();
+
+    // 3. Add to state
+    addChronoEnergy(base);
+
+    // Tutorial: Step 3 -> 4 (Collect)
+    if (state.tutorialStep == 3) {
+      advanceTutorial();
+    }
+
+    return base;
+  }
+
+  /// Helper to calculate the value of a single manual click
+  /// REBALANCED: Increased from 1% to 2% base, Pneumatic Hammer +150%/level
+  BigInt _calculateManualClickValue() {
     // 1. Calculate Base Power
-    // Base is 1% of current production OR 1, whichever is higher
-    BigInt base = state.productionPerSecond ~/ BigInt.from(100);
-    if (base < BigInt.one) base = BigInt.one;
+    // Base is 2% of current production OR 10, whichever is higher (INCREASED from 1%)
+    BigInt base = state.productionPerSecond ~/ BigInt.from(50); // 2%
+    if (base < BigInt.from(2)) base = BigInt.from(2); // Minimum 10
 
     // 2. Apply Tech Multiplier (Pneumatic Hammer)
     final hammerLevel = state.techLevels['pneumatic_hammer'] ?? 0;
     if (hammerLevel > 0) {
-      // +100% per level means multiplier = 1 + level
-      final multiplier = 1 + hammerLevel;
-      base = base * BigInt.from(multiplier);
+      // REBALANCED: +150% per level (was +100%)
+      // Level 1: 2.5x, Level 2: 4.0x, Level 3: 5.5x
+      final multiplier = 1.0 + (hammerLevel * 1.5);
+      base = BigInt.from((base.toDouble() * multiplier).round());
     }
-
-    // 3. Add to state
-    addChronoEnergy(base);
 
     return base;
   }
@@ -197,9 +235,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
   // Helper to get next worker cost (Exponential)
   BigInt getNextWorkerCost(WorkerEra era) {
     final currentHires = state.eraHires[era.id] ?? 0;
-    // Base cost * 1.20^count (20% increase per hire)
+    // Base cost * 1.35^count (35% increase per hire - REBALANCED)
     // Using double for calculation then back to BigInt
-    final multiplier = pow(1.20, currentHires).toDouble();
+    final multiplier = pow(1.35, currentHires).toDouble();
     final cost = (era.hireCost.toDouble() * multiplier).toInt();
     return BigInt.from(cost);
   }
@@ -225,6 +263,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
       totalWorkersPulled: state.totalWorkersPulled + 1,
       eraHires: newEraHires,
     );
+
+    // Tutorial: Step 1 -> 2 (Hire)
+    if (state.tutorialStep == 1) {
+      advanceTutorial();
+    }
+
     return worker;
   }
 
@@ -235,6 +279,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     final result = _summonWorkerUseCase.execute(state, targetEra: targetEra);
     state = result.state;
+
+    // Tutorial: Step 1 -> 2 (Hire) - Support shard summon too
+    if (state.tutorialStep == 1) {
+      advanceTutorial();
+    }
+
     return result.worker;
   }
 
@@ -280,6 +330,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
     );
 
     state = state.copyWith(workers: newWorkers, stations: newStations);
+
+    // Tutorial: Step 2 -> 3 (Assign)
+    if (state.tutorialStep == 2) {
+      advanceTutorial();
+    }
+
     return true;
   }
 
@@ -389,7 +445,35 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
 
     // Update state
-    state = state.copyWith(workers: newWorkers);
+    state = state.copyWith(
+      workers: newWorkers,
+      totalMerges: state.totalMerges + 1,
+    );
+    return result;
+  }
+
+  /// Merge specific workers by their IDs (manual selection)
+  MergeWorkersResult mergeSpecificWorkers(List<String> workerIds) {
+    final available = state.workers.values.toList();
+    final result = _mergeWorkersUseCase.executeWithIds(
+      allWorkers: available,
+      workerIds: workerIds,
+    );
+
+    if (!result.success) return result;
+
+    final newWorkers = Map<String, Worker>.from(state.workers);
+    for (final id in result.consumedWorkerIds) {
+      newWorkers.remove(id);
+    }
+    if (result.newWorker != null) {
+      newWorkers[result.newWorker!.id] = result.newWorker!;
+    }
+
+    state = state.copyWith(
+      workers: newWorkers,
+      totalMerges: state.totalMerges + 1,
+    );
     return result;
   }
 
@@ -547,24 +631,43 @@ class GameStateNotifier extends StateNotifier<GameState> {
   }
 
   /// Advance to a new era
+  /// - Deducts CE cost
+  /// - Marks current era as completed
+  /// - Switches to next era
+  /// - Auto-creates a free starter station for the new era
+  /// - Workers from old eras stay deployed in their chambers
   void advanceEra(String nextEraId, BigInt cost) {
     // Double check we can afford it (validation)
     if (state.chronoEnergy < cost) return;
 
     // Check completion of current era
-    // Note: We assume UI passes the correct nextEraId. Verification is done here.
-    // For simplicity, we just check if the current era is complete.
     final checkCompletion = CheckTechCompletionUseCase();
     if (!checkCompletion.execute(state, state.currentEraId)) return;
 
     final newUnlocked = {...state.unlockedEras, nextEraId};
     final newCompleted = {...state.completedEras, state.currentEraId};
 
+    // Auto-create a free starter station for the new era
+    final newEraStationType = StationType.values.firstWhere(
+      (type) => type.era.id == nextEraId,
+      orElse: () => StationType.basicLoop, // Fallback
+    );
+
+    final starterStation = StationFactory.create(
+      type: newEraStationType,
+      gridX: 0,
+      gridY: 0,
+    );
+
+    final newStations = Map<String, Station>.from(state.stations);
+    newStations[starterStation.id] = starterStation;
+
     state = state.copyWith(
       chronoEnergy: state.chronoEnergy - cost,
       currentEraId: nextEraId,
       unlockedEras: newUnlocked,
       completedEras: newCompleted,
+      stations: newStations,
     );
   }
 
@@ -583,6 +686,67 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   void updateLastTickTime() {
     state = state.copyWith(lastTickTime: DateTime.now());
+  }
+
+  /// Buy a specific prestige upgrade
+  bool buyPrestigeUpgrade(PrestigeUpgradeType type) {
+    final currentLevel = state.paradoxPointsSpent[type.id] ?? 0;
+
+    // Check max level cap
+    if (type.maxLevel != null && currentLevel >= type.maxLevel!) {
+      return false;
+    }
+
+    // Calculate cost for next level
+    final cost = type.getCost(currentLevel);
+
+    if (state.availableParadoxPoints < cost) {
+      return false;
+    }
+
+    // Execute purchase
+    final newSpent = Map<String, int>.from(state.paradoxPointsSpent);
+    newSpent[type.id] = currentLevel + 1;
+
+    state = state.copyWith(
+      availableParadoxPoints: state.availableParadoxPoints - cost,
+      paradoxPointsSpent: newSpent,
+    );
+    return true;
+  }
+
+  // ===== TUTORIAL =====
+
+  /// Advance tutorial to next step
+  void advanceTutorial() {
+    if (state.tutorialStep < 5) {
+      state = state.copyWith(tutorialStep: state.tutorialStep + 1);
+    }
+  }
+
+  /// Complete tutorial immediately (for skip/debug)
+  void completeTutorial() {
+    state = state.copyWith(tutorialStep: 5);
+  }
+
+  // ===== ACHIEVEMENTS =====
+
+  /// Unlock an achievement and grant its rewards
+  void unlockAchievement(
+    String achievementId, {
+    int rewardCE = 0,
+    int rewardShards = 0,
+  }) {
+    if (state.unlockedAchievements.contains(achievementId)) return;
+
+    final newAchievements = Set<String>.from(state.unlockedAchievements)
+      ..add(achievementId);
+
+    state = state.copyWith(
+      unlockedAchievements: newAchievements,
+      chronoEnergy: state.chronoEnergy + BigInt.from(rewardCE),
+      timeShards: state.timeShards + rewardShards,
+    );
   }
 }
 
