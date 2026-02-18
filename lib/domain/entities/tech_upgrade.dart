@@ -59,21 +59,27 @@ class TechUpgrade {
     );
   }
 
-  /// Get bonus description based on type and level
+  /// Get bonus description based on type, ID, and level
   String get bonusDescription {
     switch (type) {
       case TechType.automation:
-        return 'Auto-Clicker: ${(level * 1.0).toStringAsFixed(1)} /sec';
+        return 'Auto-Clicker: ${(level * 0.5).toStringAsFixed(1)} /sec';
       case TechType.efficiency:
-        return 'Production: +${(level * 10)}%';
+        // Boilers: +5%/lvl, Ticker Tape: +7.5%/lvl
+        final pct = id == 'ticker_tape' ? level * 7.5 : level * 5.0;
+        return 'Production: +${pct.toStringAsFixed(pct == pct.roundToDouble() ? 0 : 1)}%';
       case TechType.timeWarp:
-        return 'Game Speed: +${(level * 5)}%';
+        return 'Game Speed: +${level * 5}%';
       case TechType.costReduction:
-        return 'Station Cost: -${(level * 5)}%';
+        // Bessemer: -3%/lvl, Assembly Line: -5%/lvl
+        final reduction = id == 'bessemer_process' ? level * 3 : level * 5;
+        return 'Station Cost: −$reduction%';
       case TechType.offline:
-        return 'Offline Eff: +${(level * 10)}%';
+        // Clockwork: +10%/lvl, Radio: +15%/lvl
+        final pct = id == 'radio_broadcast' ? level * 15 : level * 10;
+        return 'Offline Gains: +$pct%';
       case TechType.clickPower:
-        return 'Click Power: +${(level * 100)}%';
+        return 'Click Power: +${level * 150}%';
       case TechType.eraUnlock:
         return 'Unlock Next Era';
     }
