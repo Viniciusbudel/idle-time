@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:time_factory/core/constants/spacing.dart';
+import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
@@ -24,6 +26,7 @@ class MegaChamberCard extends ConsumerStatefulWidget {
   final VoidCallback? onUpgrade;
   final void Function(int slotIndex)? onAssignSlot;
   final void Function(String workerId)? onRemoveWorker;
+  final bool highlightFirstEmptySlot;
 
   const MegaChamberCard({
     super.key,
@@ -33,6 +36,7 @@ class MegaChamberCard extends ConsumerStatefulWidget {
     this.onUpgrade,
     this.onAssignSlot,
     this.onRemoveWorker,
+    this.highlightFirstEmptySlot = false,
   });
 
   @override
@@ -547,7 +551,10 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         if (index < widget.assignedWorkers.length) {
           return _buildHoloWorker(widget.assignedWorkers[index], colors);
         }
-        return _buildEmptySocket(index, colors);
+        final isFirstEmpty =
+            widget.highlightFirstEmptySlot &&
+            index == widget.assignedWorkers.length;
+        return _buildEmptySocket(index, colors, isFirstEmpty: isFirstEmpty);
       }),
     );
   }
@@ -572,16 +579,10 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // SVG Avatar Icon
+            // Worker Avatar Icon
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: SvgPicture.asset(
-                WorkerIconHelper.getIconPath(worker.era, worker.rarity),
-                // colorFilter: ColorFilter.mode(
-                //   _getWorkerColor(worker, colors),
-                //   BlendMode.srcIn,
-                // ),
-              ),
+              child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
             ),
             // Holo Scanline Overlay
             Positioned.fill(
@@ -602,9 +603,17 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
     );
   }
 
-  Widget _buildEmptySocket(int index, ThemeColors colors) {
+  Widget _buildEmptySocket(
+    int index,
+    ThemeColors colors, {
+    bool isFirstEmpty = false,
+  }) {
     return GestureDetector(
-      onTap: () => widget.onAssignSlot?.call(index),
+      key: isFirstEmpty ? TutorialKeys.chamberSlot : null,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        widget.onAssignSlot?.call(index);
+      },
       child: Container(
         width: 50,
         height: 50,
@@ -657,6 +666,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
+            HapticFeedback.mediumImpact();
             if (widget.onUpgrade != null) {
               showDialog(
                 context: context,
