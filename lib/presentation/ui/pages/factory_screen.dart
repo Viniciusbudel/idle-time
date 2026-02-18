@@ -15,13 +15,17 @@ import 'package:time_factory/presentation/ui/widgets/chaos_button.dart';
 import 'package:time_factory/presentation/ui/atoms/save_indicator.dart';
 import 'package:time_factory/presentation/ui/atoms/scanline_overlay.dart';
 import 'package:time_factory/presentation/ui/atoms/glitch_overlay.dart';
-import 'package:time_factory/presentation/ui/molecules/loop_reset_timer.dart';
 import 'package:time_factory/presentation/ui/atoms/system_monitor_text.dart';
 import 'package:time_factory/presentation/ui/templates/theme_background.dart';
 import 'package:time_factory/core/theme/era_theme.dart';
 import 'package:time_factory/presentation/state/theme_provider.dart';
 import 'package:time_factory/presentation/ui/dialogs/era_unlock_dialog.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
+import 'package:time_factory/presentation/ui/molecules/time_warp_indicator.dart';
+import 'package:time_factory/presentation/ui/molecules/auto_click_indicator.dart';
+import 'package:time_factory/presentation/ui/molecules/tutorial_overlay.dart';
+import 'package:time_factory/core/constants/tutorial_keys.dart';
+import 'package:time_factory/presentation/ui/molecules/achievement_listener.dart';
 
 class FactoryScreen extends ConsumerStatefulWidget {
   const FactoryScreen({super.key});
@@ -110,116 +114,128 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
       }
     });
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.black,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        backgroundColor: activeTheme.colors.background,
-        body: Stack(
-          children: [
-            // 1. Dynamic Backgrounds
-            Positioned.fill(
-              child: RepaintBoundary(
-                // Only animate if selected tab is Factory (1)
-                child: ThemeBackground(
-                  forceStatic: _selectedTab != 1,
-                  child: const SizedBox.shrink(),
-                ),
-              ),
-            ),
-
-            // 2. Game Layer
-            if (_selectedTab == 1)
+    return AchievementListener(
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.black,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
+        child: Scaffold(
+          backgroundColor: activeTheme.colors.background,
+          body: Stack(
+            children: [
+              // 1. Dynamic Backgrounds
               Positioned.fill(
-                child: RepaintBoundary(child: GameWidget(game: _game)),
-              ),
-
-            // 3. Main Content Column
-            Positioned.fill(
-              child: SafeArea(
-                bottom: false,
-                child: Column(
-                  children: [
-                    // Global Resource Header Bar
-                    if (_selectedTab != 0) const ResourceAppBar(),
-
-                    // Tab Content
-                    Expanded(child: _buildCurrentTab(size)),
-                  ],
-                ),
-              ),
-            ),
-
-            // 4. Bottom Command Dock
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SafeArea(
-                child: GlassBottomDock(
-                  selectedIndex: _selectedTab,
-                  onItemSelected: (index) =>
-                      setState(() => _selectedTab = index),
-                  themeOverride: activeTheme,
-                ),
-              ),
-            ),
-
-            // 5. Scanline Overlay
-            const Positioned.fill(
-              child: RepaintBoundary(
-                child: ScanlineOverlay(opacity: 0.015, lineSpacing: 4),
-              ),
-            ),
-
-            // 6. Glitch Overlay (Chaos Event)
-            Consumer(
-              builder: (context, ref, child) {
-                final isChaosActive = ref.watch(
-                  gameStateProvider.select((s) => s.paradoxEventActive),
-                );
-                return GlitchOverlay(isActive: isChaosActive);
-              },
-            ),
-
-            // 7. Save Indicator
-            const Positioned(
-              top: 8,
-              right: 8,
-              child: SafeArea(child: SaveIndicator()),
-            ),
-
-            // 8. Chaos Trigger Button (Factory Tab Only)
-            if (_selectedTab == 1)
-              Align(
-                alignment: _chaosAlignment,
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0), // Safety margin
-                  child: Consumer(
-                    builder: (context, ref, child) {
-                      final paradoxLevel = ref.watch(
-                        gameStateProvider.select((s) => s.paradoxLevel),
-                      );
-                      final isChaosActive = ref.watch(
-                        gameStateProvider.select((s) => s.paradoxEventActive),
-                      );
-
-                      if (paradoxLevel < 0.8 || isChaosActive) {
-                        return const SizedBox.shrink();
-                      }
-
-                      return ChaosButton(
-                        onPressed: () {
-                          ref.read(gameStateProvider.notifier).embraceChaos();
-                          _randomizeChaosPosition(); // Move it for next time!
-                        },
-                      );
-                    },
+                child: RepaintBoundary(
+                  // Only animate if selected tab is Factory (1)
+                  child: ThemeBackground(
+                    forceStatic: _selectedTab != 1,
+                    child: const SizedBox.shrink(),
                   ),
                 ),
               ),
-          ],
+
+              // 2. Game Layer
+              if (_selectedTab == 1)
+                Positioned.fill(
+                  key: TutorialKeys.reactor,
+                  child: RepaintBoundary(child: GameWidget(game: _game)),
+                ),
+
+              // 3. Main Content Column
+              Positioned.fill(
+                child: SafeArea(
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      // Global Resource Header Bar
+                      if (_selectedTab != 0) const ResourceAppBar(),
+
+                      // Tab Content
+                      Expanded(
+                        key: TutorialKeys.mainContent,
+                        child: _buildCurrentTab(size),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 4. Bottom Command Dock
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SafeArea(
+                  child: GlassBottomDock(
+                    selectedIndex: _selectedTab,
+                    onItemSelected: (index) =>
+                        setState(() => _selectedTab = index),
+                    themeOverride: activeTheme,
+                  ),
+                ),
+              ),
+
+              // 5. Scanline Overlay
+              const Positioned.fill(
+                child: RepaintBoundary(
+                  child: ScanlineOverlay(opacity: 0.015, lineSpacing: 4),
+                ),
+              ),
+
+              // 6. Glitch Overlay (Chaos Event)
+              Consumer(
+                builder: (context, ref, child) {
+                  final isChaosActive = ref.watch(
+                    gameStateProvider.select((s) => s.paradoxEventActive),
+                  );
+                  return GlitchOverlay(isActive: isChaosActive);
+                },
+              ),
+
+              // 7. Save Indicator
+              const Positioned(
+                top: 8,
+                right: 8,
+                child: SafeArea(child: SaveIndicator()),
+              ),
+
+              // 8. Chaos Trigger Button (Factory Tab Only)
+              if (_selectedTab == 1)
+                Align(
+                  alignment: _chaosAlignment,
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0), // Safety margin
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final paradoxLevel = ref.watch(
+                          gameStateProvider.select((s) => s.paradoxLevel),
+                        );
+                        final isChaosActive = ref.watch(
+                          gameStateProvider.select((s) => s.paradoxEventActive),
+                        );
+
+                        if (paradoxLevel < 0.8 || isChaosActive) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return ChaosButton(
+                          onPressed: () {
+                            ref.read(gameStateProvider.notifier).embraceChaos();
+                            _randomizeChaosPosition(); // Move it for next time!
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+              // 9. Tutorial Overlay
+              TutorialOverlay(
+                key: ValueKey('tutorial_overlay_$_selectedTab'),
+                currentTab: _selectedTab,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -247,19 +263,11 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
   Widget _buildFactoryTab(Size size) {
     return Stack(
       children: [
-        // Loop Reset Timer (top center)
-        const Positioned(
-          top: 8,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: RepaintBoundary(
-              child: LoopResetTimer(
-                timeRemaining: Duration(minutes: 0, seconds: 45),
-              ),
-            ),
-          ),
-        ),
+        // Time Warp Speed Indicator (top-left, below header)
+        const Positioned(top: 40, left: 16, child: TimeWarpIndicator()),
+
+        // Auto-Click Indicator (below time warp)
+        const Positioned(top: 70, left: 16, child: AutoClickIndicator()),
 
         // System Monitor Text (bottom right)
         Positioned(
