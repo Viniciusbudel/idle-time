@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
@@ -11,6 +12,7 @@ import 'package:time_factory/core/utils/number_formatter.dart';
 
 import 'package:time_factory/presentation/ui/atoms/void_hiring_overlay.dart';
 import 'package:time_factory/presentation/ui/dialogs/worker_result_dialog.dart';
+import 'package:time_factory/core/constants/tutorial_keys.dart';
 
 /// Gacha Screen - Temporal Rift Summoning Interface
 class GachaScreen extends ConsumerStatefulWidget {
@@ -214,6 +216,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
     final canHire = canAfford && !_isSummoning;
 
     return GestureDetector(
+      key: TutorialKeys.summonButton,
       onTap: canHire ? () => _performCellSummon(currentEra) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -334,6 +337,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
     if (gameState.chronoEnergy < cost) return;
 
     setState(() => _isSummoning = true);
+    HapticFeedback.mediumImpact();
 
     // hireWorker now returns Worker? directly
     final worker = ref.read(gameStateProvider.notifier).hireWorker(era);
@@ -347,6 +351,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
 
   Future<void> _performSummon() async {
     setState(() => _isSummoning = true); // Lock UI
+    HapticFeedback.heavyImpact();
 
     // Perform logic
     final worker = ref.read(gameStateProvider.notifier).summonWorker(cost: 10);
@@ -386,6 +391,3 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
     );
   }
 }
-
-// Helper for kIsWeb if not imported
-const bool kIsWeb = identical(0, 0.0);

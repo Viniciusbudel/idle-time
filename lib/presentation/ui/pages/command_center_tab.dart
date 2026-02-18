@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
-import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/ui/atoms/cyber_button.dart';
 import 'package:time_factory/presentation/ui/molecules/holo_worker_card.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/core/utils/number_formatter.dart';
 
 class CommandCenterTab extends ConsumerWidget {
   const CommandCenterTab({super.key});
@@ -16,7 +16,6 @@ class CommandCenterTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final workersMap = ref.watch(workersProvider);
     final workers = workersMap.values.toList();
-    // Sort by rarity/level
     workers.sort((a, b) {
       int rarityComp = b.rarity.index.compareTo(a.rarity.index);
       if (rarityComp != 0) return rarityComp;
@@ -26,19 +25,11 @@ class CommandCenterTab extends ConsumerWidget {
     final gameState = ref.watch(gameStateProvider);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        100,
-      ), // Bottom padding for dock
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       children: [
-        // Header
         _buildHeader(context, workers.length),
-
         const SizedBox(height: 16),
 
-        // Worker List
         if (workers.isEmpty)
           _buildEmptyState(context)
         else
@@ -48,11 +39,24 @@ class CommandCenterTab extends ConsumerWidget {
               child: HoloWorkerCard(
                 unitId: 'UNIT-${worker.id.substring(0, 4).toUpperCase()}',
                 role: worker.displayName,
-                efficiency: 0.75 + (worker.level * 0.05).clamp(0.0, 0.25),
+                efficiency: _calculateEfficiency(worker),
                 status: _getWorkerStatus(worker),
                 rarity: worker.rarity,
                 onUpgrade: () {
-                  // Upgrade logic
+                  final success = ref
+                      .read(gameStateProvider.notifier)
+                      .upgradeWorker(worker.id);
+                  if (!success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${AppLocalizations.of(context)!.insufficientCE} (${NumberFormatter.formatCE(worker.upgradeCost)} CE)',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.red[900],
+                      ),
+                    );
+                  }
                 },
               ),
             ),
@@ -60,7 +64,6 @@ class CommandCenterTab extends ConsumerWidget {
 
         const SizedBox(height: 24),
 
-        // Hire Button
         Center(
           child: CyberButton(
             label: AppLocalizations.of(context)!.hireNewUnit,
@@ -81,6 +84,17 @@ class CommandCenterTab extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  double _calculateEfficiency(Worker worker) {
+    final baseEff = worker.rarity.productionMultiplier;
+    final levelBonus = (worker.level - 1) * 0.05;
+    return (baseEff + levelBonus).clamp(0.0, 1.0);
+  }
+
+  String _getWorkerStatus(Worker worker) {
+    if (worker.isDeployed) return 'DEPLOYED';
+    return 'IDLE';
   }
 
   Widget _buildHeader(BuildContext context, int count) {
@@ -127,10 +141,5 @@ class CommandCenterTab extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  String _getWorkerStatus(Worker worker) {
-    // Mock status logic based on rarity?
-    return worker.rarity == WorkerRarity.legendary ? "OPTIMAL" : "STABLE";
   }
 }
