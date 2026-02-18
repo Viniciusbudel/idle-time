@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../core/theme/neon_theme.dart';
 import '../../../../core/theme/game_theme.dart';
 import '../../../../domain/entities/worker.dart';
@@ -71,10 +71,7 @@ class WorkerResultDialog extends StatelessWidget {
               child: ClipOval(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: SvgPicture.asset(
-                    WorkerIconHelper.getIconPath(worker.era, worker.rarity),
-                    //colorFilter: ColorFilter.mode(rarityColor, BlendMode.srcIn),
-                  ),
+                  child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
                 ),
               ),
             ),
@@ -95,7 +92,7 @@ class WorkerResultDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '${AppLocalizations.of(context)!.production}: ${worker.baseProduction}',
+              '${AppLocalizations.of(context)!.production}: ${worker.currentProduction} CE/s',
               style: typography.bodyMedium.copyWith(color: colors.textPrimary),
             ),
             const SizedBox(height: 24),
