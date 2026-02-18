@@ -1,5 +1,6 @@
 import 'enums.dart';
 import 'worker_name_registry.dart';
+import 'dart:math';
 
 /// Represents a temporal worker from a specific era
 class Worker {
@@ -135,6 +136,31 @@ class WorkerFactory {
   WorkerFactory._();
 
   static int _idCounter = 0;
+  static final _random = Random();
+
+  /// Rarity weights (higher = more common) - REBALANCED
+  /// Common: 55%, Rare: 30%, Epic: 12%, Legendary: 2.5%, Paradox: 0.5%
+  static const Map<WorkerRarity, double> rarityWeights = {
+    WorkerRarity.common: 55.0,
+    WorkerRarity.rare: 30.0,
+    WorkerRarity.epic: 12.0,
+    WorkerRarity.legendary: 2.5,
+    WorkerRarity.paradox: 0.5,
+  };
+
+  /// Roll for rarity using weighted random
+  static WorkerRarity rollRarity() {
+    final totalWeight = rarityWeights.values.fold(0.0, (a, b) => a + b);
+    double roll = _random.nextDouble() * totalWeight;
+
+    for (final entry in rarityWeights.entries) {
+      roll -= entry.value;
+      if (roll <= 0) {
+        return entry.key;
+      }
+    }
+    return WorkerRarity.common;
+  }
 
   /// Create a new worker of specified era and rarity
   static Worker create({
@@ -147,7 +173,7 @@ class WorkerFactory {
     return Worker(
       id: 'worker_${_idCounter}_${DateTime.now().millisecondsSinceEpoch}',
       era: era,
-      baseProduction: BigInt.from(10), // Unified base production
+      baseProduction: BigInt.from(5), // REBALANCED: Reduced from 10 to 5
       rarity: rarity,
       name: name ?? WorkerNameRegistry.getName(era, rarity),
       specialAbility: specialAbility,
