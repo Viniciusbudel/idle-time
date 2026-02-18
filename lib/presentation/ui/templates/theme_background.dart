@@ -22,8 +22,23 @@ class ThemeBackground extends ConsumerWidget {
       return SteampunkBackground(child: child);
     }
 
-    // Default fallback to static image
-    return Container();
+    if (!forceStatic && theme.id == 'roaring_20s') {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/backgrounds/roarings-20s-bg.png',
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.low,
+            isAntiAlias: false,
+          ),
+          Container(color: Colors.black.withValues(alpha: 0.15)),
+          child,
+        ],
+      );
+    }
 
+    // Default fallback
+    return Container(child: child);
   }
 }
