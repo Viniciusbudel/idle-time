@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
@@ -204,12 +204,15 @@ class AssignWorkerDialog extends StatelessWidget {
                   color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
                 ),
               ),
-              child: SvgPicture.asset(
-                WorkerIconHelper.getIconPath(worker.era, worker.rarity),
-                colorFilter: const ColorFilter.mode(
-                  TimeFactoryColors.electricCyan,
-                  BlendMode.srcIn,
-                ),
+              child: WorkerIconHelper.buildIcon(
+                worker.era,
+                worker.rarity,
+                colorFilter: WorkerIconHelper.isSvg(worker.era)
+                    ? const ColorFilter.mode(
+                        TimeFactoryColors.electricCyan,
+                        BlendMode.srcIn,
+                      )
+                    : null,
               ),
             ),
 

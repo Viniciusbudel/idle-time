@@ -68,28 +68,38 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
       ),
     );
 
-    // 3. Inner Core (The "Worker" SVG Icon)
-    // Use SVG icon from assets/images/icons/
-    // Example: assets/images/icons/victorian-icon-rare.svg
+    // 3. Inner Core (The "Worker" Icon)
     final iconPath = WorkerIconHelper.getIconPath(worker.era, worker.rarity);
 
     try {
-      // Load SVG using flame_svg
-      final svg = await Svg.load(iconPath);
-
-      add(
-        SvgComponent(
-          svg: svg,
-          size: Vector2.all(32),
-          anchor: Anchor.center,
-          position: size / 2,
-          paint: Paint()
-            ..colorFilter = ColorFilter.mode(rarityColor, BlendMode.srcIn),
-        ),
-      );
+      if (WorkerIconHelper.isSvg(worker.era)) {
+        // Load SVG using flame_svg
+        final svg = await Svg.load(iconPath);
+        add(
+          SvgComponent(
+            svg: svg,
+            size: Vector2.all(32),
+            anchor: Anchor.center,
+            position: size / 2,
+            paint: Paint()
+              ..colorFilter = ColorFilter.mode(rarityColor, BlendMode.srcIn),
+          ),
+        );
+      } else {
+        // Load PNG/raster image via Sprite
+        final sprite = await Sprite.load(iconPath);
+        add(
+          SpriteComponent(
+            sprite: sprite,
+            size: Vector2.all(32),
+            anchor: Anchor.center,
+            position: size / 2,
+          ),
+        );
+      }
     } catch (e) {
       debugPrint(
-        'Warning: Failed to load SVG icon for ${worker.era.displayName} ${worker.rarity.displayName} Worker ($iconPath): $e',
+        'Warning: Failed to load icon for ${worker.era.displayName} ${worker.rarity.displayName} Worker ($iconPath): $e',
       );
 
       // Fallback to Procedural Icon based on Era
