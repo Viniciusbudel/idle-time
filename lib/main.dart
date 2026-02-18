@@ -97,15 +97,6 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
     setState(() => _isLoading = false);
   }
 
-  void _collectOfflineEarnings() {
-    if (_pendingOfflineEarnings != null) {
-      ref
-          .read(gameStateProvider.notifier)
-          .addChronoEnergy(_pendingOfflineEarnings!.ceEarned);
-      _pendingOfflineEarnings = null;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -135,14 +126,14 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
 
     // Show offline earnings dialog if needed
     if (_pendingOfflineEarnings != null) {
+      final earnings = _pendingOfflineEarnings!;
+      _pendingOfflineEarnings = null; // Clear immediately to prevent re-entry
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        OfflineEarningsDialog.show(
-          context,
-          _pendingOfflineEarnings!,
-          _collectOfflineEarnings,
-        );
-        // Clear so dialog only shows once
-        _pendingOfflineEarnings = null;
+        OfflineEarningsDialog.show(context, earnings, () {
+          ref
+              .read(gameStateProvider.notifier)
+              .addChronoEnergy(earnings.ceEarned);
+        });
       });
     }
 
