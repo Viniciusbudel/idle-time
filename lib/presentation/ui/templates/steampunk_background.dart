@@ -123,7 +123,7 @@ class _SteampunkBackgroundState extends State<SteampunkBackground>
               final opacity =
                   0.1 + (math.sin(_controller.value * math.pi * 2) * 0.075);
 
-              return Container(color: Colors.black.withOpacity(opacity));
+              return Container(color: Colors.black.withValues(alpha: opacity));
             },
           ),
 
