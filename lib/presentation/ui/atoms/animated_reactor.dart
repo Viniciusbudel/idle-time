@@ -86,7 +86,7 @@ class _AnimatedReactorState extends ConsumerState<AnimatedReactor>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: theme.primaryColor.withOpacity(0.4),
+                      color: theme.primaryColor.withValues(alpha: 0.4),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
