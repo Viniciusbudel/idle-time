@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/game_state.dart';
 import '../../domain/entities/worker.dart';
+import '../../domain/entities/worker_artifact.dart';
 import '../../domain/entities/station.dart';
 import '../../domain/entities/enums.dart';
 import '../../domain/usecases/hire_worker_usecase.dart';
@@ -13,7 +14,10 @@ import '../../domain/usecases/production_loop_usecase.dart';
 import '../../domain/usecases/upgrade_station_usecase.dart';
 import '../../domain/usecases/check_tech_completion_usecase.dart';
 import '../../domain/usecases/merge_workers_usecase.dart';
+import '../../domain/usecases/fit_worker_to_era_usecase.dart';
 import '../../domain/entities/prestige_upgrade.dart';
+// import '../../domain/entities/daily_reward.dart'; // REMOVED
+import '../../domain/usecases/claim_daily_reward_usecase.dart'; // NEW
 import '../../core/services/save_service.dart';
 import '../../core/constants/tech_data.dart';
 import 'dart:async';
@@ -37,7 +41,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
   final MergeStationsUseCase _mergeStationsUseCase = MergeStationsUseCase();
   final UpgradeStationUseCase _upgradeStationUseCase = UpgradeStationUseCase();
   final MergeWorkersUseCase _mergeWorkersUseCase = MergeWorkersUseCase();
+  final FitWorkerToEraUseCase _fitWorkerToEraUseCase = FitWorkerToEraUseCase();
   final SaveService _saveService = SaveService();
+
+  late final ClaimDailyRewardUseCase _claimDailyRewardUseCase =
+      ClaimDailyRewardUseCase(_hireWorkerUseCase);
 
   final ProductionLoopUseCase _productionLoopUseCase = ProductionLoopUseCase();
 
@@ -214,9 +222,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
   /// REBALANCED: Increased from 1% to 2% base, Pneumatic Hammer +150%/level
   BigInt _calculateManualClickValue() {
     // 1. Calculate Base Power
-    // Base is 2% of current production OR 10, whichever is higher (INCREASED from 1%)
-    BigInt base = state.productionPerSecond ~/ BigInt.from(50); // 2%
-    if (base < BigInt.from(2)) base = BigInt.from(2); // Minimum 10
+    // Base is 2% of current TRUE production (including tech multipliers)
+    final techMultiplier = TechData.calculateEfficiencyMultiplier(
+      state.techLevels,
+    );
+    final trueProduction =
+        state.productionPerSecond.toDouble() * techMultiplier;
+
+    BigInt base = BigInt.from(trueProduction / 50.0); // 2%
+    if (base < BigInt.from(2)) base = BigInt.from(2); // Minimum 2
 
     // 2. Apply Tech Multiplier (Pneumatic Hammer)
     final hammerLevel = state.techLevels['pneumatic_hammer'] ?? 0;
@@ -224,6 +238,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
       // REBALANCED: +150% per level (was +100%)
       // Level 1: 2.5x, Level 2: 4.0x, Level 3: 5.5x
       final multiplier = 1.0 + (hammerLevel * 1.5);
+      base = BigInt.from((base.toDouble() * multiplier).round());
+    }
+
+    // 3. Apply Jazz Improvisation (Roaring 20s)
+    final jazzLevel = state.techLevels['jazz_improvisation'] ?? 0;
+    if (jazzLevel > 0) {
+      // +160% per level (1.6x)
+      final multiplier = 1.0 + (jazzLevel * 1.1);
       base = BigInt.from((base.toDouble() * multiplier).round());
     }
 
@@ -376,43 +398,91 @@ class GameStateNotifier extends StateNotifier<GameState> {
     undeployWorker(workerId);
   }
 
-  /// Upgrade a worker
-  bool upgradeWorker(String workerId) {
+  /// Equip an artifact to a worker
+  bool equipArtifact(String workerId, String artifactId) {
     final worker = state.workers[workerId];
     if (worker == null) return false;
 
-    final cost = worker.upgradeCost;
-    if (!spendChronoEnergy(cost)) return false;
+    // Check if worker has free slots (max 5)
+    if (worker.equippedArtifacts.length >= 5) return false;
+
+    // Find the artifact in inventory
+    final artifactIndex = state.inventory.indexWhere((a) => a.id == artifactId);
+    if (artifactIndex < 0) return false;
+
+    final artifact = state.inventory[artifactIndex];
+
+    // Remove from inventory
+    final newInventory = List<WorkerArtifact>.from(state.inventory);
+    newInventory.removeAt(artifactIndex);
+
+    // Add to worker
+    final newWorkers = Map<String, Worker>.from(state.workers);
+    final newEquipped = List<WorkerArtifact>.from(worker.equippedArtifacts)
+      ..add(artifact);
+    newWorkers[workerId] = worker.copyWith(equippedArtifacts: newEquipped);
+
+    state = state.copyWith(workers: newWorkers, inventory: newInventory);
+    return true;
+  }
+
+  /// Unequip an artifact from a worker
+  bool unequipArtifact(String workerId, String artifactId) {
+    final worker = state.workers[workerId];
+    if (worker == null) return false;
+
+    // Find artifact on worker
+    final artifactIndex = worker.equippedArtifacts.indexWhere(
+      (a) => a.id == artifactId,
+    );
+    if (artifactIndex < 0) return false;
+
+    final artifact = worker.equippedArtifacts[artifactIndex];
+
+    // Check inventory capacity (optional, let's say hard cap of 100 for now to prevent infinite growth)
+    if (state.inventory.length >= 100) return false;
+
+    // Remove from worker
+    final newEquipped = List<WorkerArtifact>.from(worker.equippedArtifacts);
+    newEquipped.removeAt(artifactIndex);
 
     final newWorkers = Map<String, Worker>.from(state.workers);
-    newWorkers[workerId] = worker.copyWith(level: worker.level + 1);
-    state = state.copyWith(workers: newWorkers);
+    newWorkers[workerId] = worker.copyWith(equippedArtifacts: newEquipped);
+
+    // Add to inventory
+    final newInventory = List<WorkerArtifact>.from(state.inventory)
+      ..add(artifact);
+
+    state = state.copyWith(workers: newWorkers, inventory: newInventory);
+    return true;
+  }
+
+  /// Add an artifact to inventory (e.g., from anomaly drop)
+  bool addArtifactToInventory(WorkerArtifact artifact) {
+    if (state.inventory.length >= 100) {
+      // Inventory full, maybe auto-scrap for time shards in the future?
+      return false;
+    }
+
+    final newInventory = List<WorkerArtifact>.from(state.inventory)
+      ..add(artifact);
+    state = state.copyWith(inventory: newInventory);
     return true;
   }
 
   /// Refit a worker to the current era's technology
   /// This updates the worker's era to currentEraId, increasing their production
-  bool refitWorkerEra(String workerId) {
+  bool fitWorkerToEra(String workerId) {
     final worker = state.workers[workerId];
     if (worker == null) return false;
 
-    final currentEra = WorkerEra.values.firstWhere(
-      (e) => e.id == state.currentEraId,
-    );
-    if (worker.era == currentEra) return false;
-
-    // Cost to refit: 10x current level upgrade cost
-    final cost = worker.upgradeCost * BigInt.from(10);
-    if (!spendChronoEnergy(cost)) return false;
-
-    final newWorkers = Map<String, Worker>.from(state.workers);
-    newWorkers[workerId] = worker.copyWith(
-      era: currentEra,
-      // Increase base production significantly as it "evolves"
-      baseProduction: worker.baseProduction * BigInt.from(2),
-    );
-    state = state.copyWith(workers: newWorkers);
-    return true;
+    try {
+      state = _fitWorkerToEraUseCase.execute(worker, state);
+      return true;
+    } catch (e) {
+      // Logic error or insufficient funds (though UI checks too)
+      return false;
+    }
   }
 
   /// Merge 3 workers of the same era and rarity into 1 of the next rarity
@@ -748,6 +818,25 @@ class GameStateNotifier extends StateNotifier<GameState> {
       timeShards: state.timeShards + rewardShards,
     );
   }
+
+  // ===== DAILY REWARDS =====
+
+  /// Check if a daily reward is available to claim
+  bool get isDailyRewardAvailable =>
+      _claimDailyRewardUseCase.isRewardAvailable(state);
+
+  /// Get the current streak for display (0-7, resets if missed)
+  int get currentStreak => _claimDailyRewardUseCase.getCurrentStreak(state);
+
+  /// Claim the daily reward
+  ClaimDailyRewardResult? claimDailyReward() {
+    final result = _claimDailyRewardUseCase.execute(state);
+    if (result != null) {
+      state = result.newState;
+      updateLastSaveTime(); // Auto-save on claim
+    }
+    return result;
+  }
 }
 
 // ===== DERIVED PROVIDERS =====
@@ -775,4 +864,9 @@ final workersProvider = Provider<Map<String, Worker>>((ref) {
 /// All stations
 final stationsProvider = Provider<Map<String, Station>>((ref) {
   return ref.watch(gameStateProvider).stations;
+});
+
+/// Tech Levels map
+final techLevelsProvider = Provider<Map<String, int>>((ref) {
+  return ref.watch(gameStateProvider).techLevels;
 });
