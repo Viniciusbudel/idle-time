@@ -38,6 +38,22 @@ class ThemeBackground extends ConsumerWidget {
       );
     }
 
+    if (!forceStatic && theme.id == 'atomic_age') {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/backgrounds/atomic/atomic-age-background.png',
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.low,
+            isAntiAlias: false,
+          ),
+          Container(color: Colors.black.withValues(alpha: 0.15)),
+          child,
+        ],
+      );
+    }
+
     // Default fallback
     return Container(child: child);
   }

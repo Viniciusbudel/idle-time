@@ -204,16 +204,7 @@ class AssignWorkerDialog extends StatelessWidget {
                   color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
                 ),
               ),
-              child: WorkerIconHelper.buildIcon(
-                worker.era,
-                worker.rarity,
-                colorFilter: WorkerIconHelper.isSvg(worker.era)
-                    ? const ColorFilter.mode(
-                        TimeFactoryColors.electricCyan,
-                        BlendMode.srcIn,
-                      )
-                    : null,
-              ),
+              child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
             ),
 
             const SizedBox(width: 12),
@@ -234,10 +225,6 @@ class AssignWorkerDialog extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      _buildTag(
-                        'LVL ${worker.level}',
-                        TimeFactoryColors.electricCyan,
-                      ),
                       const SizedBox(width: 6),
                       _buildTag(
                         worker.rarity.localizedName(context).toUpperCase(),

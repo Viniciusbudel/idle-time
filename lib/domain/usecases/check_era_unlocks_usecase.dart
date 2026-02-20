@@ -4,7 +4,7 @@ class CheckEraUnlocksUseCase {
   GameState execute(GameState state) {
     final thresholds = {
       'roaring_20s': BigInt.from(1000),
-      'atomic_age': BigInt.from(100000),
+      // 'atomic_age': Unlocks via Manhattan Project Tech
       'cyberpunk_80s': BigInt.from(10000000),
       'neo_tokyo': BigInt.from(1000000000),
       'post_singularity': BigInt.from(100000000000),

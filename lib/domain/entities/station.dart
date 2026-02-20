@@ -57,6 +57,8 @@ class Station {
         return 1.0 + (level - 1) * 0.05; // NERFED from 0.1
       case StationType.dualHelix:
         return 1.2 + (level - 1) * 0.075; // NERFED from 0.15
+      case StationType.nuclearReactor:
+        return 1.5 + (level - 1) * 0.1;
       case StationType.paradoxAmplifier:
         return 0.0;
       case StationType.timeDistortion:
@@ -125,6 +127,8 @@ class Station {
         return BigInt.from(500);
       case StationType.dualHelix:
         return BigInt.from(2000);
+      case StationType.nuclearReactor:
+        return BigInt.from(3500);
       case StationType.paradoxAmplifier:
         return BigInt.from(5000);
       case StationType.timeDistortion:
@@ -180,6 +184,8 @@ class StationFactory {
         baseCost = BigInt.from(500);
       case StationType.dualHelix:
         baseCost = BigInt.from(2000);
+      case StationType.nuclearReactor:
+        baseCost = BigInt.from(3500);
       case StationType.paradoxAmplifier:
         baseCost = BigInt.from(5000);
       case StationType.timeDistortion:

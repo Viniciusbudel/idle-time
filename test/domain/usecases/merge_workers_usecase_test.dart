@@ -17,7 +17,6 @@ void main() {
       name: 'Worker $id',
       era: era,
       rarity: rarity,
-      level: 1,
       isDeployed: false,
       deployedStationId: null,
       baseProduction: BigInt.from(10),

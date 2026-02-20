@@ -22,6 +22,7 @@ class TimeFactoryColors {
 
   /// Deep Purple - Premium currency, rare items
   static const deepPurple = Color(0xFF8B00FF);
+  static const paradoxPurple = deepPurple;
 
   // ===== BACKGROUND/ATMOSPHERE =====
   /// Void Black - Base background (#050b14)

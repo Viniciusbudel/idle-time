@@ -49,10 +49,10 @@ enum WorkerEra {
 /// Worker rarity tiers - REBALANCED production multipliers
 enum WorkerRarity {
   common('common', 'Common', 1.0),
-  rare('rare', 'Rare', 2.5),
-  epic('epic', 'Epic', 6.0),
-  legendary('legendary', 'Legendary', 16.0),
-  paradox('paradox', 'Paradox', 50.0);
+  rare('rare', 'Rare', 3.5),
+  epic('epic', 'Epic', 13),
+  legendary('legendary', 'Legendary', 40.0),
+  paradox('paradox', 'Paradox', 150.0);
 
   final String id;
   final String displayName;
@@ -63,8 +63,15 @@ enum WorkerRarity {
 
 /// Station types available in the factory
 enum StationType {
-  basicLoop('basic_loop', 'Basic Loop Chamber', 3, 6, WorkerEra.victorian),
-  dualHelix('dual_helix', 'Dual Helix Chamber', 3, 6, WorkerEra.roaring20s),
+  basicLoop('basic_loop', 'Basic Loop Chamber', 3, 5, WorkerEra.victorian),
+  dualHelix('dual_helix', 'Dual Helix Chamber', 3, 8, WorkerEra.roaring20s),
+  nuclearReactor(
+    'nuclear_reactor',
+    'Nuclear Reactor',
+    3,
+    10,
+    WorkerEra.atomicAge,
+  ),
   paradoxAmplifier(
     'paradox_amplifier',
     'Paradox Amplifier',

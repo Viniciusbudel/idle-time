@@ -19,8 +19,10 @@ class GameAssets {
   static const String temporalReactor =
       'assets/images/icons/temporal-reactor.svg';
   static const String lottieReactor = 'assets/lottie/lottie-reactor.json';
-  static const String lottieSteamPunkReactor = 'assets/lottie/steampunk-reactor.lottie';
-  static const String lottieSteamPunkReactorJson = 'assets/lottie/steampunk.json';
+  static const String lottieSteamPunkReactor =
+      'assets/lottie/steampunk-reactor.lottie';
+  static const String lottieSteamPunkReactorJson =
+      'assets/lottie/steampunk.json';
 
   // Effects
   static const String unlockParticleEffect =

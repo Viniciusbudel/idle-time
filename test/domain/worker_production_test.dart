@@ -1,18 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/enums.dart';
-import 'package:time_factory/domain/entities/worker_artifact.dart';
 
 void main() {
-  group('Worker Production Scaling Tests (Artifacts)', () {
+  group('Worker Production Scaling Tests', () {
     test(
-      'Base Production without artifacts should match rarity multipliers exactly',
+      'Base Production at Level 1 should match rarity multipliers exactly',
       () {
         final victorianCommon = Worker(
           id: '1',
           era: WorkerEra.victorian,
           baseProduction: BigInt.from(10),
           rarity: WorkerRarity.common,
+          level: 1,
         );
 
         final victorianRare = Worker(
@@ -20,6 +20,7 @@ void main() {
           era: WorkerEra.victorian,
           baseProduction: BigInt.from(10),
           rarity: WorkerRarity.rare,
+          level: 1,
         );
 
         final victorianLegendary = Worker(
@@ -27,6 +28,7 @@ void main() {
           era: WorkerEra.victorian,
           baseProduction: BigInt.from(10),
           rarity: WorkerRarity.legendary,
+          level: 1,
         );
 
         final victorianParadox = Worker(
@@ -34,9 +36,10 @@ void main() {
           era: WorkerEra.victorian,
           baseProduction: BigInt.from(10),
           rarity: WorkerRarity.paradox,
+          level: 1,
         );
 
-        // Common: 10 * 1.0 (multiplier) * 1.0 (victorian) * 1.0 (common) = 10
+        // Common: 10 * 1.0 (growth) * 1.0 (victorian) * 1.0 (common) = 10
         expect(victorianCommon.currentProduction, BigInt.from(10));
 
         // Rare: 10 * 1.0 * 1.0 * 2.0 = 20
@@ -50,66 +53,52 @@ void main() {
       },
     );
 
-    test('Equipping Artifacts should increase Base Power and Multiplier', () {
-      final worker = Worker(
-        id: '10',
+    test('Production Growth at higher levels should vary by rarity', () {
+      // Level 10 Common: 1 + (9 * 0.05) = 1.45x
+      final commonLvl10 = Worker(
+        id: 'c10',
         era: WorkerEra.victorian,
         baseProduction: BigInt.from(10),
         rarity: WorkerRarity.common,
+        level: 10,
       );
+      // 10 * 1.45 * 1 * 1 = 14.5 -> 15
+      expect(commonLvl10.currentProduction, BigInt.from(15));
 
-      final artifact1 = WorkerArtifact(
-        id: 'art1',
-        name: 'Test Artifact',
-        rarity: WorkerRarity.rare,
-        basePowerBonus: BigInt.from(20), // 10 + 20 = 30 base power
-        productionMultiplier: 0.50, // 1.0 + 0.5 = 1.5x multiplier
-      );
-
-      final equippedWorker = worker.copyWith(equippedArtifacts: [artifact1]);
-
-      // Total = (10 + 20) * (1.0 + 0.5) * 1.0 (era) * 1.0 (rarity) = 30 * 1.5 = 45
-      expect(equippedWorker.currentProduction, BigInt.from(45));
-    });
-
-    test('Era Match Artifact Bonus should apply distinct 10% bonus', () {
-      final worker = Worker(
-        id: '11',
-        era: WorkerEra.roaring20s,
-        baseProduction: BigInt.from(100),
-        rarity: WorkerRarity.common,
-      );
-
-      // Exact era match gives +0.1 to artifact multiplier
-      final artifact = WorkerArtifact(
-        id: 'art2',
-        name: 'Era Matched Artifact',
+      // Level 10 Epic: 1 + (9 * 0.20) = 2.8x
+      final epicLvl10 = Worker(
+        id: 'e10',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(10),
         rarity: WorkerRarity.epic,
-        basePowerBonus: BigInt.zero, // Base stays 100
-        productionMultiplier:
-            0.20, // Base mult = 1.0 + 0.20 + 0.10 (era match bonus) = 1.3
-        eraMatch: WorkerEra.roaring20s,
+        level: 10,
       );
+      // 10 * 2.8 * 1 * 4 = 112
+      expect(epicLvl10.currentProduction, BigInt.from(112));
 
-      final equippedWorker = worker.copyWith(equippedArtifacts: [artifact]);
-
-      // Total = 100 * 1.3 (artifact mult) * 2.0 (roaring20s mult) = 260
-      expect(equippedWorker.currentProduction, BigInt.from(260));
+      // Level 10 Paradox: 1 + (9 * 0.60) = 6.4x
+      final paradoxLvl10 = Worker(
+        id: 'p10',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(10),
+        rarity: WorkerRarity.paradox,
+        level: 10,
+      );
+      // 10 * 6.4 * 1 * 15 = 960
+      expect(paradoxLvl10.currentProduction, BigInt.from(960));
     });
 
-    test(
-      'Roaring 20s Era Multiplier should apply on top of rarity and artifacts',
-      () {
-        final roaringLegendary = Worker(
-          id: 'rl1',
-          era: WorkerEra.roaring20s,
-          baseProduction: BigInt.from(10),
-          rarity: WorkerRarity.legendary,
-        );
+    test('Roaring 20s Era Multiplier should apply on top of rarity', () {
+      final roaringLegendary = Worker(
+        id: 'rl1',
+        era: WorkerEra.roaring20s,
+        baseProduction: BigInt.from(10),
+        rarity: WorkerRarity.legendary,
+        level: 1,
+      );
 
-        // 10 * 1.0 * 2.0 (roaring) * 8.0 (legendary) = 160
-        expect(roaringLegendary.currentProduction, BigInt.from(160));
-      },
-    );
+      // 10 * 1.0 * 2.0 (roaring) * 8.0 (legendary) = 160
+      expect(roaringLegendary.currentProduction, BigInt.from(160));
+    });
   });
 }

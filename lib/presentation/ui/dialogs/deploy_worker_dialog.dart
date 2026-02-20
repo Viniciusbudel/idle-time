@@ -83,7 +83,7 @@ class DeployWorkerDialog extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        '${worker.era.localizedName(context)} • Lv.${worker.level}',
+                        worker.era.localizedName(context),
                         style: TimeFactoryTextStyles.bodyMono.copyWith(
                           fontSize: 11,
                           color: Colors.white54,

@@ -104,14 +104,18 @@ Time Factory depends on a dark cyberpunk-steampunk aesthetic. The core loop work
 ### Milestone 2: Content & Engagement (2-3 weeks)
 > Goal: Add content depth and retention mechanics
 
-- [ ] **Achievements system** — 20+ milestones with rewards
-- [ ] **Daily login rewards** — 7-day cycle with escalating prizes
+- [x] **Achievements system** — 20+ milestones with rewards
+- [/] **Daily login rewards** — 7-day cycle with escalating prizes
 - [ ] **Notifications** — "Your factory earned X CE while you were away!"
 - [ ] **Paradox mini-events** — interactive events during paradox spikes
 - [ ] **Sound effects** — tap, upgrade, era change, prestige, gacha pull
 - [ ] **Background music** — ambient tracks per era
 - [ ] **Worker detail screen** — tap worker to see stats, upgrade, refit
-- [ ] Flesh out **Era 3 (Atomic Age)** — techs, station type, visuals, background
+- [x] **Content: Era 3 (Atomic Age)** (See [PLAN-atomic-age.md](file:///C:/Users/Vini_/.gemini/antigravity/brain/e0416022-556a-4168-9fb9-13279af3e501/PLAN-atomic-age.md))
+    - [x] Tech Tree (Nuclear Fission, Transistors, etc.)
+    - [x] Station (Nuclear Reactor)
+    - [x] Assets (Backgrounds, Icons)
+    - [x] Logic (Unlock via Manhattan Project)
 
 ### Milestone 3: Monetization & Analytics (1-2 weeks)
 > Goal: Revenue and data-driven improvement

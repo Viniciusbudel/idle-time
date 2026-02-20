@@ -226,7 +226,10 @@ class _EraAnimationPainter extends CustomPainter {
     // Rotating Sweep
     final sweepPaint = Paint()
       ..shader = SweepGradient(
-        colors: [primaryColor.withValues(alpha: 0.0), primaryColor.withValues(alpha: 0.15)],
+        colors: [
+          primaryColor.withValues(alpha: 0.0),
+          primaryColor.withValues(alpha: 0.15),
+        ],
         stops: const [0.75, 1.0],
         transform: GradientRotation(animationValue * 2 * pi),
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -250,7 +253,10 @@ class _EraAnimationPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [primaryColor.withValues(alpha: 0.0), primaryColor.withValues(alpha: 0.2)],
+        colors: [
+          primaryColor.withValues(alpha: 0.0),
+          primaryColor.withValues(alpha: 0.2),
+        ],
         stops: const [0.0, 1.0],
       ).createShader(Rect.fromLTWH(0, scanY - 50, size.width, 50));
 

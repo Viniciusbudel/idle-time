@@ -110,7 +110,9 @@ class EraUnlockDialog extends StatelessWidget {
                     style: TimeFactoryTextStyles.headerSmall.copyWith(
                       color: Colors.white,
                       letterSpacing: 4,
-                      shadows: [const Shadow(color: Colors.black, blurRadius: 4)],
+                      shadows: [
+                        const Shadow(color: Colors.black, blurRadius: 4),
+                      ],
                     ),
                   ),
                 ),

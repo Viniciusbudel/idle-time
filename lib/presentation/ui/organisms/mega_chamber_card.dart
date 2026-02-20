@@ -17,6 +17,7 @@ import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/ui/dialogs/upgrade_confirmation_dialog.dart';
+import 'package:time_factory/presentation/ui/dialogs/worker_detail_dialog.dart';
 import 'package:time_factory/presentation/ui/organisms/worker_management_sheet.dart';
 
 class MegaChamberCard extends ConsumerStatefulWidget {
@@ -561,7 +562,10 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
 
   Widget _buildHoloWorker(Worker worker, ThemeColors colors) {
     return GestureDetector(
-      onTap: () => widget.onRemoveWorker?.call(worker.id),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        WorkerDetailDialog.show(context, worker);
+      },
       child: Container(
         width: 50,
         height: 50,

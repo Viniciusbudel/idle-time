@@ -73,9 +73,6 @@ class WorkerTile extends StatelessWidget {
                           child: WorkerIconHelper.buildIcon(
                             worker.era,
                             worker.rarity,
-                            colorFilter: WorkerIconHelper.isSvg(worker.era)
-                                ? ColorFilter.mode(rarityColor, BlendMode.srcIn)
-                                : null,
                           ),
                         ),
                       ),

@@ -8,6 +8,7 @@ enum TechType {
   offline, // NEW: Increases offline eff
   clickPower, // NEW: Increases manual click CE
   eraUnlock, // NEW: Gatekeeper tech
+  manhattan, // NEW: Specific type for Manhattan Project (20x boost + Unlock)
 }
 
 class TechUpgrade {
@@ -35,14 +36,22 @@ class TechUpgrade {
     required this.eraId,
   });
 
-  /// Calculate cost for next level
-  BigInt get nextCost {
+  /// Calculate cost for next level with optional discount
+  BigInt getCost({double discountMultiplier = 1.0}) {
     if (level >= maxLevel) return BigInt.from(-1); // Maxed out
 
     // Cost = Base * (Multiplier ^ Level)
     final multiplier = pow(costMultiplier, level);
-    return BigInt.from((baseCost.toDouble() * multiplier).round());
+    final rawCost = baseCost.toDouble() * multiplier;
+
+    // Apply discount
+    final discountedCost = rawCost * discountMultiplier;
+
+    return BigInt.from(discountedCost.round());
   }
+
+  /// Legacy getter for raw cost (no discount)
+  BigInt get nextCost => getCost(discountMultiplier: 1.0);
 
   /// Copy with new level
   TechUpgrade copyWith({int? level}) {
@@ -73,15 +82,17 @@ class TechUpgrade {
       case TechType.costReduction:
         // Bessemer: -3%/lvl, Assembly Line: -5%/lvl
         final reduction = id == 'bessemer_process' ? level * 3 : level * 5;
-        return 'Station Cost: −$reduction%';
+        return 'Upgrade Cost: −$reduction%';
       case TechType.offline:
         // Clockwork: +10%/lvl, Radio: +15%/lvl
-        final pct = id == 'radio_broadcast' ? level * 15 : level * 10;
+        final pct = id == 'radio_broadcast' ? level * 5 : level * 5;
         return 'Offline Gains: +$pct%';
       case TechType.clickPower:
-        return 'Click Power: +${level * 150}%';
+        return 'Click Power: +${level * 100}%';
       case TechType.eraUnlock:
         return 'Unlock Next Era';
+      case TechType.manhattan:
+        return '20x Atomic Power';
     }
   }
 }

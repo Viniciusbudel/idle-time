@@ -30,20 +30,20 @@ class GlassBottomDock extends ConsumerWidget {
       margin: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
       height: 72,
       decoration: BoxDecoration(
-        color: colors.dockBackground.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: colors.glassBorder, // Neon Border
-          width: 1.0,
-        ),
-        boxShadow: [
-          // Neon Glow Shadow corresponding to "shadow-neon-sm"
-          BoxShadow(
-            color: colors.primary.withValues(alpha: 0.2), // Bright Cyan glow
-            blurRadius: 10,
-            spreadRadius: 1,
-          ),
-        ],
+        // color: colors.dockBackground.withValues(alpha: 0.9),
+        // borderRadius: BorderRadius.circular(24),
+        // border: Border.all(
+        //   color: colors.glassBorder, // Neon Border
+        //   width: 1.0,
+        // ),
+        // boxShadow: [
+        //   // Neon Glow Shadow corresponding to "shadow-neon-sm"
+        //   BoxShadow(
+        //     color: colors.primary.withValues(alpha: 0.2), // Bright Cyan glow
+        //     blurRadius: 10,
+        //     spreadRadius: 1,
+        //   ),
+        // ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),

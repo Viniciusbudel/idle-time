@@ -10,6 +10,8 @@ import 'package:time_factory/presentation/ui/molecules/tech_card.dart';
 import 'package:time_factory/domain/entities/tech_upgrade.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 
+import 'package:time_factory/core/constants/tech_data.dart';
+
 /// Full Tech Screen - Neon Futuristic Themed
 class TechScreen extends ConsumerWidget {
   const TechScreen({super.key});
@@ -148,7 +150,12 @@ class _SmartTechCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final nextCost = tech.nextCost;
+    // 1. Get Discount Multiplier
+    final techLevels = ref.watch(techLevelsProvider);
+    final discount = TechData.calculateCostReductionMultiplier(techLevels);
+
+    // 2. Calculate Discounted Cost
+    final nextCost = tech.getCost(discountMultiplier: discount);
     final isMaxed = nextCost < BigInt.zero;
 
     // Only watch if we can afford THIS specific tech
@@ -163,12 +170,63 @@ class _SmartTechCard extends ConsumerWidget {
       description: tech.description,
       progress: tech.level / tech.maxLevel,
       cost: isMaxed ? 'MAX' : NumberFormatter.formatCE(nextCost),
+      icon: _getTechIcon(tech.id),
       effectLabel: tech.type.localizedEffect(context),
       effectDescription: tech.bonusDescription,
       onUpgrade: (canAfford && !isMaxed)
           ? () => ref.read(techProvider.notifier).purchaseUpgrade(tech.id)
           : null,
     );
+  }
+
+  IconData _getTechIcon(String techId) {
+    switch (techId) {
+      // Victorian
+      case 'steam_boilers':
+        return Icons.water_drop;
+      case 'mechanical_arms':
+        return Icons.precision_manufacturing;
+      case 'pneumatic_hammer':
+        return Icons.gavel;
+      case 'bessemer_process':
+        return Icons.local_fire_department;
+      case 'clockwork_mechanism':
+        return Icons.watch_later;
+      case 'difference_engine':
+        return Icons.calculate;
+
+      // Roaring 20s
+      case 'radio_broadcast':
+        return Icons.radio;
+      case 'assembly_line':
+        return Icons
+            .conveyor_belt; // Material Icons doesn't have conveyor_belt, using similar
+      case 'jazz_improvisation':
+        return Icons.music_note;
+      case 'ticker_tape':
+        return Icons.receipt_long;
+      case 'jacquard_punchcards':
+        return Icons.qr_code; // Close enough
+      case 'manhattan_project':
+        return Icons.science;
+
+      // Atomic Age
+      case 'nuclear_fission':
+        return Icons.blur_on;
+      case 'transistors':
+        return Icons.memory;
+      case 'plastic_molding':
+        return Icons.dashboard;
+      case 'space_race':
+        return Icons.rocket_launch;
+      case 'arpanet':
+        return Icons.lan;
+      case 'microchip_revolution':
+        return Icons.developer_board;
+
+      default:
+        return Icons.science;
+    }
   }
 }
 

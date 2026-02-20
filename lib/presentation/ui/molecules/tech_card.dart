@@ -201,6 +201,8 @@ extension TechTypeLocalization on TechType {
         return l10n.clickPowerEffect;
       case TechType.eraUnlock:
         return l10n.eraUnlockEffect;
+      case TechType.manhattan:
+        return l10n.manhattanEffect;
     }
   }
 }

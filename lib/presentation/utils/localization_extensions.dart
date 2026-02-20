@@ -103,6 +103,8 @@ extension StationTypeLocalization on StationType {
         return l10n.basicLoopName;
       case StationType.dualHelix:
         return l10n.dualHelixName;
+      case StationType.nuclearReactor:
+        return l10n.nuclearReactorName;
       case StationType.paradoxAmplifier:
         return l10n.paradoxAmplifierName;
       case StationType.timeDistortion:

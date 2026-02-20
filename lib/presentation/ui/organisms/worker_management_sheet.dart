@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/neon_theme.dart';
 import '../../../core/theme/game_theme.dart';
+import '../../../core/constants/colors.dart';
 import '../../../core/utils/worker_icon_helper.dart';
 import '../../../domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
@@ -12,6 +13,7 @@ import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import '../atoms/merge_effect_overlay.dart';
 import '../atoms/worker_tile.dart';
+import '../dialogs/fit_worker_dialog.dart';
 
 class WorkerManagementSheet extends ConsumerStatefulWidget {
   const WorkerManagementSheet({super.key});
@@ -73,7 +75,19 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
     });
 
     // Animate merge bar
+    bool showBar = false;
     if (_selectedWorkerIds.length >= 3) {
+      showBar = true;
+    } else if (_selectedWorkerIds.length == 1) {
+      // Show for "Fit to Era" if legacy
+      final api = ref.read(gameStateProvider);
+      final worker = api.workers[_selectedWorkerIds.first];
+      if (worker != null && worker.era.id != api.currentEraId) {
+        showBar = true;
+      }
+    }
+
+    if (showBar) {
       _mergeBarController.forward();
     } else {
       _mergeBarController.reverse();
@@ -166,10 +180,13 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      AppLocalizations.of(context)!.workerManagement,
-                      style: typography.titleLarge.copyWith(
-                        color: colors.primary,
+                    Flexible(
+                      child: Text(
+                        AppLocalizations.of(context)!.workerManagement,
+                        style: typography.titleLarge.copyWith(
+                          color: colors.primary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     IconButton(
@@ -274,7 +291,7 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
     Map<WorkerRarity, int> counts,
   ) {
     return SizedBox(
-      height: 36,
+      height: 30,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -412,6 +429,57 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
               fontSize: 11,
             ),
           ),
+          // Fit to Era Button (Single Legacy Worker)
+          if (_selectedWorkerIds.length == 1 &&
+              gameState.workers[_selectedWorkerIds.first]?.era.id !=
+                  gameState.currentEraId)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: TimeFactoryColors.voltageYellow,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    final worker = gameState.workers[_selectedWorkerIds.first];
+                    if (worker != null) {
+                      showDialog(
+                        context: context,
+                        builder: (_) => FitWorkerDialog(worker: worker),
+                      ).then(
+                        (_) => setState(() {
+                          _selectedWorkerIds
+                              .clear(); // Clear selection after action
+                          _mergeBarController.reverse();
+                        }),
+                      );
+                    }
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.upgrade, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'FIT TO ERA',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
           const SizedBox(height: 12),
           // Merge Button
           SizedBox(
