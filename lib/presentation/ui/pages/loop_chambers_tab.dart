@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/spacing.dart';
-import 'package:time_factory/core/constants/tech_data.dart';
-import 'package:time_factory/core/utils/number_formatter.dart';
-import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
-// import 'package:time_factory/presentation/state/theme_provider.dart'; // Unused
 import 'package:time_factory/presentation/ui/dialogs/assign_worker_dialog.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/presentation/ui/organisms/mega_chamber_card.dart';
@@ -23,31 +19,67 @@ class LoopChambersTab extends ConsumerWidget {
     // Force Neon Theme for this tab
     final theme = const NeonTheme();
 
-    // Find the single station for the current Era
-    final currentEraId = gameState.currentEraId;
-    final stations = gameState.stations.values
-        .where((s) => s.type.era.id == currentEraId)
-        .toList();
+    // Show ALL stations across all eras, sorted by era order
+    final eraOrder = [
+      'victorian',
+      'roaring_20s',
+      'atomic_age',
+      'cyberpunk_80s',
+      'neo_tokyo',
+      'post_singularity',
+      'ancient_rome',
+      'far_future',
+    ];
+    final allStations = gameState.stations.values.toList()
+      ..sort((a, b) {
+        final aIndex = eraOrder.indexOf(a.type.era.id);
+        final bIndex = eraOrder.indexOf(b.type.era.id);
+        if (aIndex != bIndex) return aIndex.compareTo(bIndex);
+        return b.level.compareTo(a.level);
+      });
 
-    final activeStation = stations.isNotEmpty ? stations.first : null;
+    if (allStations.isEmpty) {
+      return const Center(
+        child: Text('No chambers yet', style: TextStyle(color: Colors.white38)),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.md,
       ),
-      child:  _buildMegaChamber(context, ref, theme, activeStation!, gameState),
+      child: ListView.builder(
+        itemCount: allStations.length + 1, // +1 for bottom padding
+        itemBuilder: (context, index) {
+          if (index == allStations.length) {
+            return const SizedBox(height: 100); // Bottom padding
+          }
+          final card = _buildMegaChamber(
+            context,
+            ref,
+            theme,
+            allStations[index],
+            gameState,
+            isFirstCard: index == 0,
+          );
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: card,
+          );
+        },
+      ),
     );
   }
-
 
   Widget _buildMegaChamber(
     BuildContext context,
     WidgetRef ref,
     NeonTheme theme,
     Station station,
-    GameState gameState,
-  ) {
+    GameState gameState, {
+    bool isFirstCard = false,
+  }) {
     final allWorkers = gameState.workers.values.toList();
     final assigned = allWorkers
         .where((w) => station.workerIds.contains(w.id))
@@ -55,22 +87,14 @@ class LoopChambersTab extends ConsumerWidget {
 
     final production = _calculateStationProduction(station, assigned);
 
-    // Use ListView just to allow scrolling if screen is short
-    return ListView(
-      children: [
-        MegaChamberCard(
-          station: station,
-          assignedWorkers: assigned,
-          production: production,
-          onUpgrade: () => _upgradeStation(ref, context, station),
-          onAssignSlot: (slot) =>
-              _assignWorkerToSlot(ref, context, station, slot),
-          onRemoveWorker: (id) => _removeWorkerFromStation(ref, station, id),
-        ),
-
-        // Bottom Padding
-        const SizedBox(height: 100),
-      ],
+    return MegaChamberCard(
+      station: station,
+      assignedWorkers: assigned,
+      production: production,
+      highlightFirstEmptySlot: isFirstCard,
+      onUpgrade: () => _upgradeStation(ref, context, station),
+      onAssignSlot: (slot) => _assignWorkerToSlot(ref, context, station, slot),
+      onRemoveWorker: (id) => _removeWorkerFromStation(ref, station, id),
     );
   }
 
@@ -79,50 +103,14 @@ class LoopChambersTab extends ConsumerWidget {
         .read(gameStateProvider.notifier)
         .upgradeStation(station.id);
     if (!success) {
-      _showError(context, AppLocalizations.of(context)!.insufficientCE);
-    }
-  }
-
-  void _purchaseStation(WidgetRef ref, BuildContext context) {
-    final gameState = ref.read(gameStateProvider);
-    final currentEraId = gameState.currentEraId;
-
-    // Determine station type for current era
-    // We assume 1 station type per era for now as per design
-    final stationType = StationType.values.firstWhere(
-      (type) => type.era.id == currentEraId,
-      orElse: () => StationType.basicLoop,
-    );
-
-    // Check limit before trying purchase (for better error msg)
-    if (gameState.getStationCountForEra(currentEraId) >= 5) {
-      _showError(context, AppLocalizations.of(context)!.factoryFloorFull);
-      return;
-    }
-
-    final success = ref
-        .read(gameStateProvider.notifier)
-        .purchaseStation(stationType);
-
-    if (!success) {
-      // Calculate cost for error message
-      final discount = TechData.calculateCostReductionMultiplier(
-        gameState.techLevels,
-      );
-      final ownedCount = gameState.stations.values
-          .where((s) => s.type == stationType)
-          .length;
-
-      final cost = StationFactory.getPurchaseCost(
-        stationType,
-        ownedCount,
-        discountMultiplier: discount,
-      );
-      _showError(
-        context,
-        AppLocalizations.of(
-          context,
-        )!.needCEToConstruct(NumberFormatter.formatCE(cost)),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.insufficientCE,
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[900],
+        ),
       );
     }
   }
@@ -172,14 +160,5 @@ class LoopChambersTab extends ConsumerWidget {
           BigInt.from(100);
     }
     return production; // Per second
-  }
-
-  void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.red[900],
-      ),
-    );
   }
 }

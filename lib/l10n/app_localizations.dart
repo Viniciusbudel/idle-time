@@ -875,8 +875,50 @@ abstract class AppLocalizations {
   /// No description provided for @nextEffect.
   ///
   /// In en, this message translates to:
-  /// **'NEXT: +{percent}% EFFECT'**
-  String nextEffect(Object percent);
+  /// **'NEXT: +{percent}% {label}'**
+  String nextEffect(Object label, Object percent);
+
+  /// No description provided for @automationEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'AUTO-COLLECTION'**
+  String get automationEffect;
+
+  /// No description provided for @efficiencyEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'CORE PRODUCTION'**
+  String get efficiencyEffect;
+
+  /// No description provided for @timeWarpEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'TEMPORAL SPEED'**
+  String get timeWarpEffect;
+
+  /// No description provided for @costReductionEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'UPGRADE DISCOUNT'**
+  String get costReductionEffect;
+
+  /// No description provided for @offlineEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'OFFLINE EARNINGS'**
+  String get offlineEffect;
+
+  /// No description provided for @clickPowerEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'MANUAL POWER'**
+  String get clickPowerEffect;
+
+  /// No description provided for @eraUnlockEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'ERA CLEARANCE'**
+  String get eraUnlockEffect;
 
   /// No description provided for @statusDeployed.
   ///
@@ -901,6 +943,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'FULL'**
   String get full;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'SETTINGS'**
+  String get settings;
+
+  /// No description provided for @settingsGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'GENERAL'**
+  String get settingsGeneral;
+
+  /// No description provided for @settingsData.
+  ///
+  /// In en, this message translates to:
+  /// **'DATA'**
+  String get settingsData;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'ABOUT'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsResetProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Progress'**
+  String get settingsResetProgress;
+
+  /// No description provided for @settingsReset.
+  ///
+  /// In en, this message translates to:
+  /// **'RESET'**
+  String get settingsReset;
+
+  /// No description provided for @settingsResetConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'RESET ALL DATA?'**
+  String get settingsResetConfirmTitle;
+
+  /// No description provided for @settingsResetConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently erase all progress, workers, and resources. This action cannot be undone.'**
+  String get settingsResetConfirmBody;
+
+  /// No description provided for @settingsVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get settingsVersion;
+
+  /// No description provided for @settingsDeveloper.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get settingsDeveloper;
+
+  /// No description provided for @tutorialWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'WELCOME, CHRONO-ENGINEER'**
+  String get tutorialWelcomeTitle;
+
+  /// No description provided for @tutorialWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The timeline is unstable. We need to establish a production loop. Tap anywhere to initialize the protocol.'**
+  String get tutorialWelcomeBody;
+
+  /// No description provided for @tutorialHireTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'RECRUIT WORKFORCE'**
+  String get tutorialHireTitle;
+
+  /// No description provided for @tutorialHireBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Productivity is zero. You need workers from across history. Access the TIME RIFT to summon unit.'**
+  String get tutorialHireBody;
+
+  /// No description provided for @tutorialAssignTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'DATA: IDLE UNIT'**
+  String get tutorialAssignTitle;
+
+  /// No description provided for @tutorialAssignBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We have a worker, but they are doing nothing. Drag them to a Chamber to start generating Chrono-Energy.'**
+  String get tutorialAssignBody;
+
+  /// No description provided for @tutorialProduceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'SYSTEM: ONLINE'**
+  String get tutorialProduceTitle;
+
+  /// No description provided for @tutorialProduceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Production is stable. Tap the REACTOR to manually accelerate time and collect energy.'**
+  String get tutorialProduceBody;
+
+  /// No description provided for @tutorialGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'OBJECTIVE: COLLAPSE'**
+  String get tutorialGoalTitle;
+
+  /// No description provided for @tutorialGoalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Great work. Your goal is to reach 1 MILLION CE to trigger a PRESTIGE EVENT and collapse the timeline. Good luck.'**
+  String get tutorialGoalBody;
 }
 
 class _AppLocalizationsDelegate

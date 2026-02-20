@@ -24,6 +24,8 @@ class ProductionLoopUseCase {
     required BigInt productionRate, // Base production (CE/sec)
     required double techMultiplier, // Efficiency multiplier
     required double currentFractionalAccumulator,
+    BigInt?
+    additionalProduction, // NEW: For auto-clicks or other instant bonuses
   }) {
     // 1. Calculate effective production for this delta
     // productionRate is BigInt, so we need to be careful with precision if we convert to double
@@ -47,7 +49,10 @@ class ProductionLoopUseCase {
     // But for now, let's assume it fits.
 
     final rawProduction = safeProductionRate * dt;
-    final totalAccumulated = currentFractionalAccumulator + rawProduction;
+    final totalAccumulated =
+        currentFractionalAccumulator +
+        rawProduction +
+        (additionalProduction?.toDouble() ?? 0.0);
 
     final amountToAdd = BigInt.from(totalAccumulated.floor());
     final newFractional = totalAccumulated - amountToAdd.toDouble();

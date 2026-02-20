@@ -1,6 +1,8 @@
 import 'enums.dart';
 import 'worker.dart';
 import 'station.dart';
+import 'package:time_factory/core/constants/tech_data.dart';
+import 'prestige_upgrade.dart';
 
 /// Main game state containing all player progress
 class GameState {
@@ -24,6 +26,9 @@ class GameState {
   final DateTime? lastTickTime;
   final int totalPrestiges;
   final int totalWorkersPulled;
+  final int totalMerges;
+  final Set<String> unlockedAchievements;
+  final int tutorialStep; // 0=Welcome, 1=Hire, 2=Assign, 3=Collect, 5=Complete
 
   const GameState({
     required this.chronoEnergy,
@@ -46,6 +51,9 @@ class GameState {
     this.lastTickTime,
     this.totalPrestiges = 0,
     this.totalWorkersPulled = 0,
+    this.totalMerges = 0,
+    this.unlockedAchievements = const {},
+    this.tutorialStep = 0,
   });
 
   /// Initial game state for new players
@@ -74,7 +82,7 @@ class GameState {
     );
 
     return GameState(
-      chronoEnergy: BigInt.zero,
+      chronoEnergy: BigInt.from(500), // Start with some CE for tutorial
       timeShards: 100,
       lifetimeChronoEnergy: BigInt.zero,
       workers: {'worker_$starterId': starterWorker},
@@ -82,10 +90,13 @@ class GameState {
       unlockedEras: {'victorian'},
       completedEras: {},
       currentEraId: 'victorian',
-      techLevels: {}, // Initial empty
-      eraHires: {}, // Initial empty
+      techLevels: {},
+      eraHires: {},
       lastSaveTime: DateTime.now(),
       lastTickTime: DateTime.now(),
+      totalMerges: 0,
+      unlockedAchievements: {},
+      tutorialStep: 0,
     );
   }
 
@@ -111,6 +122,9 @@ class GameState {
     DateTime? lastTickTime,
     int? totalPrestiges,
     int? totalWorkersPulled,
+    int? totalMerges,
+    Set<String>? unlockedAchievements,
+    int? tutorialStep,
   }) {
     return GameState(
       chronoEnergy: chronoEnergy ?? this.chronoEnergy,
@@ -134,6 +148,9 @@ class GameState {
       lastTickTime: lastTickTime ?? this.lastTickTime,
       totalPrestiges: totalPrestiges ?? this.totalPrestiges,
       totalWorkersPulled: totalWorkersPulled ?? this.totalWorkersPulled,
+      totalMerges: totalMerges ?? this.totalMerges,
+      unlockedAchievements: unlockedAchievements ?? this.unlockedAchievements,
+      tutorialStep: tutorialStep ?? this.tutorialStep,
     );
   }
 
@@ -157,7 +174,8 @@ class GameState {
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
 
-      final chronoMasteryLevel = paradoxPointsSpent['chrono_mastery'] ?? 0;
+      final chronoMasteryLevel =
+          paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0;
       if (chronoMasteryLevel > 0) {
         final bonus = 1.0 + (chronoMasteryLevel * 0.1);
         production =
@@ -188,7 +206,8 @@ class GameState {
       rate += (eraVariety - 1) * 0.002;
     }
 
-    final riftStabilityLevel = paradoxPointsSpent['rift_stability'] ?? 0;
+    final riftStabilityLevel =
+        paradoxPointsSpent[PrestigeUpgradeType.riftStability.id] ?? 0;
     if (riftStabilityLevel > 0) {
       rate *= (1.0 - riftStabilityLevel * 0.05);
     }
@@ -216,7 +235,8 @@ class GameState {
           BigInt.from(100);
 
       // Chrono Mastery
-      final chronoMasteryLevel = paradoxPointsSpent['chrono_mastery'] ?? 0;
+      final chronoMasteryLevel =
+          paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0;
       if (chronoMasteryLevel > 0) {
         final bonus = 1.0 + (chronoMasteryLevel * 0.1);
         production =
@@ -236,13 +256,15 @@ class GameState {
   /// Get offline efficiency multiplier
   double get offlineEfficiency {
     const base = 0.7;
-    // Pardeox Upgrade
-    final offlineBonusLevel = paradoxPointsSpent['offline_bonus'] ?? 0;
-
-    // Tech Upgrade (Analytical Engine)
-    final techBonusLevel = techLevels['analytical_engine'] ?? 0;
-
-    return base + (offlineBonusLevel * 0.1) + (techBonusLevel * 0.1);
+    // Paradox Upgrade
+    final offlineBonusLevel =
+        paradoxPointsSpent[PrestigeUpgradeType.temporalMemory.id] ?? 0;
+    // Tech Upgrade (all offline techs: clockwork_arithmometer, radio_broadcast, etc.)
+    final techMultiplier = TechData.calculateOfflineEfficiencyMultiplier(
+      techLevels,
+    );
+    // TechData returns 1.0 + bonus, subtract 1.0 to get just the bonus portion
+    return base + (offlineBonusLevel * 0.1) + (techMultiplier - 1.0);
   }
 
   /// Check if can afford purchase
@@ -295,6 +317,9 @@ class GameState {
       'lastTickTime': lastTickTime?.toIso8601String(),
       'totalPrestiges': totalPrestiges,
       'totalWorkersPulled': totalWorkersPulled,
+      'totalMerges': totalMerges,
+      'unlockedAchievements': unlockedAchievements.toList(),
+      'tutorialStep': tutorialStep,
     };
   }
 
@@ -332,6 +357,9 @@ class GameState {
           : null,
       totalPrestiges: map['totalPrestiges'] ?? 0,
       totalWorkersPulled: map['totalWorkersPulled'] ?? 0,
+      totalMerges: map['totalMerges'] ?? 0,
+      unlockedAchievements: Set<String>.from(map['unlockedAchievements'] ?? []),
+      tutorialStep: map['tutorialStep'] ?? 0,
     );
   }
 }

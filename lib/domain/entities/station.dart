@@ -40,24 +40,29 @@ class Station {
   }
 
   /// Number of worker slots available
-  int get maxWorkerSlots => type.workerSlots * level;
+  /// Base slots + 1 per additional level, capped per station type
+  int get maxWorkerSlots {
+    final cap = type.maxSlotsCap;
+    final slots = type.workerSlots + (level - 1);
+    return slots.clamp(1, cap);
+  }
 
   /// Check if station can accept more workers
   bool get canAddWorker => workerIds.length < maxWorkerSlots;
 
-  /// Production bonus from this station
+  /// Production bonus from this station - PHASE 2: All bonuses halved
   double get productionBonus {
     switch (type) {
       case StationType.basicLoop:
-        return 1.0 + (level - 1) * 0.1;
+        return 1.0 + (level - 1) * 0.05; // NERFED from 0.1
       case StationType.dualHelix:
-        return 1.2 + (level - 1) * 0.15;
+        return 1.2 + (level - 1) * 0.075; // NERFED from 0.15
       case StationType.paradoxAmplifier:
         return 0.0;
       case StationType.timeDistortion:
-        return 2.0 + (level - 1) * 0.25;
+        return 2.0 + (level - 1) * 0.125; // NERFED from 0.25
       case StationType.riftGenerator:
-        return 1.5 + (level - 1) * 0.2;
+        return 1.5 + (level - 1) * 0.1; // NERFED from 0.2
     }
   }
 
@@ -94,9 +99,12 @@ class Station {
   }
 
   /// Upgrade cost with optional discount
+  /// REBALANCED: Growth changed from 1.6 to 2.0 per level
   BigInt getUpgradeCost({double discountMultiplier = 1.0}) {
     final baseCost = _getBaseCost();
-    final multiplier = BigInt.from((1.6 * 100).toInt());
+    final multiplier = BigInt.from(
+      (2.0 * 100).toInt(),
+    ); // CHANGED from 1.6 to 2.0
     BigInt cost = baseCost;
 
     for (int i = 0; i < level; i++) {

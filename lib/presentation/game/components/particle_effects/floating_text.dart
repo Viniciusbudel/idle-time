@@ -17,7 +17,7 @@ class FloatingTextComponent extends TextComponent {
            style: TimeFactoryTextStyles.numbers.copyWith(
              fontSize: 24,
              color: color,
-             shadows: [Shadow(color: color.withOpacity(0.8), blurRadius: 10)],
+             shadows: [Shadow(color: color.withValues(alpha: 0.8), blurRadius: 10)],
            ),
          ),
          anchor: Anchor.center,

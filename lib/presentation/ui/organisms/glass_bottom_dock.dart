@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/presentation/state/theme_provider.dart';
 
 class GlassBottomDock extends ConsumerWidget {
@@ -59,6 +60,7 @@ class GlassBottomDock extends ConsumerWidget {
                   AppLocalizations.of(context)!.chambers,
                   colors,
                   theme,
+                  key: TutorialKeys.chambersTab,
                 ),
                 _buildNavItem(
                   1,
@@ -66,6 +68,7 @@ class GlassBottomDock extends ConsumerWidget {
                   AppLocalizations.of(context)!.factory,
                   colors,
                   theme,
+                  key: TutorialKeys.factoryTab,
                 ),
                 _buildNavItem(
                   2,
@@ -73,6 +76,7 @@ class GlassBottomDock extends ConsumerWidget {
                   AppLocalizations.of(context)!.summon,
                   colors,
                   theme,
+                  key: TutorialKeys.gachaTab,
                 ),
                 _buildNavItem(
                   3,
@@ -101,8 +105,9 @@ class GlassBottomDock extends ConsumerWidget {
     IconData icon,
     String label,
     ThemeColors colors,
-    GameTheme theme,
-  ) {
+    GameTheme theme, {
+    Key? key,
+  }) {
     final isSelected = selectedIndex == index;
     final color = isSelected
         ? colors.primary
@@ -110,6 +115,7 @@ class GlassBottomDock extends ConsumerWidget {
 
     return Expanded(
       child: GestureDetector(
+        key: key,
         onTap: () {
           HapticFeedback.lightImpact();
           onItemSelected(index);

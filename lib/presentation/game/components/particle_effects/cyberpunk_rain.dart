@@ -52,7 +52,7 @@ class CyberpunkRain extends Component with HasGameRef {
         y: -50,
         speed: speed,
         length: length,
-        color: color.withOpacity(0.3 + _rng.nextDouble() * 0.4),
+        color: color.withValues(alpha: 0.3 + _rng.nextDouble() * 0.4),
       ),
     );
   }

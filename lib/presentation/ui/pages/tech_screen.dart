@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/tech_provider.dart';
@@ -47,7 +48,10 @@ class TechScreen extends ConsumerWidget {
                 }
 
                 final tech = techs[index];
-                return _SmartTechCard(tech: tech);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _SmartTechCard(tech: tech),
+                );
               },
             ),
           ),
@@ -159,6 +163,8 @@ class _SmartTechCard extends ConsumerWidget {
       description: tech.description,
       progress: tech.level / tech.maxLevel,
       cost: isMaxed ? 'MAX' : NumberFormatter.formatCE(nextCost),
+      effectLabel: tech.type.localizedEffect(context),
+      effectDescription: tech.bonusDescription,
       onUpgrade: (canAfford && !isMaxed)
           ? () => ref.read(techProvider.notifier).purchaseUpgrade(tech.id)
           : null,
@@ -282,9 +288,12 @@ class _EraAdvancementButton extends ConsumerWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: canAfford
-                      ? () => ref
-                            .read(gameStateProvider.notifier)
-                            .advanceEra(nextEraId, cost)
+                      ? () {
+                          HapticFeedback.heavyImpact();
+                          ref
+                              .read(gameStateProvider.notifier)
+                              .advanceEra(nextEraId, cost);
+                        }
                       : null,
                   borderRadius: BorderRadius.circular(8),
                   child: Center(

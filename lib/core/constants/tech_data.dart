@@ -8,8 +8,8 @@ class TechData {
       name: 'Pressurized Boilers',
       description: 'Higher pressure means more power.',
       type: TechType.efficiency,
-      baseCost: BigInt.from(100),
-      costMultiplier: 1.5,
+      baseCost: BigInt.from(1000), // PHASE 2: 100 → 1000 (×10)
+      costMultiplier: 2.1, // PHASE 2: 1.5 → 2.5
       eraId: 'victorian',
       maxLevel: 10,
     ),
@@ -18,8 +18,8 @@ class TechData {
       name: 'Centrifugal Governor',
       description: 'The spinning balls of industry. Stabilizes steam flow.',
       type: TechType.timeWarp,
-      baseCost: BigInt.from(250),
-      costMultiplier: 1.6,
+      baseCost: BigInt.from(2500), // PHASE 2: 250 → 2500 (×10)
+      costMultiplier: 2.5, // PHASE 2: 1.6 → 2.5
       eraId: 'victorian',
       maxLevel: 5,
     ),
@@ -29,8 +29,8 @@ class TechData {
       name: 'Bessemer Process',
       description: 'The age of steel begins. Massive cost savings.',
       type: TechType.costReduction,
-      baseCost: BigInt.from(500),
-      costMultiplier: 1.4,
+      baseCost: BigInt.from(5000), // PHASE 2: 500 → 5000 (×10)
+      costMultiplier: 2.0, // PHASE 2: 1.4 → 2.0
       eraId: 'victorian',
       maxLevel: 5,
     ),
@@ -39,8 +39,8 @@ class TechData {
       name: 'Jacquard Punch-Cards',
       description: 'The original industrial programming via looms.',
       type: TechType.automation,
-      baseCost: BigInt.from(1000),
-      costMultiplier: 1.5,
+      baseCost: BigInt.from(10000), // PHASE 2: 1000 → 10000 (×10)
+      costMultiplier: 2.5, // PHASE 2: 1.5 → 2.5
       eraId: 'victorian',
       maxLevel: 3,
     ),
@@ -51,9 +51,9 @@ class TechData {
       description:
           'A thunderous assembly of brass cogs and perforated cards that automates the ledger, continuing calculations even whilst the operator slumbers.',
       type: TechType.offline,
-      baseCost: BigInt.from(5000),
-      costMultiplier: 1.8,
-      eraId: 'victorian', // or 'steam_age'
+      baseCost: BigInt.from(8000), // REBALANCED: 50000 → 8000
+      costMultiplier: 2.0, // REBALANCED: 3.0 → 2.0
+      eraId: 'victorian',
       maxLevel: 5,
     ),
     TechUpgrade(
@@ -61,8 +61,8 @@ class TechData {
       name: 'Pneumatic Hammer',
       description: 'Compressed air for maximum impact.',
       type: TechType.clickPower,
-      baseCost: BigInt.from(750),
-      costMultiplier: 1.5,
+      baseCost: BigInt.from(7500), // PHASE 2: 750 → 7500 (×10)
+      costMultiplier: 2.5, // PHASE 2: 1.5 → 2.5
       eraId: 'victorian',
       maxLevel: 5,
     ),
@@ -110,8 +110,8 @@ class TechData {
       description:
           'Reaching workers in their homes. Productivity never sleeps.',
       type: TechType.offline,
-      baseCost: BigInt.from(300000), // 300K
-      costMultiplier: 1.7,
+      baseCost: BigInt.from(200000), // REBALANCED: 300000 → 200000
+      costMultiplier: 1.5, // REBALANCED: 1.7 → 1.5
       eraId: 'roaring_20s',
       maxLevel: 5,
     ),
@@ -141,18 +141,18 @@ class TechData {
   static double calculateEfficiencyMultiplier(Map<String, int> techLevels) {
     double multiplier = 1.0;
 
-    // Pressurized Boilers (Efficiency)
+    // Pressurized Boilers (Efficiency) - PHASE 2: +10% → +5%
     final boilerLevel = techLevels['steam_boilers'] ?? 0;
-    multiplier += boilerLevel * 0.1; // +10% per level
+    multiplier += boilerLevel * 0.05; // NERFED from 0.1
 
-    // Jacquard Punch-Cards (Efficiency/Automation)
+    // Jacquard Punch-Cards (Efficiency/Automation) - PHASE 2: +5% → +2.5%
     final jacquardLevel = techLevels['jacquard_punchcards'] ?? 0;
-    multiplier += jacquardLevel * 0.05; // +5% per level
+    multiplier += jacquardLevel * 0.025; // NERFED from 0.05
 
-    // ROARING 20s
-    // Ticker Tape Feed - +15% per level
+    // ROARING 20s - PHASE 2: +15% → +7.5%
+    // Ticker Tape Feed
     final tickerLevel = techLevels['ticker_tape'] ?? 0;
-    multiplier += tickerLevel * 0.15;
+    multiplier += tickerLevel * 0.075; // NERFED from 0.15
 
     return multiplier;
   }
@@ -167,16 +167,16 @@ class TechData {
 
   static double calculateCostReductionMultiplier(Map<String, int> techLevels) {
     double multiplier = 1.0;
-    // Bessemer Process - Cost becomes (1.0 - (level * 0.05))
+    // Bessemer Process - PHASE 2: -5% → -3% per level
     final bessemerLevel = techLevels['bessemer_process'] ?? 0;
-    multiplier -= bessemerLevel * 0.05;
+    multiplier -= bessemerLevel * 0.03; // NERFED from 0.05
 
-    // ROARING 20s
-    // Assembly Line - Cost becomes (Current - (level * 0.08))
+    // ROARING 20s - PHASE 2: -8% → -5% per level
+    // Assembly Line
     final assemblyLevel = techLevels['assembly_line'] ?? 0;
-    multiplier -= assemblyLevel * 0.08;
+    multiplier -= assemblyLevel * 0.05; // NERFED from 0.08
 
-    return multiplier.clamp(0.1, 1.0); // Cap at 90% reduction
+    return multiplier.clamp(0.5, 1.0); // PHASE 2: Cap at 50% min (was 10%)
   }
 
   static double calculateOfflineEfficiencyMultiplier(
@@ -199,5 +199,18 @@ class TechData {
     multiplier += radioLevel * 0.15;
 
     return multiplier;
+  }
+
+  static double calculateAutomationLevel(Map<String, int> techLevels) {
+    double clicksPerSecond = 0.0;
+
+    // Jacquard Punch-Cards (Victorian)
+    // 0.5 clicks/sec per level
+    final jacquard = techLevels['jacquard_punchcards'] ?? 0;
+    clicksPerSecond += jacquard * 0.5;
+
+    // TODO: Add future automation techs here
+
+    return clicksPerSecond;
   }
 }

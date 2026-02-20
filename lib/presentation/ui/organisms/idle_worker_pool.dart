@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
@@ -153,12 +153,15 @@ class IdleWorkerPool extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: SvgPicture.asset(
-                WorkerIconHelper.getIconPath(worker.era, worker.rarity),
-                colorFilter: ColorFilter.mode(
-                  TimeFactoryColors.electricCyan.withValues(alpha: 0.8),
-                  BlendMode.srcIn,
-                ),
+              child: WorkerIconHelper.buildIcon(
+                worker.era,
+                worker.rarity,
+                colorFilter: WorkerIconHelper.isSvg(worker.era)
+                    ? ColorFilter.mode(
+                        TimeFactoryColors.electricCyan.withValues(alpha: 0.8),
+                        BlendMode.srcIn,
+                      )
+                    : null,
               ),
             ),
             Positioned(

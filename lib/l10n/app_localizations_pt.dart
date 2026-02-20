@@ -420,12 +420,33 @@ class AppLocalizationsPt extends AppLocalizations {
   String get confirm => 'CONFIRMAR';
 
   @override
-  String nextEffect(Object percent) {
-    return 'PRÓXIMO: +$percent% EFFECT';
+  String nextEffect(Object label, Object percent) {
+    return 'PRÓXIMO: +$percent% $label';
   }
 
   @override
-  String get statusDeployed => 'DEPLOYED';
+  String get automationEffect => 'AUT0-COLETA';
+
+  @override
+  String get efficiencyEffect => 'PRODUÇÃO';
+
+  @override
+  String get timeWarpEffect => 'VELOCIDADE';
+
+  @override
+  String get costReductionEffect => 'PREÇO UPGRADE';
+
+  @override
+  String get offlineEffect => 'GANHOS OFFLINE';
+
+  @override
+  String get clickPowerEffect => 'PODER MANUAL';
+
+  @override
+  String get eraUnlockEffect => 'LIBERAÇÃO DE ERA';
+
+  @override
+  String get statusDeployed => 'ALOCADO';
 
   @override
   String get statusIdle => 'IDLE';
@@ -435,4 +456,73 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get full => 'FULL';
+
+  @override
+  String get settings => 'CONFIGURAÇÕES';
+
+  @override
+  String get settingsGeneral => 'GERAL';
+
+  @override
+  String get settingsData => 'DADOS';
+
+  @override
+  String get settingsAbout => 'SOBRE';
+
+  @override
+  String get settingsLanguage => 'Idioma';
+
+  @override
+  String get settingsResetProgress => 'Resetar Progresso';
+
+  @override
+  String get settingsReset => 'RESETAR';
+
+  @override
+  String get settingsResetConfirmTitle => 'RESETAR TUDO?';
+
+  @override
+  String get settingsResetConfirmBody =>
+      'Isso apagará permanentemente todo progresso, trabalhadores e recursos. Esta ação não pode ser desfeita.';
+
+  @override
+  String get settingsVersion => 'Versão';
+
+  @override
+  String get settingsDeveloper => 'Desenvolvedor';
+
+  @override
+  String get tutorialWelcomeTitle => 'BEM-VINDO, CRONO-ENGENHEIRO';
+
+  @override
+  String get tutorialWelcomeBody =>
+      'A linha do tempo está instável. Precisamos estabelecer um loop de produção. Toque em qualquer lugar para inicializar.';
+
+  @override
+  String get tutorialHireTitle => 'RECRUTAR FORÇA';
+
+  @override
+  String get tutorialHireBody =>
+      'Produtividade zero. Precisamos de trabalhadores. Acesse a FENDA TEMPORAL para invocar uma unidade.';
+
+  @override
+  String get tutorialAssignTitle => 'DADOS: UNIDADE OCIOSA';
+
+  @override
+  String get tutorialAssignBody =>
+      'Temos um trabalhador, mas ele não está fazendo nada. Arraste-o para uma Câmara para gerar Crono-Energia.';
+
+  @override
+  String get tutorialProduceTitle => 'SISTEMA: ONLINE';
+
+  @override
+  String get tutorialProduceBody =>
+      'Produção estável. Toque no REATOR para acelerar o tempo manualmente e coletar energia.';
+
+  @override
+  String get tutorialGoalTitle => 'OBJETIVO: COLAPSO';
+
+  @override
+  String get tutorialGoalBody =>
+      'Bom trabalho. Seu objetivo é alcançar 1 MILHÃO DE CE para causar um EVENTO DE PRESTÍGIO. Boa sorte.';
 }

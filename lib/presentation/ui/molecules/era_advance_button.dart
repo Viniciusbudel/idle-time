@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
@@ -49,13 +50,18 @@ class EraAdvanceButton extends ConsumerWidget {
     final nextEraName = _getEraDisplayName(context, nextEraId);
 
     return GestureDetector(
-      onTap: isReady ? () => eraService.advanceEra() : null,
+      onTap: isReady
+          ? () {
+              HapticFeedback.heavyImpact();
+              eraService.advanceEra();
+            }
+          : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isReady
-              ? TimeFactoryColors.electricCyan.withOpacity(0.1)
+              ? TimeFactoryColors.electricCyan.withValues(alpha: 0.1)
               : Colors.black54,
           border: Border.all(
             color: isReady ? TimeFactoryColors.electricCyan : Colors.white10,
@@ -65,7 +71,9 @@ class EraAdvanceButton extends ConsumerWidget {
           boxShadow: isReady
               ? [
                   BoxShadow(
-                    color: TimeFactoryColors.electricCyan.withOpacity(0.3),
+                    color: TimeFactoryColors.electricCyan.withValues(
+                      alpha: 0.3,
+                    ),
                     blurRadius: 10,
                     spreadRadius: 1,
                   ),
@@ -79,7 +87,7 @@ class EraAdvanceButton extends ConsumerWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isReady
-                    ? TimeFactoryColors.electricCyan.withOpacity(0.2)
+                    ? TimeFactoryColors.electricCyan.withValues(alpha: 0.2)
                     : Colors.white10,
                 shape: BoxShape.circle,
               ),

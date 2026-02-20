@@ -30,29 +30,29 @@ enum WorkerEra {
     return multipliers[id] ?? 1.0;
   }
 
-  /// Hire cost in CE for this era
+  /// Hire cost in CE for this era (Base cost for first hire)
   BigInt get hireCost {
     const costs = {
-      'victorian': 100,
-      'roaring_20s': 500,
-      'atomic_age': 2500,
-      'cyberpunk_80s': 12500,
-      'neo_tokyo': 62500,
-      'post_singularity': 312500,
-      'ancient_rome': 1562500,
-      'far_future': 7812500,
+      'victorian': 150,
+      'roaring_20s': 525, // 150 × 3.5
+      'atomic_age': 1800, // 150 × 12.0
+      'cyberpunk_80s': 6750, // 150 × 45.0
+      'neo_tokyo': 27000, // 150 × 180.0
+      'post_singularity': 112500, // 150 × 750.0
+      'ancient_rome': 450000, // 150 × 3000.0
+      'far_future': 1800000, // 150 × 12000.0
     };
-    return BigInt.from(costs[id] ?? 100);
+    return BigInt.from(costs[id] ?? 150);
   }
 }
 
-/// Worker rarity tiers
+/// Worker rarity tiers - REBALANCED production multipliers
 enum WorkerRarity {
   common('common', 'Common', 1.0),
-  rare('rare', 'Rare', 4.0),
-  epic('epic', 'Epic', 16.0),
-  legendary('legendary', 'Legendary', 64.0),
-  paradox('paradox', 'Paradox', 256.0);
+  rare('rare', 'Rare', 2.5),
+  epic('epic', 'Epic', 6.0),
+  legendary('legendary', 'Legendary', 16.0),
+  paradox('paradox', 'Paradox', 50.0);
 
   final String id;
   final String displayName;
@@ -63,28 +63,37 @@ enum WorkerRarity {
 
 /// Station types available in the factory
 enum StationType {
-  basicLoop('basic_loop', 'Basic Loop Chamber', 3, WorkerEra.victorian),
-  dualHelix('dual_helix', 'Dual Helix Chamber', 3, WorkerEra.roaring20s),
+  basicLoop('basic_loop', 'Basic Loop Chamber', 3, 6, WorkerEra.victorian),
+  dualHelix('dual_helix', 'Dual Helix Chamber', 3, 6, WorkerEra.roaring20s),
   paradoxAmplifier(
     'paradox_amplifier',
     'Paradox Amplifier',
     3,
+    5,
     WorkerEra.atomicAge,
   ),
   timeDistortion(
     'time_distortion',
     'Time Distortion Field',
     3,
+    8,
     WorkerEra.cyberpunk80s,
   ),
-  riftGenerator('rift_generator', 'Rift Generator', 3, WorkerEra.neoTokyo);
+  riftGenerator('rift_generator', 'Rift Generator', 3, 6, WorkerEra.neoTokyo);
 
   final String id;
   final String displayName;
   final int workerSlots;
+  final int maxSlotsCap;
   final WorkerEra era;
 
-  const StationType(this.id, this.displayName, this.workerSlots, this.era);
+  const StationType(
+    this.id,
+    this.displayName,
+    this.workerSlots,
+    this.maxSlotsCap,
+    this.era,
+  );
 }
 
 /// Resource types

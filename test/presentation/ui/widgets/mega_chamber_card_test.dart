@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/station.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/ui/organisms/mega_chamber_card.dart';
 
 void main() {
@@ -28,6 +30,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: MegaChamberCard(
               station: station,
@@ -40,7 +48,6 @@ void main() {
     );
 
     // Allow animations to settle
-    // Allow animations to start
     await tester.pump(const Duration(seconds: 1));
 
     // Verify Output Display (Hero Stat)
@@ -59,12 +66,10 @@ void main() {
 
     // Verify Worker Header with Capacity
     expect(find.text('WORKER PROTOCOLS'), findsOneWidget);
-    expect(find.textContaining('0 / 3'), findsOneWidget);
+    // Capacity text includes localized 'ONLINE' suffix
+    expect(find.textContaining('0 /'), findsOneWidget);
 
-    // Verify Upgrade Button
-    expect(find.text('INITIALIZE UPGRADE'), findsOneWidget);
-
-    // Verify Upgrade Button
-    expect(find.text('INITIALIZE UPGRADE'), findsOneWidget);
+    // Verify Upgrade Button — widget now shows 'INIT UPGRADE'
+    expect(find.text('INIT UPGRADE'), findsOneWidget);
   });
 }

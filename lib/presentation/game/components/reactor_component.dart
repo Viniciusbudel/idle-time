@@ -43,7 +43,7 @@ class ReactorComponent extends LottieComponent
   static Future<ReactorComponent> create(double size, {String? eraId}) async {
     final asset = eraId == 'roaring_20s'
         ? GameAssets
-              .lottieSteamPunkReactor // This is the Art Deco / Machine Age reactor
+              .lottieReactor // This is the Art Deco / Machine Age reactor
         : GameAssets.lottieReactor; // Default / Victorian
 
     final composition = await AssetLottie(asset).load();

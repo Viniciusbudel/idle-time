@@ -418,9 +418,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirm => 'CONFIRM';
 
   @override
-  String nextEffect(Object percent) {
-    return 'NEXT: +$percent% EFFECT';
+  String nextEffect(Object label, Object percent) {
+    return 'NEXT: +$percent% $label';
   }
+
+  @override
+  String get automationEffect => 'AUTO-COLLECTION';
+
+  @override
+  String get efficiencyEffect => 'CORE PRODUCTION';
+
+  @override
+  String get timeWarpEffect => 'TEMPORAL SPEED';
+
+  @override
+  String get costReductionEffect => 'UPGRADE DISCOUNT';
+
+  @override
+  String get offlineEffect => 'OFFLINE EARNINGS';
+
+  @override
+  String get clickPowerEffect => 'MANUAL POWER';
+
+  @override
+  String get eraUnlockEffect => 'ERA CLEARANCE';
 
   @override
   String get statusDeployed => 'DEPLOYED';
@@ -433,4 +454,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get full => 'FULL';
+
+  @override
+  String get settings => 'SETTINGS';
+
+  @override
+  String get settingsGeneral => 'GENERAL';
+
+  @override
+  String get settingsData => 'DATA';
+
+  @override
+  String get settingsAbout => 'ABOUT';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsResetProgress => 'Reset Progress';
+
+  @override
+  String get settingsReset => 'RESET';
+
+  @override
+  String get settingsResetConfirmTitle => 'RESET ALL DATA?';
+
+  @override
+  String get settingsResetConfirmBody =>
+      'This will permanently erase all progress, workers, and resources. This action cannot be undone.';
+
+  @override
+  String get settingsVersion => 'Version';
+
+  @override
+  String get settingsDeveloper => 'Developer';
+
+  @override
+  String get tutorialWelcomeTitle => 'WELCOME, CHRONO-ENGINEER';
+
+  @override
+  String get tutorialWelcomeBody =>
+      'The timeline is unstable. We need to establish a production loop. Tap anywhere to initialize the protocol.';
+
+  @override
+  String get tutorialHireTitle => 'RECRUIT WORKFORCE';
+
+  @override
+  String get tutorialHireBody =>
+      'Productivity is zero. You need workers from across history. Access the TIME RIFT to summon unit.';
+
+  @override
+  String get tutorialAssignTitle => 'DATA: IDLE UNIT';
+
+  @override
+  String get tutorialAssignBody =>
+      'We have a worker, but they are doing nothing. Drag them to a Chamber to start generating Chrono-Energy.';
+
+  @override
+  String get tutorialProduceTitle => 'SYSTEM: ONLINE';
+
+  @override
+  String get tutorialProduceBody =>
+      'Production is stable. Tap the REACTOR to manually accelerate time and collect energy.';
+
+  @override
+  String get tutorialGoalTitle => 'OBJECTIVE: COLLAPSE';
+
+  @override
+  String get tutorialGoalBody =>
+      'Great work. Your goal is to reach 1 MILLION CE to trigger a PRESTIGE EVENT and collapse the timeline. Good luck.';
 }

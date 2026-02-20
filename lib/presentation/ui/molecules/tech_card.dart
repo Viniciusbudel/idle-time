@@ -3,6 +3,7 @@ import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/presentation/ui/atoms/cyber_button.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/domain/entities/tech_upgrade.dart';
 
 class TechCard extends StatelessWidget {
   final String title;
@@ -13,6 +14,8 @@ class TechCard extends StatelessWidget {
   final VoidCallback? onUpgrade;
   final IconData icon;
   final Color color;
+  final String? effectLabel;
+  final String? effectDescription;
 
   const TechCard({
     super.key,
@@ -24,6 +27,8 @@ class TechCard extends StatelessWidget {
     this.onUpgrade,
     this.icon = Icons.science,
     this.color = TimeFactoryColors.electricCyan,
+    this.effectLabel,
+    this.effectDescription,
   });
 
   @override
@@ -65,13 +70,16 @@ class TechCard extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                title.toUpperCase(),
-                                style: TimeFactoryTextStyles.headerSmall
-                                    .copyWith(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                    ),
+                              Expanded(
+                                child: Text(
+                                  title.toUpperCase(),
+                                  style: TimeFactoryTextStyles.headerSmall
+                                      .copyWith(
+                                        fontSize: 14,
+                                        color: Colors.white,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -146,9 +154,12 @@ class TechCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      AppLocalizations.of(
-                        context,
-                      )!.nextEffect((progress * 100).toInt().toString()),
+                      effectDescription ??
+                          AppLocalizations.of(context)!.nextEffect(
+                            effectLabel ??
+                                AppLocalizations.of(context)!.efficiency,
+                            (progress * 100).toInt().toString(),
+                          ),
                       style: TimeFactoryTextStyles.bodyMono.copyWith(
                         fontSize: 10,
                         color: Colors.grey,
@@ -169,6 +180,28 @@ class TechCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+extension TechTypeLocalization on TechType {
+  String localizedEffect(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (this) {
+      case TechType.automation:
+        return l10n.automationEffect;
+      case TechType.efficiency:
+        return l10n.efficiencyEffect;
+      case TechType.timeWarp:
+        return l10n.timeWarpEffect;
+      case TechType.costReduction:
+        return l10n.costReductionEffect;
+      case TechType.offline:
+        return l10n.offlineEffect;
+      case TechType.clickPower:
+        return l10n.clickPowerEffect;
+      case TechType.eraUnlock:
+        return l10n.eraUnlockEffect;
+    }
   }
 }
 

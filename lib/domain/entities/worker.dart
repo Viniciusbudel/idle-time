@@ -1,101 +1,89 @@
 import 'enums.dart';
 import 'worker_name_registry.dart';
+import 'worker_artifact.dart'; // IMPORT ARTIFACTS
+import 'dart:math';
 
 /// Represents a temporal worker from a specific era
 class Worker {
   final String id;
   final WorkerEra era;
-  final int level;
   final BigInt baseProduction;
   final WorkerRarity rarity;
   final String? name;
   final String? specialAbility;
   final bool isDeployed;
   final String? deployedStationId;
+  final List<WorkerArtifact> equippedArtifacts;
+  final double chronalAttunement;
 
   const Worker({
     required this.id,
     required this.era,
-    this.level = 1,
     required this.baseProduction,
     this.rarity = WorkerRarity.common,
     this.name,
     this.specialAbility,
     this.isDeployed = false,
     this.deployedStationId,
+    this.equippedArtifacts = const [],
+    this.chronalAttunement = 1.0,
   });
 
   /// Create a copy with updated fields
   Worker copyWith({
     String? id,
     WorkerEra? era,
-    int? level,
     BigInt? baseProduction,
     WorkerRarity? rarity,
     String? name,
     String? specialAbility,
     bool? isDeployed,
     String? deployedStationId,
+    List<WorkerArtifact>? equippedArtifacts,
+    double? chronalAttunement,
   }) {
     return Worker(
       id: id ?? this.id,
       era: era ?? this.era,
-      level: level ?? this.level,
       baseProduction: baseProduction ?? this.baseProduction,
       rarity: rarity ?? this.rarity,
       name: name ?? this.name,
       specialAbility: specialAbility ?? this.specialAbility,
       isDeployed: isDeployed ?? this.isDeployed,
       deployedStationId: deployedStationId,
+      equippedArtifacts: equippedArtifacts ?? this.equippedArtifacts,
+      chronalAttunement: chronalAttunement ?? this.chronalAttunement,
     );
   }
 
-  /// Calculate current production rate
-  BigInt get currentProduction {
-    // 1. Determine level growth and multiplier based on Rarity
-    double growthPerLevel;
-    switch (rarity) {
-      case WorkerRarity.common:
-        growthPerLevel = 0.05;
-        break;
-      case WorkerRarity.rare:
-        growthPerLevel = 0.10;
-        break;
-      case WorkerRarity.epic:
-        growthPerLevel = 0.20;
-        break;
-      case WorkerRarity.legendary:
-        growthPerLevel = 0.35;
-        break;
-      case WorkerRarity.paradox:
-        growthPerLevel = 0.60;
-        break;
+  /// Check if the worker can equip another artifact
+  bool get canEquipArtifact => equippedArtifacts.length < 5;
+
+  /// Get the base power (flat sum: base + artifact bonuses) * individual attunement
+  double get totalBasePower {
+    double total = baseProduction.toDouble();
+    for (var artifact in equippedArtifacts) {
+      total += artifact.basePowerBonus.toDouble();
     }
-
-    // multiplier = 1.0 + (level - 1) * growth
-    final levelGrowthMultiplier = 1.0 + (level - 1) * growthPerLevel;
-
-    // Total = base × levelGrowthMultiplier × eraMultiplier × rarityMultiplier
-    final baseValue = baseProduction.toDouble();
-    final eraMult = era.multiplier;
-    final rarityMult = rarity.productionMultiplier;
-
-    final total = baseValue * levelGrowthMultiplier * eraMult * rarityMult;
-
-    return BigInt.from(total.round());
+    return total * chronalAttunement;
   }
 
-  /// Calculate upgrade cost
-  BigInt get upgradeCost {
-    final baseCost = BigInt.from(50);
-    final multiplier = BigInt.from((1.2 * 100).toInt());
-    BigInt cost = baseCost;
-
-    for (int i = 0; i < level; i++) {
-      cost = cost * multiplier ~/ BigInt.from(100);
+  /// Get the total multiplier (Era * Rarity * Artifact Mults)
+  double get totalMultiplier {
+    double artifactMult = 1.0;
+    for (var artifact in equippedArtifacts) {
+      artifactMult += artifact.productionMultiplier;
+      if (artifact.eraMatch == era) {
+        artifactMult += 0.1;
+      }
     }
+    return artifactMult * era.multiplier * rarity.productionMultiplier;
+  }
 
-    return cost;
+  /// Calculate current production rate based on base stats + artifacts
+  BigInt get currentProduction {
+    final total = totalBasePower * totalMultiplier;
+    return BigInt.from(total.round());
   }
 
   /// Get display name
@@ -105,13 +93,14 @@ class Worker {
     return {
       'id': id,
       'era': era.id,
-      'level': level,
       'baseProduction': baseProduction.toString(),
       'rarity': rarity.id,
       'name': name,
       'specialAbility': specialAbility,
       'isDeployed': isDeployed,
       'deployedStationId': deployedStationId,
+      'equippedArtifacts': equippedArtifacts.map((e) => e.toMap()).toList(),
+      'chronalAttunement': chronalAttunement,
     };
   }
 
@@ -119,13 +108,18 @@ class Worker {
     return Worker(
       id: map['id'],
       era: WorkerEra.values.firstWhere((e) => e.id == map['era']),
-      level: map['level'],
       baseProduction: BigInt.parse(map['baseProduction']),
       rarity: WorkerRarity.values.firstWhere((e) => e.id == map['rarity']),
       name: map['name'],
       specialAbility: map['specialAbility'],
       isDeployed: map['isDeployed'] ?? false,
       deployedStationId: map['deployedStationId'],
+      equippedArtifacts:
+          (map['equippedArtifacts'] as List<dynamic>?)
+              ?.map((e) => WorkerArtifact.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      chronalAttunement: (map['chronalAttunement'] as num?)?.toDouble() ?? 1.0,
     );
   }
 }
@@ -135,6 +129,31 @@ class WorkerFactory {
   WorkerFactory._();
 
   static int _idCounter = 0;
+  static final _random = Random();
+
+  /// Rarity weights (higher = more common) - REBALANCED
+  /// Common: 55%, Rare: 30%, Epic: 12%, Legendary: 2.5%, Paradox: 0.5%
+  static const Map<WorkerRarity, double> rarityWeights = {
+    WorkerRarity.common: 55.0,
+    WorkerRarity.rare: 31.0,
+    WorkerRarity.epic: 12.0,
+    WorkerRarity.legendary: 1.8,
+    WorkerRarity.paradox: 0.2,
+  };
+
+  /// Roll for rarity using weighted random
+  static WorkerRarity rollRarity() {
+    final totalWeight = rarityWeights.values.fold(0.0, (a, b) => a + b);
+    double roll = _random.nextDouble() * totalWeight;
+
+    for (final entry in rarityWeights.entries) {
+      roll -= entry.value;
+      if (roll <= 0) {
+        return entry.key;
+      }
+    }
+    return WorkerRarity.common;
+  }
 
   /// Create a new worker of specified era and rarity
   static Worker create({
@@ -142,15 +161,21 @@ class WorkerFactory {
     WorkerRarity rarity = WorkerRarity.common,
     String? name,
     String? specialAbility,
+    double? chronalAttunement,
   }) {
     _idCounter++;
+    // Roll attunement if not provided (0.85 to 1.15)
+    final rolledAttunement =
+        chronalAttunement ?? (0.85 + (_random.nextDouble() * 0.3));
+
     return Worker(
       id: 'worker_${_idCounter}_${DateTime.now().millisecondsSinceEpoch}',
       era: era,
-      baseProduction: BigInt.from(10), // Unified base production
+      baseProduction: BigInt.from(3),
       rarity: rarity,
       name: name ?? WorkerNameRegistry.getName(era, rarity),
       specialAbility: specialAbility,
+      chronalAttunement: rolledAttunement,
     );
   }
 

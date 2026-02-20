@@ -7,6 +7,7 @@ import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/production_provider.dart';
+import 'package:time_factory/presentation/ui/pages/settings_screen.dart';
 
 /// Premium header following the HTML prototype:
 /// CE/sec (left) | Large CE icon + number (center) | Shards (right)
@@ -85,15 +86,39 @@ class ResourceAppBar extends ConsumerWidget {
             ),
           ),
 
-          // Right: Shards
+          // Right: Shards + Settings
           Expanded(
-            child: _SideStat(
-              label: AppLocalizations.of(context)!.shards,
-              value: timeShards.toString(),
-              icon: Icons.diamond_outlined,
-              iconColor: TimeFactoryColors.hotMagenta.withValues(alpha: 0.7),
-              iconFirst: false,
-              alignment: CrossAxisAlignment.end,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: _SideStat(
+                    label: AppLocalizations.of(context)!.shards,
+                    value: timeShards.toString(),
+                    icon: Icons.diamond_outlined,
+                    iconColor: TimeFactoryColors.hotMagenta.withValues(
+                      alpha: 0.7,
+                    ),
+                    iconFirst: false,
+                    alignment: CrossAxisAlignment.end,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    );
+                  },
+                  child: Icon(
+                    Icons.settings,
+                    size: 18,
+                    color: TimeFactoryColors.electricCyan.withValues(
+                      alpha: 0.5,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

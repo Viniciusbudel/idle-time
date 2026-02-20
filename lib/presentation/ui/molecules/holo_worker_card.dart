@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
@@ -92,8 +92,9 @@ class HoloWorkerCard extends StatelessWidget {
               border: Border.all(color: statusColor.withValues(alpha: 0.5)),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: SvgPicture.asset(
-              WorkerIconHelper.getIconPath(WorkerEra.victorian, rarity),
+            child: WorkerIconHelper.buildIcon(
+              WorkerEra.victorian,
+              rarity,
               colorFilter: ColorFilter.mode(
                 statusColor.withValues(alpha: 0.8),
                 BlendMode.srcIn,
