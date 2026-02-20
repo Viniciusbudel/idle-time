@@ -348,9 +348,9 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? color.withValues(alpha: 0.2) : Colors.transparent,
+          color: isActive ? color.withOpacity( 0.2) : Colors.transparent,
           border: Border.all(
-            color: isActive ? color : color.withValues(alpha: 0.3),
+            color: isActive ? color : color.withOpacity( 0.3),
             width: isActive ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(20),
@@ -358,7 +358,7 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
         child: Text(
           label,
           style: typography.bodySmall.copyWith(
-            color: isActive ? color : color.withValues(alpha: 0.6),
+            color: isActive ? color : color.withOpacity( 0.6),
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             fontSize: 11,
           ),
@@ -385,11 +385,11 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
       decoration: BoxDecoration(
         color: colors.background,
         border: Border(
-          top: BorderSide(color: rarityColor.withValues(alpha: 0.5), width: 1),
+          top: BorderSide(color: rarityColor.withOpacity( 0.5), width: 1),
         ),
         boxShadow: [
           BoxShadow(
-            color: rarityColor.withValues(alpha: 0.2),
+            color: rarityColor.withOpacity( 0.2),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -413,7 +413,7 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                     shape: BoxShape.circle,
                     color: filled ? rarityColor : Colors.transparent,
                     border: Border.all(
-                      color: rarityColor.withValues(alpha: 0.5),
+                      color: rarityColor.withOpacity( 0.5),
                       width: 1.5,
                     ),
                   ),
@@ -489,13 +489,13 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
               style: ElevatedButton.styleFrom(
                 backgroundColor: _selectedWorkerIds.length >= 3
                     ? rarityColor
-                    : rarityColor.withValues(alpha: 0.3),
+                    : rarityColor.withOpacity( 0.3),
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: _selectedWorkerIds.length >= 3 ? 8 : 0,
-                shadowColor: rarityColor.withValues(alpha: 0.5),
+                shadowColor: rarityColor.withOpacity( 0.5),
               ),
               onPressed: _selectedWorkerIds.length >= 3 ? _performMerge : null,
               child: Row(
@@ -620,7 +620,7 @@ class _MergeResultDialogState extends State<_MergeResultDialog>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: rarityColor.withValues(alpha: 0.5),
+                color: rarityColor.withOpacity( 0.5),
                 blurRadius: 40,
                 spreadRadius: 4,
               ),
@@ -648,14 +648,14 @@ class _MergeResultDialogState extends State<_MergeResultDialog>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      rarityColor.withValues(alpha: 0.3),
-                      rarityColor.withValues(alpha: 0.05),
+                      rarityColor.withOpacity( 0.3),
+                      rarityColor.withOpacity( 0.05),
                     ],
                   ),
                   border: Border.all(color: rarityColor, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: rarityColor.withValues(alpha: 0.6),
+                      color: rarityColor.withOpacity( 0.6),
                       blurRadius: 30,
                       spreadRadius: 4,
                     ),
@@ -695,8 +695,8 @@ class _MergeResultDialogState extends State<_MergeResultDialog>
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: rarityColor.withValues(alpha: 0.15),
-                  border: Border.all(color: rarityColor.withValues(alpha: 0.4)),
+                  color: rarityColor.withOpacity( 0.15),
+                  border: Border.all(color: rarityColor.withOpacity( 0.4)),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(

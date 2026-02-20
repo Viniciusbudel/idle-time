@@ -102,7 +102,7 @@ class SteampunkWorkerPainter extends CustomPainter {
       center,
       radius,
       Paint()
-        ..color = Colors.white.withValues(alpha: 0.8)
+        ..color = Colors.white.withOpacity( 0.8)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0,
     );
@@ -133,7 +133,7 @@ class SteampunkWorkerPainter extends CustomPainter {
 
     // Lenses (Neon filled)
     final lensPaint = Paint()
-      ..color = neonColor.withValues(alpha: 0.6)
+      ..color = neonColor.withOpacity( 0.6)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(leftEye, goggleRadius * 0.8, lensPaint);
@@ -141,7 +141,7 @@ class SteampunkWorkerPainter extends CustomPainter {
 
     // Glint
     final glintPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.9)
+      ..color = Colors.white.withOpacity( 0.9)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(leftEye + const Offset(-2, -2), 1.5, glintPaint);

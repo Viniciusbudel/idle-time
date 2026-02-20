@@ -146,7 +146,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: TimeFactoryColors.electricCyan
-                          .withValues(alpha: 0.2),
+                          .withOpacity( 0.2),
                       foregroundColor: TimeFactoryColors.electricCyan,
                       side: const BorderSide(
                         color: TimeFactoryColors.electricCyan,
@@ -168,12 +168,12 @@ class UpgradeConfirmationDialog extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: highlight
-            ? TimeFactoryColors.electricCyan.withValues(alpha: 0.1)
+            ? TimeFactoryColors.electricCyan.withOpacity( 0.1)
             : Colors.black26,
         borderRadius: BorderRadius.circular(8),
         border: highlight
             ? Border.all(
-                color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
+                color: TimeFactoryColors.electricCyan.withOpacity( 0.5),
               )
             : null,
       ),

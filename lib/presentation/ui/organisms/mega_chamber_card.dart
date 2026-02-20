@@ -81,10 +81,10 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         color: cyberDark,
         borderRadius: BorderRadius.circular(16),
         // Double border effect
-        border: Border.all(color: neonCyan.withValues(alpha: 0.3), width: 1.0),
+        border: Border.all(color: neonCyan.withOpacity(0.5), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: neonCyan.withValues(alpha: 0.15),
+            color: neonCyan.withOpacity(0.5),
             blurRadius: 15,
             spreadRadius: 2,
           ),
@@ -101,7 +101,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                 builder: (context, child) {
                   return CustomPaint(
                     painter: _CyberGridPainter(
-                      color: neonCyan.withValues(alpha: 0.05),
+                      color: neonCyan.withOpacity(0.5),
                       offset: _controller.value * 20,
                     ),
                   );
@@ -142,7 +142,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                         AppLocalizations.of(context)!.workerProtocols,
                         style: typography.bodyMedium.copyWith(
                           fontSize: 10.0,
-                          color: neonCyan.withValues(alpha: 0.8),
+                          color: neonCyan.withOpacity(0.5),
                           letterSpacing: 2.0,
                           fontWeight: FontWeight.bold,
                         ),
@@ -153,10 +153,10 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: neonCyan.withValues(alpha: 0.1),
+                          color: neonCyan.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                            color: neonCyan.withValues(alpha: 0.3),
+                            color: neonCyan.withOpacity(0.5),
                           ),
                         ),
                         child: Text(
@@ -205,11 +205,11 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                 widget.station.type.era.localizedName(context).toUpperCase(),
                 style: typography.bodyMedium.copyWith(
                   fontSize: 10,
-                  color: colors.primary.withValues(alpha: 0.8),
+                  color: colors.primary.withOpacity(0.5),
                   letterSpacing: 3.0,
                   shadows: [
                     Shadow(
-                      color: colors.primary.withValues(alpha: 0.5),
+                      color: colors.primary.withOpacity(0.5),
                       blurRadius: 4,
                     ),
                   ],
@@ -251,7 +251,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                 borderRadius: BorderRadius.circular(4),
                 boxShadow: [
                   BoxShadow(
-                    color: colors.primary.withValues(alpha: 0.3),
+                    color: colors.primary.withOpacity(0.5),
                     blurRadius: 8,
                   ),
                 ],
@@ -292,7 +292,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                 ),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: colors.secondary.withValues(alpha: 0.7),
+                    color: colors.secondary.withOpacity(0.5),
                   ),
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -318,9 +318,9 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
       decoration: BoxDecoration(
         color: Colors.black,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: colors.primary.withOpacity(0.5)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.8), blurRadius: 10),
+          BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10),
         ],
       ),
       child: Stack(
@@ -359,7 +359,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
               child: Icon(
                 Icons.precision_manufacturing,
                 size: 80,
-                color: colors.primary.withValues(alpha: 0.5),
+                color: colors.primary.withOpacity(0.5),
               ),
             ),
           ),
@@ -371,8 +371,8 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
               builder: (context, child) {
                 return CustomPaint(
                   painter: _ScanlinePainter(
-                    color: colors.primary.withValues(alpha: 0.05),
-                    activeLineColor: colors.primary.withValues(alpha: 0.2),
+                    color: colors.primary.withOpacity(0.5),
+                    activeLineColor: colors.primary.withOpacity(0.5),
                     progress: _controller.value,
                   ),
                 );
@@ -388,7 +388,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                 AppLocalizations.of(context)!.currentOutput,
                 style: typography.bodyMedium.copyWith(
                   fontSize: 10,
-                  color: colors.success.withValues(alpha: 0.8),
+                  color: colors.success.withOpacity(0.5),
                   letterSpacing: 2.0,
                 ),
               ),
@@ -409,7 +409,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                       color: colors.success,
                       shadows: [
                         Shadow(
-                          color: colors.success.withValues(alpha: 0.5),
+                          color: colors.success.withOpacity(0.5),
                           blurRadius: 10,
                         ),
                       ],
@@ -420,7 +420,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                     '/ SEC',
                     style: typography.bodyMedium.copyWith(
                       fontSize: 12,
-                      color: colors.success.withValues(alpha: 0.8),
+                      color: colors.success.withOpacity(0.5),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -436,10 +436,10 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
+                color: Colors.black.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
-                  color: colors.primary.withValues(alpha: 0.3),
+                  color: colors.primary.withOpacity(0.5),
                 ),
               ),
               child: Text(
@@ -462,9 +462,9 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.05),
+        color: colors.primary.withOpacity(0.5),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.1)),
+        border: Border.all(color: colors.primary.withOpacity(0.5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -481,7 +481,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
           Container(
             width: 1,
             height: 30,
-            color: colors.primary.withValues(alpha: 0.2),
+            color: colors.primary.withOpacity(0.5),
           ),
 
           _buildWideStat(
@@ -508,7 +508,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity(0.5),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 16, color: color),
@@ -570,12 +570,12 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: colors.primary.withValues(alpha: 0.1),
-          border: Border.all(color: colors.primary.withValues(alpha: 0.6)),
+          color: colors.primary.withOpacity(0.5),
+          border: Border.all(color: colors.primary.withOpacity(0.5)),
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: colors.primary.withValues(alpha: 0.3),
+              color: colors.primary.withOpacity(0.5),
               blurRadius: 8,
             ),
           ],
@@ -593,7 +593,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
               child: IgnorePointer(
                 child: CustomPaint(
                   painter: _ScanlinePainter(
-                    color: colors.primary.withValues(alpha: 0.05),
+                    color: colors.primary.withOpacity(0.5),
                     activeLineColor: Colors.transparent,
                     progress: 0,
                     lineCount: 10,
@@ -622,9 +622,9 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.3),
+          color: Colors.black.withOpacity(0.5),
           border: Border.all(
-            color: colors.primary.withValues(alpha: 0.2),
+            color: colors.primary.withOpacity(0.5),
             style: BorderStyle.solid,
           ),
           borderRadius: BorderRadius.circular(8),
@@ -632,7 +632,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         child: Center(
           child: Icon(
             Icons.add,
-            color: colors.primary.withValues(alpha: 0.3),
+            color: colors.primary.withOpacity(0.5),
             size: 20,
           ),
         ),
@@ -656,12 +656,12 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.1),
+        color: colors.primary.withOpacity(0.5),
         border: Border.all(color: colors.primary),
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: colors.primary.withValues(alpha: 0.2),
+            color: colors.primary.withOpacity(0.5),
             blurRadius: 10,
           ),
         ],

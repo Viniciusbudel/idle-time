@@ -50,7 +50,7 @@ class _CyberGridBackgroundState extends State<CyberGridBackground>
               size: Size.infinite,
               painter: _GridPainter(
                 offset: _controller.value * 40.0, // Move by one grid cell
-                color: TimeFactoryColors.electricCyan.withValues(alpha: 0.1),
+                color: TimeFactoryColors.electricCyan.withOpacity( 0.1),
               ),
             );
           },
@@ -63,8 +63,8 @@ class _CyberGridBackgroundState extends State<CyberGridBackground>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                TimeFactoryColors.voidBlack.withValues(alpha: 0.0),
-                TimeFactoryColors.voidBlack.withValues(alpha: 0.5),
+                TimeFactoryColors.voidBlack.withOpacity( 0.0),
+                TimeFactoryColors.voidBlack.withOpacity( 0.5),
                 TimeFactoryColors.voidBlack,
               ],
               stops: const [0.0, 0.7, 1.0],

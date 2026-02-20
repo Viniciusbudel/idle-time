@@ -56,9 +56,9 @@ class _ResourcePill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: TimeFactoryColors.surfaceDark.withValues(alpha: 0.9),
+        color: TimeFactoryColors.surfaceDark.withOpacity( 0.9),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withOpacity( 0.3)),
       ),
       child: Row(
         children: [
@@ -67,7 +67,7 @@ class _ResourcePill extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
+              color: color.withOpacity( 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 16),

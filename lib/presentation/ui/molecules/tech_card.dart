@@ -38,12 +38,12 @@ class TechCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(1), // Border width
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.3), // Border color
+          color: color.withOpacity( 0.3), // Border color
         ),
         child: ClipPath(
           clipper: _TechCardClipper(),
           child: Container(
-            color: TimeFactoryColors.surfaceDark.withValues(alpha: 0.9),
+            color: TimeFactoryColors.surfaceDark.withOpacity( 0.9),
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,7 +56,7 @@ class TechCard extends StatelessWidget {
                       height: 48,
                       decoration: BoxDecoration(
                         color: Colors.black,
-                        border: Border.all(color: color.withValues(alpha: 0.3)),
+                        border: Border.all(color: color.withOpacity( 0.3)),
                       ),
                       child: Icon(icon, color: color),
                     ),
@@ -87,9 +87,9 @@ class TechCard extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: color.withValues(alpha: 0.1),
+                                  color: color.withOpacity( 0.1),
                                   border: Border.all(
-                                    color: color.withValues(alpha: 0.3),
+                                    color: color.withOpacity( 0.3),
                                   ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
@@ -138,7 +138,7 @@ class TechCard extends StatelessWidget {
                         color: color,
                         boxShadow: [
                           BoxShadow(
-                            color: color.withValues(alpha: 0.5),
+                            color: color.withOpacity( 0.5),
                             blurRadius: 6,
                           ),
                         ],

@@ -32,8 +32,8 @@ class ResourceAppBar extends ConsumerWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withValues(alpha: 0.95),
-            Colors.black.withValues(alpha: 0.8),
+            Colors.black.withOpacity( 0.95),
+            Colors.black.withOpacity( 0.8),
             Colors.transparent,
           ],
           stops: const [0.0, 0.6, 1.0],
@@ -164,9 +164,9 @@ class _CenterDisplay extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.black.withValues(alpha: 0.4),
+                color: Colors.black.withOpacity( 0.4),
                 border: Border.all(
-                  color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
+                  color: TimeFactoryColors.electricCyan.withOpacity( 0.5),
                   width: 1,
                 ),
                 boxShadow: [
@@ -202,11 +202,11 @@ class _CenterDisplay extends StatelessWidget {
             letterSpacing: 2,
             shadows: [
               Shadow(
-                color: TimeFactoryColors.electricCyan.withValues(alpha: 0.8),
+                color: TimeFactoryColors.electricCyan.withOpacity( 0.8),
                 blurRadius: 10,
               ),
               Shadow(
-                color: TimeFactoryColors.electricCyan.withValues(alpha: 0.4),
+                color: TimeFactoryColors.electricCyan.withOpacity( 0.4),
                 blurRadius: 20,
               ),
             ],
@@ -219,7 +219,7 @@ class _CenterDisplay extends StatelessWidget {
         Text(
           AppLocalizations.of(context)!.chronoEnergy.toUpperCase(),
           style: TimeFactoryTextStyles.label.copyWith(
-            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.8),
+            color: TimeFactoryColors.electricCyan.withOpacity( 0.8),
             letterSpacing: 3,
           ),
         ),

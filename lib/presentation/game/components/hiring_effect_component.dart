@@ -93,7 +93,7 @@ class HiringEffectComponent extends PositionComponent with HasGameReference {
           anchor: Anchor.center,
           position: size / 2,
           paint: Paint()
-            ..color = color.withValues(alpha: 0.8)
+            ..color = color.withOpacity( 0.8)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.0
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
@@ -213,7 +213,7 @@ class HiringEffectComponent extends PositionComponent with HasGameReference {
               speed: Vector2(cos(angle), sin(angle)) * speed,
               child: CircleParticle(
                 radius: 2.0,
-                paint: Paint()..color = color.withValues(alpha: 0.8),
+                paint: Paint()..color = color.withOpacity( 0.8),
               ),
             );
           },
@@ -272,7 +272,7 @@ class _AccretionParticle extends Particle {
 
     final opacity = (lifespan - progress * lifespan) / lifespan;
 
-    final paint = Paint()..color = color.withValues(alpha: 1.0 * opacity);
+    final paint = Paint()..color = color.withOpacity( 1.0 * opacity);
     canvas.drawCircle(pos.toOffset(), 1.5, paint);
   }
 }

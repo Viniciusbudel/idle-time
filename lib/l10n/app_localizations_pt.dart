@@ -197,6 +197,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get dualHelixName => 'Câmara de Hélice Dupla';
 
   @override
+  String get nuclearReactorName => 'Reator de Fusão Nuclear';
+
+  @override
   String get paradoxAmplifierName => 'Amplificador de Paradoxo';
 
   @override
@@ -444,6 +447,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get eraUnlockEffect => 'LIBERAÇÃO DE ERA';
+
+  @override
+  String get manhattanEffect => 'MULTIPLICADOR ATÔMICO';
 
   @override
   String get statusDeployed => 'ALOCADO';

@@ -5,14 +5,14 @@ import 'package:time_factory/domain/entities/enums.dart';
 void main() {
   group('Worker Production Scaling Tests', () {
     test(
-      'Base Production at Level 1 should match rarity multipliers exactly',
+      'Base Production should match rarity multipliers exactly with 1.0 attunement',
       () {
         final victorianCommon = Worker(
           id: '1',
           era: WorkerEra.victorian,
           baseProduction: BigInt.from(10),
           rarity: WorkerRarity.common,
-          level: 1,
+          chronalAttunement: 1.0,
         );
 
         final victorianRare = Worker(
@@ -20,7 +20,7 @@ void main() {
           era: WorkerEra.victorian,
           baseProduction: BigInt.from(10),
           rarity: WorkerRarity.rare,
-          level: 1,
+          chronalAttunement: 1.0,
         );
 
         final victorianLegendary = Worker(
@@ -28,7 +28,7 @@ void main() {
           era: WorkerEra.victorian,
           baseProduction: BigInt.from(10),
           rarity: WorkerRarity.legendary,
-          level: 1,
+          chronalAttunement: 1.0,
         );
 
         final victorianParadox = Worker(
@@ -36,10 +36,10 @@ void main() {
           era: WorkerEra.victorian,
           baseProduction: BigInt.from(10),
           rarity: WorkerRarity.paradox,
-          level: 1,
+          chronalAttunement: 1.0,
         );
 
-        // Common: 10 * 1.0 (growth) * 1.0 (victorian) * 1.0 (common) = 10
+        // Common: 10 * 1.0 (Attunement) * 1.0 (Victorian) * 1.0 (Common) = 10
         expect(victorianCommon.currentProduction, BigInt.from(10));
 
         // Rare: 10 * 1.0 * 1.0 * 2.0 = 20
@@ -53,52 +53,44 @@ void main() {
       },
     );
 
-    test('Production Growth at higher levels should vary by rarity', () {
-      // Level 10 Common: 1 + (9 * 0.05) = 1.45x
-      final commonLvl10 = Worker(
-        id: 'c10',
+    test('Chronal Attunement should scale production accurately', () {
+      // 1.15x Attunement Common
+      final giftedCommon = Worker(
+        id: 'c115',
         era: WorkerEra.victorian,
-        baseProduction: BigInt.from(10),
+        baseProduction: BigInt.from(100),
         rarity: WorkerRarity.common,
-        level: 10,
+        chronalAttunement: 1.15,
       );
-      // 10 * 1.45 * 1 * 1 = 14.5 -> 15
-      expect(commonLvl10.currentProduction, BigInt.from(15));
+      // 100 * 1.15 * 1 * 1 = 115
+      expect(giftedCommon.currentProduction, BigInt.from(115));
 
-      // Level 10 Epic: 1 + (9 * 0.20) = 2.8x
-      final epicLvl10 = Worker(
-        id: 'e10',
+      // 0.85x Attunement Epic
+      final clumsyEpic = Worker(
+        id: 'e85',
         era: WorkerEra.victorian,
-        baseProduction: BigInt.from(10),
+        baseProduction: BigInt.from(100),
         rarity: WorkerRarity.epic,
-        level: 10,
+        chronalAttunement: 0.85,
       );
-      // 10 * 2.8 * 1 * 4 = 112
-      expect(epicLvl10.currentProduction, BigInt.from(112));
-
-      // Level 10 Paradox: 1 + (9 * 0.60) = 6.4x
-      final paradoxLvl10 = Worker(
-        id: 'p10',
-        era: WorkerEra.victorian,
-        baseProduction: BigInt.from(10),
-        rarity: WorkerRarity.paradox,
-        level: 10,
-      );
-      // 10 * 6.4 * 1 * 15 = 960
-      expect(paradoxLvl10.currentProduction, BigInt.from(960));
+      // 100 * 0.85 * 1 * 4 = 340
+      expect(clumsyEpic.currentProduction, BigInt.from(340));
     });
 
-    test('Roaring 20s Era Multiplier should apply on top of rarity', () {
-      final roaringLegendary = Worker(
-        id: 'rl1',
-        era: WorkerEra.roaring20s,
-        baseProduction: BigInt.from(10),
-        rarity: WorkerRarity.legendary,
-        level: 1,
-      );
+    test(
+      'Roaring 20s Era Multiplier should apply on top of rarity and attunement',
+      () {
+        final roaringLegendary = Worker(
+          id: 'rl1',
+          era: WorkerEra.roaring20s,
+          baseProduction: BigInt.from(10),
+          rarity: WorkerRarity.legendary,
+          chronalAttunement: 1.1,
+        );
 
-      // 10 * 1.0 * 2.0 (roaring) * 8.0 (legendary) = 160
-      expect(roaringLegendary.currentProduction, BigInt.from(160));
-    });
+        // 10 * 1.1 (attunement) * 2.0 (roaring) * 8.0 (legendary) = 176
+        expect(roaringLegendary.currentProduction, BigInt.from(176));
+      },
+    );
   });
 }

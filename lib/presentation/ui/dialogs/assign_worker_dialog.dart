@@ -55,7 +55,7 @@ class AssignWorkerDialog extends StatelessWidget {
         color: const Color(0xFF0A1520),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         border: Border.all(
-          color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
+          color: TimeFactoryColors.electricCyan.withOpacity( 0.3),
         ),
       ),
       child: Column(
@@ -177,10 +177,10 @@ class AssignWorkerDialog extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
+          color: Colors.white.withOpacity( 0.05),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
+            color: TimeFactoryColors.electricCyan.withOpacity( 0.2),
           ),
         ),
         child: Row(
@@ -195,13 +195,13 @@ class AssignWorkerDialog extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    TimeFactoryColors.deepPurple.withValues(alpha: 0.5),
+                    TimeFactoryColors.deepPurple.withOpacity( 0.5),
                     const Color(0xFF0A1520),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
+                  color: TimeFactoryColors.electricCyan.withOpacity( 0.3),
                 ),
               ),
               child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
@@ -245,7 +245,7 @@ class AssignWorkerDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
+                color: TimeFactoryColors.electricCyan.withOpacity( 0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(
@@ -264,7 +264,7 @@ class AssignWorkerDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: color.withOpacity( 0.15),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(

@@ -37,7 +37,7 @@ class FitWorkerDialog extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: TimeFactoryColors.voltageYellow.withValues(alpha: 0.3),
+              color: TimeFactoryColors.voltageYellow.withOpacity( 0.3),
               blurRadius: 20,
             ),
           ],

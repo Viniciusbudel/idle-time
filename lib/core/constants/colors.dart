@@ -86,12 +86,12 @@ class TimeFactoryColors {
   static List<BoxShadow> neonGlow(Color color, {double intensity = 1.0}) {
     return [
       BoxShadow(
-        color: color.withValues(alpha: 0.5 * intensity),
+        color: color.withOpacity( 0.5 * intensity),
         blurRadius: 20 * intensity,
         spreadRadius: 2 * intensity,
       ),
       BoxShadow(
-        color: color.withValues(alpha: 0.3 * intensity),
+        color: color.withOpacity( 0.3 * intensity),
         blurRadius: 40 * intensity,
         spreadRadius: 4 * intensity,
       ),

@@ -32,7 +32,7 @@ class _ScanlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: opacity)
+      ..color = Colors.white.withOpacity( opacity)
       ..strokeWidth = 1;
 
     for (double y = 0; y < size.height; y += lineSpacing) {

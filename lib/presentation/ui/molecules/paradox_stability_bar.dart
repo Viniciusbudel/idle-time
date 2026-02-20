@@ -24,10 +24,10 @@ class ParadoxStabilityBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A0A0A).withValues(alpha: 0.9),
+        color: const Color(0xFF1A0A0A).withOpacity( 0.9),
         border: Border.all(
           color: isCritical
-              ? TimeFactoryColors.hotMagenta.withValues(alpha: 0.5)
+              ? TimeFactoryColors.hotMagenta.withOpacity( 0.5)
               : Colors.white10,
         ),
         borderRadius: BorderRadius.circular(4),
@@ -123,7 +123,7 @@ class ParadoxStabilityIndicator extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.black,
               borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: barColor.withValues(alpha: 0.3)),
+              border: Border.all(color: barColor.withOpacity( 0.3)),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(3),
@@ -134,11 +134,11 @@ class ParadoxStabilityIndicator extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          TimeFactoryColors.acidGreen.withValues(alpha: 0.2),
+                          TimeFactoryColors.acidGreen.withOpacity( 0.2),
                           TimeFactoryColors.voltageYellow.withValues(
                             alpha: 0.2,
                           ),
-                          TimeFactoryColors.hotMagenta.withValues(alpha: 0.2),
+                          TimeFactoryColors.hotMagenta.withOpacity( 0.2),
                         ],
                       ),
                     ),

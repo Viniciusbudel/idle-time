@@ -30,7 +30,7 @@ class GlassBottomDock extends ConsumerWidget {
       margin: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
       height: 72,
       decoration: BoxDecoration(
-        // color: colors.dockBackground.withValues(alpha: 0.9),
+        // color: colors.dockBackground.withOpacity( 0.9),
         // borderRadius: BorderRadius.circular(24),
         // border: Border.all(
         //   color: colors.glassBorder, // Neon Border
@@ -39,7 +39,7 @@ class GlassBottomDock extends ConsumerWidget {
         // boxShadow: [
         //   // Neon Glow Shadow corresponding to "shadow-neon-sm"
         //   BoxShadow(
-        //     color: colors.primary.withValues(alpha: 0.2), // Bright Cyan glow
+        //     color: colors.primary.withOpacity( 0.2), // Bright Cyan glow
         //     blurRadius: 10,
         //     spreadRadius: 1,
         //   ),
@@ -111,7 +111,7 @@ class GlassBottomDock extends ConsumerWidget {
     final isSelected = selectedIndex == index;
     final color = isSelected
         ? colors.primary
-        : colors.primary.withValues(alpha: 0.6);
+        : colors.primary.withOpacity( 0.6);
 
     return Expanded(
       child: GestureDetector(
@@ -138,7 +138,7 @@ class GlassBottomDock extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(2),
                   boxShadow: [
                     BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.8),
+                      color: colors.primary.withOpacity( 0.8),
                       blurRadius: 6,
                       spreadRadius: 1,
                     ),
@@ -155,7 +155,7 @@ class GlassBottomDock extends ConsumerWidget {
               shadows: isSelected
                   ? [
                       Shadow(
-                        color: colors.primary.withValues(alpha: 0.8),
+                        color: colors.primary.withOpacity( 0.8),
                         blurRadius: 8,
                       ),
                     ]
@@ -189,7 +189,7 @@ class GlassBottomDock extends ConsumerWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.8),
+                      color: colors.primary.withOpacity( 0.8),
                       blurRadius: 4,
                     ),
                   ],

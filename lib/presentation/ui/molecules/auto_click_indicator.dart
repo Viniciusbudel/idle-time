@@ -64,7 +64,7 @@ class _AnimatedAutoClickBadgeState extends State<_AnimatedAutoClickBadge>
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.6),
+            color: Colors.black.withOpacity( 0.6),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: TimeFactoryColors.electricCyan.withValues(

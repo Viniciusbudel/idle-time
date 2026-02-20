@@ -39,8 +39,8 @@ class NotificationService {
         );
 
     await _notificationsPlugin.initialize(
+      initializationSettings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
-      settings: initializationSettings,
     );
 
     _initialized = true;
@@ -108,11 +108,11 @@ class NotificationService {
     );
 
     await _notificationsPlugin.show(
-      title: title,
-      body: body,
-      notificationDetails: platformDetails,
+      id,
+      title,
+      body,
+      platformDetails,
       payload: payload,
-      id: id,
     );
   }
 
@@ -142,19 +142,21 @@ class NotificationService {
     );
 
     await _notificationsPlugin.zonedSchedule(
-      id: id,
-      title: title,
-      body: body,
-      scheduledDate: tz.TZDateTime.now(tz.local).add(delay),
-      notificationDetails: platformDetails,
+      id,
+      title,
+      body,
+      tz.TZDateTime.now(tz.local).add(delay),
+      platformDetails,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: payload,
     );
   }
 
   Future<void> cancelNotification(int id) async {
-    await _notificationsPlugin.cancel(id: id);
+    await _notificationsPlugin.cancel(id);
   }
 
   Future<void> cancelAllNotifications() async {

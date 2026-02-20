@@ -49,7 +49,7 @@ class ArtDecoWorkerPainter extends CustomPainter {
 
   void _drawSunburst(Canvas canvas, Offset center, double radius, Color color) {
     final paint = Paint()
-      ..color = color.withValues(alpha: 0.3)
+      ..color = color.withOpacity( 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 

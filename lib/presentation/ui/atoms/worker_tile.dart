@@ -33,19 +33,19 @@ class WorkerTile extends StatelessWidget {
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           color: isSelected
-              ? rarityColor.withValues(alpha: 0.2)
+              ? rarityColor.withOpacity( 0.2)
               : colors.surface,
           border: Border.all(
             color: isSelected
                 ? rarityColor
-                : rarityColor.withValues(alpha: 0.3),
+                : rarityColor.withOpacity( 0.3),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: rarityColor.withValues(alpha: 0.4),
+                    color: rarityColor.withOpacity( 0.4),
                     blurRadius: 12,
                     spreadRadius: 1,
                   ),
@@ -65,7 +65,7 @@ class WorkerTile extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: rarityColor.withValues(alpha: 0.15),
+                        color: rarityColor.withOpacity( 0.15),
                       ),
                       child: ClipOval(
                         child: Padding(
@@ -96,7 +96,7 @@ class WorkerTile extends StatelessWidget {
                     worker.era.displayName,
                     style: TextStyle(
                       fontSize: 7,
-                      color: colors.textSecondary.withValues(alpha: 0.7),
+                      color: colors.textSecondary.withOpacity( 0.7),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

@@ -35,7 +35,7 @@ class DeployWorkerDialog extends ConsumerWidget {
         color: TimeFactoryColors.voidBlack,
         border: Border(
           top: BorderSide(
-            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
+            color: TimeFactoryColors.electricCyan.withOpacity( 0.5),
             width: 2,
           ),
         ),
@@ -64,7 +64,7 @@ class DeployWorkerDialog extends ConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: worker.era.color.withValues(alpha: 0.2),
+                    color: worker.era.color.withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: worker.era.color, width: 1),
                   ),
@@ -162,9 +162,9 @@ class DeployWorkerDialog extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity( 0.2),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+        border: Border.all(color: color.withOpacity( 0.5)),
       ),
       child: Text(
         text,
@@ -214,7 +214,7 @@ class DeployWorkerDialog extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isCurrentStation
-            ? TimeFactoryColors.acidGreen.withValues(alpha: 0.1)
+            ? TimeFactoryColors.acidGreen.withOpacity( 0.1)
             : TimeFactoryColors.surfaceDark,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
@@ -229,7 +229,7 @@ class DeployWorkerDialog extends ConsumerWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
+            color: TimeFactoryColors.electricCyan.withOpacity( 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Icon(

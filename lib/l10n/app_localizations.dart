@@ -458,6 +458,12 @@ abstract class AppLocalizations {
   /// **'Dual Helix Chamber'**
   String get dualHelixName;
 
+  /// No description provided for @nuclearReactorName.
+  ///
+  /// In en, this message translates to:
+  /// **'Nuclear Fusion Reactor'**
+  String get nuclearReactorName;
+
   /// No description provided for @paradoxAmplifierName.
   ///
   /// In en, this message translates to:
@@ -919,6 +925,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'ERA CLEARANCE'**
   String get eraUnlockEffect;
+
+  /// No description provided for @manhattanEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'ATOMIC MULTIPLIER'**
+  String get manhattanEffect;
 
   /// No description provided for @statusDeployed.
   ///

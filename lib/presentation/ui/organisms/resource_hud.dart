@@ -23,15 +23,15 @@ class ResourceHUD extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: TimeFactoryColors.midnightBlue.withValues(alpha: 0.6),
+                color: TimeFactoryColors.midnightBlue.withOpacity( 0.6),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
+                  color: TimeFactoryColors.electricCyan.withOpacity( 0.3),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity( 0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -64,7 +64,7 @@ class ResourceHUD extends StatelessWidget {
                                 shadows: [
                                   Shadow(
                                     color: TimeFactoryColors.electricCyan
-                                        .withValues(alpha: 0.5),
+                                        .withOpacity( 0.5),
                                     blurRadius: 8,
                                   ),
                                 ],
@@ -151,9 +151,9 @@ class _ResourceChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity( 0.2),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+        border: Border.all(color: color.withOpacity( 0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

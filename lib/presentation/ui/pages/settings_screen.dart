@@ -143,7 +143,7 @@ class SettingsScreen extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
+            border: Border.all(color: Colors.red.withOpacity( 0.5)),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -190,16 +190,16 @@ class SettingsScreen extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: Colors.white.withOpacity( 0.04),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: Colors.white.withOpacity( 0.08)),
       ),
       child: Row(
         children: [
           Icon(
             icon,
             size: 20,
-            color: iconColor ?? colors.primary.withValues(alpha: 0.7),
+            color: iconColor ?? colors.primary.withOpacity( 0.7),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -225,7 +225,7 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFF0A0E17),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.red.withValues(alpha: 0.5)),
+          side: BorderSide(color: Colors.red.withOpacity( 0.5)),
         ),
         title: Row(
           children: [

@@ -61,7 +61,7 @@ class EraAdvanceButton extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isReady
-              ? TimeFactoryColors.electricCyan.withValues(alpha: 0.1)
+              ? TimeFactoryColors.electricCyan.withOpacity( 0.1)
               : Colors.black54,
           border: Border.all(
             color: isReady ? TimeFactoryColors.electricCyan : Colors.white10,
@@ -87,7 +87,7 @@ class EraAdvanceButton extends ConsumerWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isReady
-                    ? TimeFactoryColors.electricCyan.withValues(alpha: 0.2)
+                    ? TimeFactoryColors.electricCyan.withOpacity( 0.2)
                     : Colors.white10,
                 shape: BoxShape.circle,
               ),

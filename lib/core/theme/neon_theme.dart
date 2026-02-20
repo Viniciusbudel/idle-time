@@ -47,10 +47,10 @@ class _NeonColors implements ThemeColors {
   Color get textPrimary => Colors.white;
 
   @override
-  Color get textSecondary => const Color(0xFF00E5FF).withValues(alpha: 0.7);
+  Color get textSecondary => const Color(0xFF00E5FF).withOpacity( 0.7);
 
   @override
-  Color get glassBorder => const Color(0xFF00E5FF).withValues(alpha: 0.5); // Neon Border
+  Color get glassBorder => const Color(0xFF00E5FF).withOpacity( 0.5); // Neon Border
 
   @override
   Color get success => const Color(0xFF00FF9D); // Accent Green
@@ -59,7 +59,7 @@ class _NeonColors implements ThemeColors {
   Color get error => const Color(0xFFBD00FF);
 
   @override
-  Color get dockBackground => const Color(0xFF13162F).withValues(alpha: 0.9); // Card Dark with opacity
+  Color get dockBackground => const Color(0xFF13162F).withOpacity( 0.9); // Card Dark with opacity
 
   @override
   Color get chaosButtonStart => const Color(0xFFBD00FF);

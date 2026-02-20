@@ -30,9 +30,9 @@ class ParadoxMeter extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(compact ? 8 : 12),
       decoration: BoxDecoration(
-        color: TimeFactoryColors.midnightBlue.withValues(alpha: 0.8),
+        color: TimeFactoryColors.midnightBlue.withOpacity( 0.8),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: barColor.withValues(alpha: 0.5), width: 1),
+        border: Border.all(color: barColor.withOpacity( 0.5), width: 1),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -158,7 +158,7 @@ class _ParadoxProgressBarState extends State<_ParadoxProgressBar>
             color: TimeFactoryColors.voidBlack,
             borderRadius: BorderRadius.circular(widget.height / 2),
             border: Border.all(
-              color: widget.color.withValues(alpha: 0.3),
+              color: widget.color.withOpacity( 0.3),
               width: 1,
             ),
           ),
@@ -173,13 +173,13 @@ class _ParadoxProgressBarState extends State<_ParadoxProgressBar>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        widget.color.withValues(alpha: 0.8),
+                        widget.color.withOpacity( 0.8),
                         widget.color,
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: widget.color.withValues(alpha: 0.5),
+                        color: widget.color.withOpacity( 0.5),
                         blurRadius: 10,
                         spreadRadius: 1,
                       ),
@@ -211,9 +211,9 @@ class ParadoxIndicator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity( 0.2),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+        border: Border.all(color: color.withOpacity( 0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

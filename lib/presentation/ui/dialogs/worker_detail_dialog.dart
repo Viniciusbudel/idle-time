@@ -59,10 +59,10 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
       decoration: BoxDecoration(
         color: const Color(0xFF0A1520),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        border: Border.all(color: rarityColor.withValues(alpha: 0.2), width: 1),
+        border: Border.all(color: rarityColor.withOpacity( 0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: rarityColor.withValues(alpha: 0.1),
+            color: rarityColor.withOpacity( 0.1),
             blurRadius: 30,
             spreadRadius: 2,
             offset: const Offset(0, -10),
@@ -85,9 +85,9 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      rarityColor.withValues(alpha: 0.0),
-                      rarityColor.withValues(alpha: 0.8),
-                      rarityColor.withValues(alpha: 0.0),
+                      rarityColor.withOpacity( 0.0),
+                      rarityColor.withOpacity( 0.8),
+                      rarityColor.withOpacity( 0.0),
                     ],
                   ),
                 ),
@@ -146,14 +146,14 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                           height: 100,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: rarityColor.withValues(alpha: 0.1),
+                            color: rarityColor.withOpacity( 0.1),
                             border: Border.all(
-                              color: rarityColor.withValues(alpha: 0.5),
+                              color: rarityColor.withOpacity( 0.5),
                               width: 2,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: rarityColor.withValues(alpha: 0.2),
+                                color: rarityColor.withOpacity( 0.2),
                                 blurRadius: 20,
                                 spreadRadius: 2,
                               ),
@@ -281,7 +281,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                   color: const Color(0xFF0D1B22),
                   border: Border(
                     top: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withOpacity( 0.05),
                     ),
                   ),
                 ),
@@ -326,9 +326,9 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: color.withOpacity( 0.15),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+        border: Border.all(color: color.withOpacity( 0.5)),
       ),
       child: Text(
         text,
@@ -440,19 +440,19 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
         width: 60,
         decoration: BoxDecoration(
           color: _flashingSlotIndex == index
-              ? TimeFactoryColors.acidGreen.withValues(alpha: 0.3)
+              ? TimeFactoryColors.acidGreen.withOpacity( 0.3)
               : Colors.black12,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: _flashingSlotIndex == index
                 ? TimeFactoryColors.acidGreen
-                : TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
+                : TimeFactoryColors.electricCyan.withOpacity( 0.3),
             width: _flashingSlotIndex == index ? 2 : 1,
           ),
           boxShadow: _flashingSlotIndex == index
               ? [
                   BoxShadow(
-                    color: TimeFactoryColors.acidGreen.withValues(alpha: 0.4),
+                    color: TimeFactoryColors.acidGreen.withOpacity( 0.4),
                     blurRadius: 12,
                     spreadRadius: 2,
                   ),
@@ -525,8 +525,8 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
         width: 60,
         decoration: BoxDecoration(
           color: isFlashing
-              ? TimeFactoryColors.acidGreen.withValues(alpha: 0.3)
-              : rarityColor.withValues(alpha: 0.1),
+              ? TimeFactoryColors.acidGreen.withOpacity( 0.3)
+              : rarityColor.withOpacity( 0.1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isFlashing ? TimeFactoryColors.acidGreen : rarityColor,
@@ -535,8 +535,8 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
           boxShadow: [
             BoxShadow(
               color: isFlashing
-                  ? TimeFactoryColors.acidGreen.withValues(alpha: 0.5)
-                  : rarityColor.withValues(alpha: 0.2),
+                  ? TimeFactoryColors.acidGreen.withOpacity( 0.5)
+                  : rarityColor.withOpacity( 0.2),
               blurRadius: isFlashing ? 16 : 8,
             ),
           ],

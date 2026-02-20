@@ -71,7 +71,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
                       Text(
                         'TEMPORAL RIFT ACTIVE',
                         style: theme.typography.bodyMedium.copyWith(
-                          color: colors.primary.withValues(alpha: 0.7),
+                          color: colors.primary.withOpacity( 0.7),
                           letterSpacing: 3.0,
                           fontWeight: FontWeight.bold,
                         ),
@@ -80,7 +80,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
                       Text(
                         'Summon workers from across time',
                         style: theme.typography.bodySmall.copyWith(
-                          color: colors.textSecondary.withValues(alpha: 0.5),
+                          color: colors.textSecondary.withOpacity( 0.5),
                         ),
                       ),
                     ],
@@ -128,9 +128,9 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: Colors.black.withOpacity( 0.5),
                     border: Border.all(
-                      color: colors.primary.withValues(alpha: 0.3),
+                      color: colors.primary.withOpacity( 0.3),
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -172,7 +172,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
         // Subtle outer glow
         boxShadow: [
           BoxShadow(
-            color: colors.primary.withValues(alpha: 0.1),
+            color: colors.primary.withOpacity( 0.1),
             blurRadius: 50,
             spreadRadius: 10,
           ),
@@ -223,7 +223,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         decoration: BoxDecoration(
           color: canHire
-              ? colors.accent.withValues(alpha: 0.2)
+              ? colors.accent.withOpacity( 0.2)
               : Colors.grey.shade900,
           borderRadius: BorderRadius.circular(theme.dimens.cornerRadius),
           border: Border.all(color: canHire ? colors.accent : Colors.white10),
@@ -284,7 +284,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
           boxShadow: canSummon
               ? [
                   BoxShadow(
-                    color: colors.primary.withValues(alpha: 0.5),
+                    color: colors.primary.withOpacity( 0.5),
                     blurRadius: 15.0,
                     spreadRadius: 2.0,
                   ),

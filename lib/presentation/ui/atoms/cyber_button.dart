@@ -40,7 +40,7 @@ class CyberButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: onTap != null ? primaryColor : Colors.grey[800],
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: Colors.white.withOpacity( 0.1),
               width: 1,
             ),
           ),
@@ -64,13 +64,13 @@ class CyberButton extends StatelessWidget {
                   width: 1,
                   height: 16,
                   margin: const EdgeInsets.symmetric(horizontal: 8),
-                  color: textColor.withValues(alpha: 0.2),
+                  color: textColor.withOpacity( 0.2),
                 ),
                 Text(
                   subLabel!,
                   style: TimeFactoryTextStyles.bodyMono.copyWith(
                     fontSize: 10,
-                    color: textColor.withValues(alpha: 0.8),
+                    color: textColor.withOpacity( 0.8),
                     fontWeight: FontWeight.bold,
                   ),
                 ),

@@ -109,7 +109,7 @@ class OfflineEarningsDialog extends StatelessWidget {
               ),
               style: TextStyle(
                 fontSize: 11,
-                color: TimeFactoryColors.acidGreen.withValues(alpha: 0.8),
+                color: TimeFactoryColors.acidGreen.withOpacity( 0.8),
               ),
             ),
 

@@ -32,7 +32,7 @@ class ThemeBackground extends ConsumerWidget {
             filterQuality: FilterQuality.low,
             isAntiAlias: false,
           ),
-          Container(color: Colors.black.withValues(alpha: 0.15)),
+          Container(color: Colors.black.withOpacity( 0.15)),
           child,
         ],
       );
@@ -48,7 +48,7 @@ class ThemeBackground extends ConsumerWidget {
             filterQuality: FilterQuality.low,
             isAntiAlias: false,
           ),
-          Container(color: Colors.black.withValues(alpha: 0.15)),
+          Container(color: Colors.black.withOpacity( 0.15)),
           child,
         ],
       );

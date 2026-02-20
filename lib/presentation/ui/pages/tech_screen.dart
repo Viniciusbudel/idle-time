@@ -75,9 +75,9 @@ class TechScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: colors.primary.withValues(alpha: 0.1),
+              color: colors.primary.withOpacity( 0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: colors.primary.withValues(alpha: 0.5)),
+              border: Border.all(color: colors.primary.withOpacity( 0.5)),
             ),
             child: Icon(Icons.memory, color: colors.primary, size: 20),
           ),
@@ -110,7 +110,7 @@ class TechScreen extends ConsumerWidget {
                   AppLocalizations.of(context)!.systemUpgradesAvailable,
                   style: typography.bodyMedium.copyWith(
                     fontSize: 10.0,
-                    color: colors.primary.withValues(alpha: 0.7),
+                    color: colors.primary.withOpacity( 0.7),
                     letterSpacing: 2.0,
                   ),
                 ),
@@ -123,10 +123,10 @@ class TechScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
               border: Border.all(
-                color: colors.secondary.withValues(alpha: 0.5),
+                color: colors.secondary.withOpacity( 0.5),
               ),
               borderRadius: BorderRadius.circular(4),
-              color: colors.secondary.withValues(alpha: 0.1),
+              color: colors.secondary.withOpacity( 0.1),
             ),
             child: Text(
               'SYS.pV2',
@@ -257,13 +257,13 @@ class _EraAdvancementButton extends ConsumerWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.grey.shade900.withValues(alpha: 0.8),
-                  Colors.grey.shade800.withValues(alpha: 0.8),
+                  Colors.grey.shade900.withOpacity( 0.8),
+                  Colors.grey.shade800.withOpacity( 0.8),
                 ],
               ),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: Colors.red.withValues(alpha: 0.3),
+                color: Colors.red.withOpacity( 0.3),
                 width: 2,
               ),
             ),
@@ -273,7 +273,7 @@ class _EraAdvancementButton extends ConsumerWidget {
                 children: [
                   Icon(
                     Icons.lock_outline,
-                    color: Colors.red.withValues(alpha: 0.5),
+                    color: Colors.red.withOpacity( 0.5),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -294,7 +294,7 @@ class _EraAdvancementButton extends ConsumerWidget {
                       Text(
                         AppLocalizations.of(context)!.researchIncomplete,
                         style: TextStyle(
-                          color: Colors.red.withValues(alpha: 0.5),
+                          color: Colors.red.withOpacity( 0.5),
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1,
@@ -324,8 +324,8 @@ class _EraAdvancementButton extends ConsumerWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFFD4AF37).withValues(alpha: 0.2), // Gold
-                    const Color(0xFF00FFFF).withValues(alpha: 0.2), // Cyan
+                    const Color(0xFFD4AF37).withOpacity( 0.2), // Gold
+                    const Color(0xFF00FFFF).withOpacity( 0.2), // Cyan
                   ],
                 ),
                 borderRadius: BorderRadius.circular(8),
@@ -336,7 +336,7 @@ class _EraAdvancementButton extends ConsumerWidget {
                 boxShadow: [
                   if (canAfford)
                     BoxShadow(
-                      color: const Color(0xFFD4AF37).withValues(alpha: 0.5),
+                      color: const Color(0xFFD4AF37).withOpacity( 0.5),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),

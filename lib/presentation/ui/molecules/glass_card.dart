@@ -41,7 +41,7 @@ class GlassCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(eraThemeProvider);
     final effectiveBorderColor =
-        borderColor ?? theme.primaryColor.withValues(alpha: 0.3);
+        borderColor ?? theme.primaryColor.withOpacity( 0.3);
     final effectiveRadius = borderRadius ?? BorderRadius.circular(12);
 
     Widget content = Container(
@@ -55,19 +55,19 @@ class GlassCard extends ConsumerWidget {
         boxShadow: [
           // Base shadow
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
+            color: Colors.black.withOpacity( 0.5),
             blurRadius: 30,
             offset: const Offset(0, 4),
           ),
           // Optional Neon Glow
           if (borderGlow) ...[
             BoxShadow(
-              color: effectiveBorderColor.withValues(alpha: 0.5),
+              color: effectiveBorderColor.withOpacity( 0.5),
               blurRadius: 12,
               spreadRadius: 0,
             ),
             BoxShadow(
-              color: effectiveBorderColor.withValues(alpha: 0.3),
+              color: effectiveBorderColor.withOpacity( 0.3),
               blurRadius: 24,
               spreadRadius: 2,
             ),

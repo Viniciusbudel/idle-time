@@ -33,7 +33,7 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
         anchor: Anchor.center,
         position: size / 2,
         paint: Paint()
-          ..color = rarityColor.withValues(alpha: 0.15)
+          ..color = rarityColor.withOpacity( 0.15)
           ..style = PaintingStyle.fill
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
       )..add(
@@ -57,7 +57,7 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
         anchor: Anchor.center,
         position: size / 2,
         paint: Paint()
-          ..color = rarityColor.withValues(alpha: 0.5)
+          ..color = rarityColor.withOpacity( 0.5)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5,
       )..add(
@@ -196,7 +196,7 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
               speed: Vector2(0, -10), // slowly rise
               child: CircleParticle(
                 radius: 1.0,
-                paint: Paint()..color = rarityColor.withValues(alpha: 0.4),
+                paint: Paint()..color = rarityColor.withOpacity( 0.4),
               ),
             );
           },

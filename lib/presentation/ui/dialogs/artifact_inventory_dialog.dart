@@ -66,7 +66,7 @@ class _ArtifactInventoryDialogState
         color: const Color(0xFF0A1520),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         border: Border.all(
-          color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
+          color: TimeFactoryColors.electricCyan.withOpacity( 0.3),
         ),
       ),
       child: Column(
@@ -130,10 +130,10 @@ class _ArtifactInventoryDialogState
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.12),
+                  color: Colors.orange.withOpacity( 0.12),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: Colors.orange.withValues(alpha: 0.6),
+                    color: Colors.orange.withOpacity( 0.6),
                   ),
                 ),
                 child: Row(
@@ -227,7 +227,7 @@ class _ArtifactInventoryDialogState
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? chipColor.withValues(alpha: 0.25)
+                            ? chipColor.withOpacity( 0.25)
                             : Colors.black26,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
@@ -293,7 +293,7 @@ class _ArtifactInventoryDialogState
           Icon(
             Icons.inventory_2_outlined,
             size: 64,
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withOpacity( 0.1),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
@@ -343,10 +343,10 @@ class _ArtifactInventoryDialogState
       },
       child: Container(
         decoration: BoxDecoration(
-          color: rarityColor.withValues(alpha: 0.05),
+          color: rarityColor.withOpacity( 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: rarityColor.withValues(alpha: isFull ? 0.15 : 0.3),
+            color: rarityColor.withOpacity( isFull ? 0.15 : 0.3),
           ),
         ),
         child: Stack(
@@ -372,12 +372,12 @@ class _ArtifactInventoryDialogState
                         child: Container(
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: rarityColor.withValues(alpha: 0.2),
+                            color: rarityColor.withOpacity( 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.touch_app_outlined,
-                            color: rarityColor.withValues(alpha: 0.7),
+                            color: rarityColor.withOpacity( 0.7),
                             size: 10,
                           ),
                         ),
@@ -402,7 +402,7 @@ class _ArtifactInventoryDialogState
                       ),
                       border: Border(
                         top: BorderSide(
-                          color: rarityColor.withValues(alpha: 0.3),
+                          color: rarityColor.withOpacity( 0.3),
                         ),
                       ),
                     ),
@@ -462,7 +462,7 @@ class _ArtifactInventoryDialogState
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.4),
+                    color: Colors.black.withOpacity( 0.4),
                     borderRadius: BorderRadius.circular(11),
                   ),
                 ),
@@ -490,10 +490,10 @@ class _ArtifactInventoryDialogState
           decoration: BoxDecoration(
             color: const Color(0xFF0A1520),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: rarityColor.withValues(alpha: 0.6)),
+            border: Border.all(color: rarityColor.withOpacity( 0.6)),
             boxShadow: [
               BoxShadow(
-                color: rarityColor.withValues(alpha: 0.2),
+                color: rarityColor.withOpacity( 0.2),
                 blurRadius: 20,
               ),
             ],
@@ -529,7 +529,7 @@ class _ArtifactInventoryDialogState
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: rarityColor.withValues(alpha: 0.2),
+                            color: rarityColor.withOpacity( 0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(

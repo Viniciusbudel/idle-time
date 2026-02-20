@@ -77,7 +77,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                   letterSpacing: 2.0,
                   shadows: [
                     Shadow(
-                      color: colors.primary.withValues(alpha: 0.7),
+                      color: colors.primary.withOpacity( 0.7),
                       blurRadius: 8,
                     ),
                   ],
@@ -92,7 +92,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                   letterSpacing: 2.0,
                   shadows: [
                     Shadow(
-                      color: colors.primary.withValues(alpha: 0.7),
+                      color: colors.primary.withOpacity( 0.7),
                       blurRadius: 8,
                     ),
                   ],
@@ -113,14 +113,14 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.1),
+                  color: colors.primary.withOpacity( 0.1),
                   border: Border.all(
-                    color: colors.primary.withValues(alpha: 0.5),
+                    color: colors.primary.withOpacity( 0.5),
                   ),
                   borderRadius: BorderRadius.circular(4),
                   boxShadow: [
                     BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.3),
+                      color: colors.primary.withOpacity( 0.3),
                       blurRadius: 8,
                     ),
                   ],
@@ -148,7 +148,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                 'SYS.LC1',
                 style: typography.bodyMedium.copyWith(
                   fontSize: 10.0,
-                  color: colors.primary.withValues(alpha: 0.6),
+                  color: colors.primary.withOpacity( 0.6),
                   letterSpacing: 2.0,
                 ),
               ),

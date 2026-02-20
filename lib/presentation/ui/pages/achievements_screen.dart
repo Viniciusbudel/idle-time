@@ -49,7 +49,7 @@ class AchievementsScreen extends ConsumerWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: TimeFactoryColors.voltageYellow.withValues(alpha: 0.2),
+                  color: TimeFactoryColors.voltageYellow.withOpacity( 0.2),
                   border: Border.all(
                     color: TimeFactoryColors.voltageYellow.withValues(
                       alpha: 0.5,
@@ -108,9 +108,9 @@ class _AchievementCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: unlocked
-            ? TimeFactoryColors.voltageYellow.withValues(alpha: 0.05)
-            : Colors.white.withValues(alpha: 0.03),
-        border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+            ? TimeFactoryColors.voltageYellow.withOpacity( 0.05)
+            : Colors.white.withOpacity( 0.03),
+        border: Border.all(color: accentColor.withOpacity( 0.3)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -121,8 +121,8 @@ class _AchievementCard extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: accentColor.withValues(alpha: 0.15),
-              border: Border.all(color: accentColor.withValues(alpha: 0.4)),
+              color: accentColor.withOpacity( 0.15),
+              border: Border.all(color: accentColor.withOpacity( 0.4)),
             ),
             child: Icon(
               unlocked ? achievement.icon : Icons.lock_outline,
@@ -159,7 +159,7 @@ class _AchievementCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 4,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    backgroundColor: Colors.white.withOpacity( 0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       unlocked
                           ? TimeFactoryColors.voltageYellow
@@ -199,7 +199,7 @@ class _AchievementCard extends StatelessWidget {
             '+${achievement.rewardCE}',
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               fontSize: 9,
-              color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
+              color: TimeFactoryColors.electricCyan.withOpacity( 0.5),
             ),
           ),
         if (hasShards)
@@ -207,7 +207,7 @@ class _AchievementCard extends StatelessWidget {
             '+${achievement.rewardShards}💎',
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               fontSize: 9,
-              color: TimeFactoryColors.hotMagenta.withValues(alpha: 0.5),
+              color: TimeFactoryColors.hotMagenta.withOpacity( 0.5),
             ),
           ),
       ],

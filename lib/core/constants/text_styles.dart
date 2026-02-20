@@ -82,7 +82,7 @@ class TimeFactoryTextStyles {
     color: TimeFactoryColors.electricCyan,
     shadows: [
       Shadow(
-        color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
+        color: TimeFactoryColors.electricCyan.withOpacity( 0.5),
         blurRadius: 20,
       ),
     ],
@@ -133,7 +133,7 @@ class TimeFactoryTextStyles {
     color: TimeFactoryColors.acidGreen,
     shadows: [
       Shadow(
-        color: TimeFactoryColors.acidGreen.withValues(alpha: 0.6),
+        color: TimeFactoryColors.acidGreen.withOpacity( 0.6),
         blurRadius: 12,
       ),
     ],
@@ -146,7 +146,7 @@ class TimeFactoryTextStyles {
     color: TimeFactoryColors.deepPurple,
     shadows: [
       Shadow(
-        color: TimeFactoryColors.deepPurple.withValues(alpha: 0.5),
+        color: TimeFactoryColors.deepPurple.withOpacity( 0.5),
         blurRadius: 10,
       ),
     ],
@@ -169,8 +169,8 @@ class TimeFactoryTextStyles {
   static TextStyle withGlow(TextStyle style, Color glowColor) {
     return style.copyWith(
       shadows: [
-        Shadow(color: glowColor.withValues(alpha: 0.8), blurRadius: 10),
-        Shadow(color: glowColor.withValues(alpha: 0.5), blurRadius: 20),
+        Shadow(color: glowColor.withOpacity( 0.8), blurRadius: 10),
+        Shadow(color: glowColor.withOpacity( 0.5), blurRadius: 20),
       ],
     );
   }

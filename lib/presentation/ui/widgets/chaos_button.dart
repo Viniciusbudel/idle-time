@@ -87,7 +87,7 @@ class _ChaosButtonState extends ConsumerState<ChaosButton>
                       end: Alignment.bottomRight,
                     ),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: Colors.white.withOpacity( 0.5),
                       width: 1.5,
                     ),
                   ),
@@ -110,7 +110,7 @@ class _ChaosButtonState extends ConsumerState<ChaosButton>
                           fontWeight: FontWeight.w900,
                           shadows: [
                             Shadow(
-                              color: Colors.black.withValues(alpha: 0.5),
+                              color: Colors.black.withOpacity( 0.5),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),

@@ -39,8 +39,8 @@ class IdleWorkerPool extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            TimeFactoryColors.electricCyan.withValues(alpha: 0.4),
-            TimeFactoryColors.electricCyan.withValues(alpha: 0.1),
+            TimeFactoryColors.electricCyan.withOpacity( 0.4),
+            TimeFactoryColors.electricCyan.withOpacity( 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -142,9 +142,9 @@ class IdleWorkerPool extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: TimeFactoryColors.deepPurple.withValues(alpha: 0.3),
+          color: TimeFactoryColors.deepPurple.withOpacity( 0.3),
           border: Border.all(
-            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.4),
+            color: TimeFactoryColors.electricCyan.withOpacity( 0.4),
           ),
           borderRadius: BorderRadius.circular(4),
         ),
@@ -158,7 +158,7 @@ class IdleWorkerPool extends StatelessWidget {
                 worker.rarity,
                 colorFilter: WorkerIconHelper.isSvg(worker.era)
                     ? ColorFilter.mode(
-                        TimeFactoryColors.electricCyan.withValues(alpha: 0.8),
+                        TimeFactoryColors.electricCyan.withOpacity( 0.8),
                         BlendMode.srcIn,
                       )
                     : null,
@@ -242,7 +242,7 @@ class IdleWorkerPool extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           boxShadow: [
             BoxShadow(
-              color: TimeFactoryColors.electricCyan.withValues(alpha: 0.4),
+              color: TimeFactoryColors.electricCyan.withOpacity( 0.4),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
