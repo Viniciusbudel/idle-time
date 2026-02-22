@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/presentation/state/theme_provider.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class ChaosButton extends ConsumerStatefulWidget {
   final VoidCallback onPressed;
@@ -87,15 +88,15 @@ class _ChaosButtonState extends ConsumerState<ChaosButton>
                       end: Alignment.bottomRight,
                     ),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: Colors.white.withOpacity(0.5),
                       width: 1.5,
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.warning_amber_rounded,
+                      const AppIcon(
+                        AppHugeIcons.warning_amber_rounded,
                         color: Colors.white,
                         size: 24,
                       ),
@@ -110,7 +111,7 @@ class _ChaosButtonState extends ConsumerState<ChaosButton>
                           fontWeight: FontWeight.w900,
                           shadows: [
                             Shadow(
-                              color: Colors.black.withValues(alpha: 0.5),
+                              color: Colors.black.withOpacity(0.5),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),

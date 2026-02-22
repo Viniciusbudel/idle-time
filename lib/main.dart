@@ -11,9 +11,15 @@ import 'package:time_factory/presentation/ui/dialogs/offline_dialog.dart';
 import 'package:time_factory/domain/entities/offline_earnings.dart';
 import 'package:time_factory/presentation/ui/pages/factory_screen.dart';
 import 'package:time_factory/domain/usecases/calculate_offline_earnings_usecase.dart';
+import 'package:time_factory/core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize notifications
+  final notificationService = NotificationService();
+  await notificationService.init();
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.black,
@@ -27,11 +33,54 @@ void main() async {
 /// Global save service instance
 final saveServiceProvider = Provider<SaveService>((ref) => SaveService());
 
-class TimeFactoryApp extends ConsumerWidget {
+class TimeFactoryApp extends ConsumerStatefulWidget {
   const TimeFactoryApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TimeFactoryApp> createState() => _TimeFactoryAppState();
+}
+
+class _TimeFactoryAppState extends ConsumerState<TimeFactoryApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    final notificationService = NotificationService();
+
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      // App went to background
+      // Schedule a notification to remind player about offline earnings
+      // For testing, schedule it for 10 seconds from now.
+      // In production, this might be 4-8 hours or based on storage capacity.
+      notificationService.scheduleNotification(
+        id: 1, // Offline earnings ID
+        title: 'Factory is producing!',
+        body:
+            'Your workers are gathering Chrono Energy while you are away. Come back to collect it!',
+        delay: const Duration(seconds: 10), // Short delay for testing
+      );
+    } else if (state == AppLifecycleState.resumed) {
+      // App came to foreground
+      // Cancel the scheduled offline earnings notification
+      notificationService.cancelNotification(1);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
 
     return MaterialApp(
@@ -75,6 +124,9 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
   Future<void> _loadGame() async {
     final saveService = ref.read(saveServiceProvider);
     await saveService.init();
+
+    // Ask for permissions
+    await NotificationService().requestPermissions();
 
     // Try to load saved game
     final savedState = await saveService.load();

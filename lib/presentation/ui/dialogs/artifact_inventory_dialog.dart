@@ -8,6 +8,7 @@ import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker_artifact.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Filter states for the artifact inventory
 enum _RarityFilter { all, common, rare, epic, legendary, paradox }
@@ -43,7 +44,7 @@ class _ArtifactInventoryDialogState
 
     if (worker == null) return const SizedBox.shrink();
 
-    final isFull = worker.equippedArtifacts.length >= 5;
+    final isFull = worker.equippedArtifacts.length >= worker.maxArtifactSlots;
 
     final inventory = gameState.inventory.where((artifact) {
       // Rarity filter
@@ -66,7 +67,7 @@ class _ArtifactInventoryDialogState
         color: const Color(0xFF0A1520),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         border: Border.all(
-          color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
+          color: TimeFactoryColors.electricCyan.withOpacity(0.3),
         ),
       ),
       child: Column(
@@ -111,7 +112,10 @@ class _ArtifactInventoryDialogState
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white54),
+                  icon: const AppIcon(
+                    AppHugeIcons.close,
+                    color: Colors.white54,
+                  ),
                   onPressed: () => Navigator.pop(context),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -130,23 +134,21 @@ class _ArtifactInventoryDialogState
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.12),
+                  color: Colors.orange.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.orange.withValues(alpha: 0.6),
-                  ),
+                  border: Border.all(color: Colors.orange.withOpacity(0.6)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.warning_amber_rounded,
+                    const AppIcon(
+                      AppHugeIcons.warning_amber_rounded,
                       color: Colors.orange,
                       size: 16,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'ALL 5 SLOTS FILLED — Unequip an artifact first.',
+                        'ALL ${worker.maxArtifactSlots} SLOTS FILLED — Unequip an artifact first.',
                         style: TimeFactoryTextStyles.bodyMono.copyWith(
                           fontSize: 11,
                           color: Colors.orange,
@@ -172,8 +174,8 @@ class _ArtifactInventoryDialogState
                   color: Colors.white24,
                   fontSize: 12,
                 ),
-                prefixIcon: const Icon(
-                  Icons.search,
+                prefixIcon: const AppIcon(
+                  AppHugeIcons.search,
                   color: TimeFactoryColors.electricCyan,
                   size: 20,
                 ),
@@ -227,7 +229,7 @@ class _ArtifactInventoryDialogState
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? chipColor.withValues(alpha: 0.25)
+                            ? chipColor.withOpacity(0.25)
                             : Colors.black26,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
@@ -290,10 +292,10 @@ class _ArtifactInventoryDialogState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.inventory_2_outlined,
+          AppIcon(
+            AppHugeIcons.inventory_2_outlined,
             size: 64,
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withOpacity(0.1),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
@@ -343,10 +345,10 @@ class _ArtifactInventoryDialogState
       },
       child: Container(
         decoration: BoxDecoration(
-          color: rarityColor.withValues(alpha: 0.05),
+          color: rarityColor.withOpacity(0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: rarityColor.withValues(alpha: isFull ? 0.15 : 0.3),
+            color: rarityColor.withOpacity(isFull ? 0.15 : 0.3),
           ),
         ),
         child: Stack(
@@ -359,7 +361,7 @@ class _ArtifactInventoryDialogState
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      Icon(
+                      AppIcon(
                         _rarityIcon(artifact.rarity),
                         color: rarityColor.withValues(
                           alpha: isFull ? 0.4 : 1.0,
@@ -372,12 +374,12 @@ class _ArtifactInventoryDialogState
                         child: Container(
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: rarityColor.withValues(alpha: 0.2),
+                            color: rarityColor.withOpacity(0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
-                            Icons.touch_app_outlined,
-                            color: rarityColor.withValues(alpha: 0.7),
+                          child: AppIcon(
+                            AppHugeIcons.touch_app_outlined,
+                            color: rarityColor.withOpacity(0.7),
                             size: 10,
                           ),
                         ),
@@ -401,9 +403,7 @@ class _ArtifactInventoryDialogState
                         bottom: Radius.circular(11),
                       ),
                       border: Border(
-                        top: BorderSide(
-                          color: rarityColor.withValues(alpha: 0.3),
-                        ),
+                        top: BorderSide(color: rarityColor.withOpacity(0.3)),
                       ),
                     ),
                     child: Column(
@@ -462,7 +462,7 @@ class _ArtifactInventoryDialogState
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.4),
+                    color: Colors.black.withOpacity(0.4),
                     borderRadius: BorderRadius.circular(11),
                   ),
                 ),
@@ -490,12 +490,9 @@ class _ArtifactInventoryDialogState
           decoration: BoxDecoration(
             color: const Color(0xFF0A1520),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: rarityColor.withValues(alpha: 0.6)),
+            border: Border.all(color: rarityColor.withOpacity(0.6)),
             boxShadow: [
-              BoxShadow(
-                color: rarityColor.withValues(alpha: 0.2),
-                blurRadius: 20,
-              ),
+              BoxShadow(color: rarityColor.withOpacity(0.2), blurRadius: 20),
             ],
           ),
           child: Column(
@@ -505,7 +502,7 @@ class _ArtifactInventoryDialogState
               // Header
               Row(
                 children: [
-                  Icon(
+                  AppIcon(
                     _rarityIcon(artifact.rarity),
                     color: rarityColor,
                     size: 24,
@@ -529,7 +526,7 @@ class _ArtifactInventoryDialogState
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: rarityColor.withValues(alpha: 0.2),
+                            color: rarityColor.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -545,8 +542,8 @@ class _ArtifactInventoryDialogState
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(
-                      Icons.close,
+                    icon: const AppIcon(
+                      AppHugeIcons.close,
                       color: Colors.white54,
                       size: 18,
                     ),
@@ -561,7 +558,7 @@ class _ArtifactInventoryDialogState
 
               // Stats
               _tooltipStat(
-                Icons.flash_on,
+                AppHugeIcons.flash_on,
                 'Base Power',
                 '+$baseBonus',
                 baseBonus > BigInt.zero
@@ -570,7 +567,7 @@ class _ArtifactInventoryDialogState
               ),
               const SizedBox(height: 8),
               _tooltipStat(
-                Icons.trending_up,
+                AppHugeIcons.trending_up,
                 'Production Bonus',
                 hasProdBonus
                     ? '+${(artifact.productionMultiplier * 100).toStringAsFixed(0)}%'
@@ -579,7 +576,7 @@ class _ArtifactInventoryDialogState
               ),
               const SizedBox(height: 8),
               _tooltipStat(
-                Icons.public,
+                AppHugeIcons.public,
                 'Era Synergy',
                 hasEraMatch
                     ? '${artifact.eraMatch!.displayName} (+10% if matched)'
@@ -604,14 +601,14 @@ class _ArtifactInventoryDialogState
   }
 
   Widget _tooltipStat(
-    IconData icon,
+    AppIconData icon,
     String label,
     String value,
     Color valueColor,
   ) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.white38),
+        AppIcon(icon, size: 16, color: Colors.white38),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -687,18 +684,18 @@ class _ArtifactInventoryDialogState
     }
   }
 
-  IconData _rarityIcon(WorkerRarity rarity) {
+  AppIconData _rarityIcon(WorkerRarity rarity) {
     switch (rarity) {
       case WorkerRarity.common:
-        return Icons.settings;
+        return AppHugeIcons.settings;
       case WorkerRarity.rare:
-        return Icons.electric_bolt;
+        return AppHugeIcons.electric_bolt;
       case WorkerRarity.epic:
-        return Icons.auto_fix_high;
+        return AppHugeIcons.auto_fix_high;
       case WorkerRarity.legendary:
-        return Icons.diamond_outlined;
+        return AppHugeIcons.diamond_outlined;
       case WorkerRarity.paradox:
-        return Icons.blur_circular;
+        return AppHugeIcons.blur_circular;
     }
   }
 }

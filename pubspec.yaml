@@ -36,8 +36,10 @@ dependencies:
   flutter_svg: ^2.2.3
   flame_svg: ^1.11.19
   flame_lottie: ^0.4.2+19
-  flutter_local_notifications: ^21.0.0-dev.1
-  timezone: ^0.11.0
+  flutter_local_notifications: ^17.2.2
+  timezone: ^0.9.4
+  video_player: ^2.8.1
+  hugeicons: ^1.1.5
 
 dev_dependencies:
   flutter_test:
@@ -56,6 +58,7 @@ flutter:
   generate: true
 
   assets:
+    - assets/icons/
     - assets/images/
     - assets/sfx/
     - assets/music/
@@ -63,11 +66,14 @@ flutter:
     - assets/images/backgrounds/
     - assets/images/backgrounds/victorian/
     - assets/images/backgrounds/atomic/
+    - assets/images/backgrounds/20s/
+    - assets/images/backgrounds/cyberpunk/
     - assets/images/effects/
     - assets/images/icons/
     - assets/images/workers/
     - assets/lottie/
     - assets/data/
+    - assets/videos/
 
   fonts:
     - family: Orbitron

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/presentation/state/tech_provider.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Animated badge that shows the current time warp speed multiplier.
 /// Only visible when timeWarpMultiplier > 1.0.
@@ -58,7 +59,7 @@ class _AnimatedBadgeState extends State<_AnimatedBadge>
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.6),
+            color: Colors.black.withOpacity(0.6),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: TimeFactoryColors.acidGreen.withValues(
@@ -79,8 +80,8 @@ class _AnimatedBadgeState extends State<_AnimatedBadge>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.fast_forward_rounded,
+              AppIcon(
+                AppHugeIcons.fast_forward_rounded,
                 size: 14,
                 color: TimeFactoryColors.acidGreen.withValues(
                   alpha: 0.6 + _glowAnimation.value * 0.4,

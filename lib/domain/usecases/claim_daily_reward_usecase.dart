@@ -123,8 +123,9 @@ class ClaimDailyRewardUseCase {
     // Check if it's a different calendar day based on local time
     if (now.year > last.year) return true;
     if (now.year == last.year && now.month > last.month) return true;
-    if (now.year == last.year && now.month == last.month && now.day > last.day)
+    if (now.year == last.year && now.month == last.month && now.day > last.day) {
       return true;
+    }
 
     return false;
   }

@@ -61,7 +61,7 @@ class PortalGame extends FlameGame {
         radius: 26.0,
         anchor: Anchor.center,
         paint: Paint()
-          ..color = Colors.white.withValues(alpha: 0.6)
+          ..color = Colors.white.withOpacity( 0.6)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.0
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
@@ -161,7 +161,7 @@ class _AccretionParticle extends Particle {
 
     final opacity = (lifespan - progress * lifespan) / lifespan; // Fade out
 
-    final paint = Paint()..color = color.withValues(alpha: 0.6 * opacity);
+    final paint = Paint()..color = color.withOpacity( 0.6 * opacity);
 
     canvas.drawCircle(pos.toOffset(), 2.0, paint);
   }

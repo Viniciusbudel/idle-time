@@ -3,6 +3,7 @@ import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/presentation/ui/molecules/tech_card.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class TechTreeTab extends StatelessWidget {
   const TechTreeTab({super.key});
@@ -24,7 +25,7 @@ class TechTreeTab extends StatelessWidget {
         description: "Increases mining efficiency by 25%",
         progress: 0.2,
         cost: "1.2k CE",
-        icon: Icons.api,
+        icon: AppHugeIcons.api,
         color: TimeFactoryColors.voltageYellow,
       ),
       _MockUpgrade(
@@ -33,7 +34,7 @@ class TechTreeTab extends StatelessWidget {
         description: "Workers automate tasks 10% faster",
         progress: 1.0,
         cost: "MAX",
-        icon: Icons.psychology,
+        icon: AppHugeIcons.psychology,
         color: TimeFactoryColors.hotMagenta,
       ),
     ];
@@ -81,8 +82,8 @@ class TechTreeTab extends StatelessWidget {
             ),
           ],
         ),
-        const Icon(
-          Icons.memory,
+        const AppIcon(
+          AppHugeIcons.memory,
           color: TimeFactoryColors.electricCyan,
           size: 28,
         ),
@@ -97,7 +98,7 @@ class _MockUpgrade {
   final String description;
   final double progress;
   final String cost;
-  final IconData icon;
+  final AppIconData icon;
   final Color color;
 
   _MockUpgrade({
@@ -106,7 +107,7 @@ class _MockUpgrade {
     required this.description,
     required this.progress,
     required this.cost,
-    this.icon = Icons.science,
+    this.icon = AppHugeIcons.science,
     this.color = TimeFactoryColors.electricCyan,
   });
 }

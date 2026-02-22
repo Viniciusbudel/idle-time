@@ -5,6 +5,7 @@ import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/presentation/ui/molecules/paradox_meter.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class ResourceHUD extends StatelessWidget {
   final GameState gameState;
@@ -23,15 +24,15 @@ class ResourceHUD extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: TimeFactoryColors.midnightBlue.withValues(alpha: 0.6),
+                color: TimeFactoryColors.midnightBlue.withOpacity(0.6),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
+                  color: TimeFactoryColors.electricCyan.withOpacity(0.3),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity(0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -47,8 +48,8 @@ class ResourceHUD extends StatelessWidget {
                         'assets/images/icons/chrono_energy_icon.png',
                         width: 24,
                         height: 24,
-                        errorBuilder: (c, e, s) => const Icon(
-                          Icons.bolt,
+                        errorBuilder: (c, e, s) => const AppIcon(
+                          AppHugeIcons.bolt,
                           color: TimeFactoryColors.electricCyan,
                         ),
                       ),
@@ -64,7 +65,7 @@ class ResourceHUD extends StatelessWidget {
                                 shadows: [
                                   Shadow(
                                     color: TimeFactoryColors.electricCyan
-                                        .withValues(alpha: 0.5),
+                                        .withOpacity(0.5),
                                     blurRadius: 8,
                                   ),
                                 ],
@@ -97,13 +98,13 @@ class ResourceHUD extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _ResourceChip(
-                        icon: Icons.auto_awesome,
+                        icon: AppHugeIcons.auto_awesome,
                         label: '${gameState.timeShards} TS',
                         color: TimeFactoryColors.deepPurple,
                       ),
                       if (gameState.availableParadoxPoints > 0)
                         _ResourceChip(
-                          icon: Icons.stars,
+                          icon: AppHugeIcons.stars,
                           label: '${gameState.availableParadoxPoints} PP',
                           color: TimeFactoryColors.hotMagenta,
                         ),
@@ -136,7 +137,7 @@ class AnimatedNumberDisplay extends StatelessWidget {
 }
 
 class _ResourceChip extends StatelessWidget {
-  final IconData icon;
+  final AppIconData icon;
   final String label;
   final Color color;
 
@@ -151,14 +152,14 @@ class _ResourceChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+        border: Border.all(color: color.withOpacity(0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color),
+          AppIcon(icon, size: 12, color: color),
           const SizedBox(width: 4),
           Text(
             label,

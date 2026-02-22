@@ -7,7 +7,7 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/ui/atoms/cyber_button.dart';
 import 'package:time_factory/presentation/ui/molecules/holo_worker_card.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
-import 'package:time_factory/core/utils/number_formatter.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class CommandCenterTab extends ConsumerWidget {
   const CommandCenterTab({super.key});
@@ -17,9 +17,7 @@ class CommandCenterTab extends ConsumerWidget {
     final workersMap = ref.watch(workersProvider);
     final workers = workersMap.values.toList();
     workers.sort((a, b) {
-      int rarityComp = b.rarity.index.compareTo(a.rarity.index);
-      if (rarityComp != 0) return rarityComp;
-      return b.level.compareTo(a.level);
+      return b.rarity.index.compareTo(a.rarity.index);
     });
 
     final gameState = ref.watch(gameStateProvider);
@@ -43,20 +41,7 @@ class CommandCenterTab extends ConsumerWidget {
                 status: _getWorkerStatus(worker),
                 rarity: worker.rarity,
                 onUpgrade: () {
-                  final success = ref
-                      .read(gameStateProvider.notifier)
-                      .upgradeWorker(worker.id);
-                  if (!success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '${AppLocalizations.of(context)!.insufficientCE} (${NumberFormatter.formatCE(worker.upgradeCost)} CE)',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        backgroundColor: Colors.red[900],
-                      ),
-                    );
-                  }
+                  // TODO: Implement navigation to worker detail view which has the equip/unequip artifact logic
                 },
               ),
             ),
@@ -68,7 +53,7 @@ class CommandCenterTab extends ConsumerWidget {
           child: CyberButton(
             label: AppLocalizations.of(context)!.hireNewUnit,
             subLabel: '50 ${AppLocalizations.of(context)!.shards}',
-            icon: Icons.person_add,
+            icon: AppHugeIcons.person_add,
             isLarge: true,
             primaryColor: TimeFactoryColors.deepPurple,
             onTap: () {
@@ -87,9 +72,8 @@ class CommandCenterTab extends ConsumerWidget {
   }
 
   double _calculateEfficiency(Worker worker) {
-    final baseEff = worker.rarity.productionMultiplier;
-    final levelBonus = (worker.level - 1) * 0.05;
-    return (baseEff + levelBonus).clamp(0.0, 1.0);
+    // Return relative efficiency based on base stats + artifacts instead of level scaling
+    return worker.rarity.productionMultiplier.clamp(0.0, 1.0);
   }
 
   String _getWorkerStatus(Worker worker) {
@@ -116,7 +100,11 @@ class CommandCenterTab extends ConsumerWidget {
             ),
           ],
         ),
-        const Icon(Icons.hub, color: TimeFactoryColors.electricCyan, size: 28),
+        const AppIcon(
+          AppHugeIcons.hub,
+          color: TimeFactoryColors.electricCyan,
+          size: 28,
+        ),
       ],
     );
   }
@@ -130,7 +118,11 @@ class CommandCenterTab extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          const Icon(Icons.person_off, size: 48, color: Colors.white24),
+          const AppIcon(
+            AppHugeIcons.person_off,
+            size: 48,
+            color: Colors.white24,
+          ),
           const SizedBox(height: 16),
           Text(
             AppLocalizations.of(context)!.noUnitsDetected,

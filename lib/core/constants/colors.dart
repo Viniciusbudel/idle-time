@@ -4,37 +4,41 @@ import 'package:flutter/material.dart';
 class TimeFactoryColors {
   TimeFactoryColors._();
 
-  // ===== PRIMARY COLORS (HTML Cyberpunk) =====
-  /// Electric Cyan - Time energy, UI accents (#0de3f2)
-  static const electricCyan = Color(0xFF0DE3F2);
+  // ===== CORE TOKENS (HARMONIC SYSTEM) =====
+  /// Primary
+  static const primary = Color(0xFF1AA3B8);
+  static const onPrimary = Color(0xFF04181D);
 
-  /// Neon Blue - Tech automation, cooling (#00f3ff) - close to cyan but distinct
-  static const neonBlue = Color(0xFF00BFFF);
+  /// Secondary
+  static const secondary = Color(0xFF5B4BDB);
+  static const onSecondary = Color(0xFFF4F1FF);
 
-  /// Hot Magenta - Danger, paradox warnings, errors (#ff00ff)
-  static const hotMagenta = Color(0xFFFF00FF);
+  /// Base surfaces
+  static const background = Color(0xFF0B1020);
+  static const surface = Color(0xFF141B2F);
 
-  /// Voltage Yellow - Alerts, timekeepers (#facc15)
-  static const voltageYellow = Color(0xFFFACC15);
+  /// Feedback + accent
+  static const error = Color(0xFFD64545);
+  static const accent = Color(0xFFF2A93B);
+  static const success = Color(0xFF3BCB7A);
 
-  /// Acid Green - Success states, production (Legacy, keeping for now)
-  static const acidGreen = Color(0xFF39FF14);
-
-  /// Deep Purple - Premium currency, rare items
-  static const deepPurple = Color(0xFF8B00FF);
+  // ===== LEGACY ALIASES (COMPATIBILITY) =====
+  static const electricCyan = primary;
+  static const neonBlue = Color(0xFF2B8FCA);
+  static const hotMagenta = error;
+  static const voltageYellow = accent;
+  static const acidGreen = success;
+  static const deepPurple = secondary;
+  static const paradoxPurple = deepPurple;
 
   // ===== BACKGROUND/ATMOSPHERE =====
-  /// Void Black - Base background (#050b14)
-  static const voidBlack = Color(0xFF050B14);
+  static const voidBlack = background;
 
-  /// Surface Glass - Panels / Cards (#0d1b22)
-  static const surfaceGlass = Color(0xFF0D1B22);
+  static const surfaceGlass = surface;
 
-  /// Midnight Blue - Secondary panels (Legacy)
-  static const midnightBlue = Color(0xFF1A1F3A);
+  static const midnightBlue = Color(0xFF1B2440);
 
-  /// Smoke Gray - Inactive elements
-  static const smokeGray = Color(0xFF2D2D44);
+  static const smokeGray = Color(0xFF2C3550);
 
   // ===== REDESIGN COLORS (HTML Reference) =====
   static const backgroundDark = voidBlack;
@@ -69,7 +73,7 @@ class TimeFactoryColors {
   );
 
   static const paradoxGradient = LinearGradient(
-    colors: [hotMagenta, deepPurple],
+    colors: [deepPurple, hotMagenta],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -97,19 +101,25 @@ class TimeFactoryColors {
     ];
   }
 
-  /// Creates the cyberpunk dark theme
+  /// Global Material dark theme aligned with the harmonic palette.
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: voidBlack,
-      primaryColor: electricCyan,
+      scaffoldBackgroundColor: background,
+      primaryColor: primary,
       colorScheme: const ColorScheme.dark(
-        primary: electricCyan,
-        secondary: hotMagenta,
-        surface: midnightBlue,
-        error: hotMagenta,
+        primary: primary,
+        onPrimary: onPrimary,
+        secondary: secondary,
+        onSecondary: onSecondary,
+        tertiary: accent,
+        onTertiary: onPrimary,
+        surface: surface,
+        onSurface: Color(0xFFE8EEF8),
+        error: error,
+        onError: Color(0xFFFFF1F1),
       ),
-      cardColor: midnightBlue,
+      cardColor: surface,
       dividerColor: smokeGray,
     );
   }

@@ -27,20 +27,20 @@ void main() {
       expect(artifact.eraMatch, WorkerEra.atomicAge);
     });
 
-    test('common artifact has zero productionMultiplier', () {
+    test('common artifact has 2% productionMultiplier', () {
       final artifact = WorkerArtifact.generate(
         WorkerRarity.common,
         WorkerEra.victorian,
       );
-      expect(artifact.productionMultiplier, 0.0);
+      expect(artifact.productionMultiplier, 0.02);
     });
 
-    test('paradox artifact has 100% productionMultiplier', () {
+    test('paradox artifact has 20% productionMultiplier', () {
       final artifact = WorkerArtifact.generate(
         WorkerRarity.paradox,
         WorkerEra.cyberpunk80s,
       );
-      expect(artifact.productionMultiplier, 1.0);
+      expect(artifact.productionMultiplier, 0.2);
     });
 
     test('each generated artifact has unique id', () {
@@ -162,7 +162,7 @@ void main() {
       expect(worker.currentProduction, BigInt.from(expected));
     });
 
-    test('era-matching artifact grants +10% bonus', () {
+    test('era-matching artifact grants +2% bonus', () {
       final eraMatchArtifact = WorkerArtifact(
         id: 'art_era',
         name: 'Victorian Regulator',
@@ -175,14 +175,14 @@ void main() {
         equippedArtifacts: [eraMatchArtifact],
       );
 
-      // multiplier = 1.0 + 0.15 (artifact) + 0.10 (era match bonus) = 1.25
+      // multiplier = 1.0 + 0.15 (artifact) + 0.02 (era match bonus) = 1.17
       final expected =
           (10.0 *
-                  1.25 *
+                  1.17 *
                   WorkerEra.victorian.multiplier *
                   WorkerRarity.common.productionMultiplier)
               .round();
-      expect(workerWithMatch.currentProduction, BigInt.from(expected));
+      expect(workerWithMatch.currentProduction, BigInt.from(expected)); // 12
     });
 
     test('non-matching eraMatch artifact grants no bonus', () {
@@ -239,7 +239,8 @@ void main() {
     final baseWorker = Worker(
       id: 'w2',
       era: WorkerEra.victorian,
-      baseProduction: BigInt.from(1),
+      baseProduction: BigInt.from(25),
+      rarity: WorkerRarity.paradox,
     );
 
     test('canEquipArtifact is true when fewer than 5 artifacts equipped', () {
@@ -260,33 +261,35 @@ void main() {
       expect(with4.canEquipArtifact, isTrue);
     });
 
-    test('canEquipArtifact is false when 5 artifacts equipped', () {
-      final with5 = baseWorker.copyWith(
-        equippedArtifacts: List.generate(
-          5,
-          (i) => WorkerArtifact(
-            id: 'full$i',
-            name: 'Full$i',
-            rarity: WorkerRarity.common,
-            basePowerBonus: BigInt.zero,
-            productionMultiplier: 0.0,
+    test(
+      'canEquipArtifact is false when 5 artifacts equipped on paradox worker',
+      () {
+        final with5 = baseWorker.copyWith(
+          equippedArtifacts: List.generate(
+            5,
+            (i) => WorkerArtifact(
+              id: 'full$i',
+              name: 'Full$i',
+              rarity: WorkerRarity.common,
+              basePowerBonus: BigInt.zero,
+              productionMultiplier: 0.0,
+            ),
           ),
-        ),
-      );
-      expect(with5.canEquipArtifact, isFalse);
-    });
+        );
+        expect(with5.canEquipArtifact, isFalse);
+      },
+    );
   });
 
   // ====================================================================
   // Artifact equip/unequip logic (tested via pure GameState operations)
-  // Because GameStateNotifier._init() requires SharedPreferences, we test
-  // the business logic directly on GameState + Worker domain objects.
   // ====================================================================
   group('Artifact equip/unequip logic', () {
     final testWorker = Worker(
       id: 'w_test',
       era: WorkerEra.victorian,
-      baseProduction: BigInt.from(10),
+      baseProduction: BigInt.from(25),
+      rarity: WorkerRarity.paradox,
     );
 
     final testArtifact = WorkerArtifact(
@@ -342,7 +345,7 @@ void main() {
 
     test('inventory cap: adding to 100-item list is rejected', () {
       final fullInventory = List.generate(
-        100,
+        999,
         (i) => WorkerArtifact(
           id: 'inv_$i',
           name: 'Item $i',
@@ -352,13 +355,13 @@ void main() {
         ),
       );
       // Simulate the cap check
-      final canAdd = fullInventory.length < 100;
+      final canAdd = fullInventory.length < 999;
       expect(canAdd, isFalse);
     });
 
     test('adding to below-cap inventory is accepted', () {
       final smallInventory = [testArtifact];
-      final canAdd = smallInventory.length < 100;
+      final canAdd = smallInventory.length < 999;
       expect(canAdd, isTrue);
     });
 

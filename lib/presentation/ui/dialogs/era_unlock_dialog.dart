@@ -73,7 +73,7 @@ class EraUnlockDialog extends StatelessWidget {
                       image: AssetImage(imagePath),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
-                        Colors.black.withValues(alpha: 0.3),
+                        Colors.black.withOpacity( 0.3),
                         BlendMode.darken,
                       ),
                       onError:
@@ -110,7 +110,9 @@ class EraUnlockDialog extends StatelessWidget {
                     style: TimeFactoryTextStyles.headerSmall.copyWith(
                       color: Colors.white,
                       letterSpacing: 4,
-                      shadows: [const Shadow(color: Colors.black, blurRadius: 4)],
+                      shadows: [
+                        const Shadow(color: Colors.black, blurRadius: 4),
+                      ],
                     ),
                   ),
                 ),
@@ -151,12 +153,12 @@ class EraUnlockDialog extends StatelessWidget {
                         vertical: AppSpacing.md,
                       ),
                       decoration: BoxDecoration(
-                        color: eraTheme.primaryColor.withValues(alpha: 0.2),
+                        color: eraTheme.primaryColor.withOpacity( 0.2),
                         border: Border.all(color: eraTheme.primaryColor),
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
-                            color: eraTheme.primaryColor.withValues(alpha: 0.3),
+                            color: eraTheme.primaryColor.withOpacity( 0.3),
                             blurRadius: 16,
                           ),
                         ],

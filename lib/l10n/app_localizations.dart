@@ -458,6 +458,12 @@ abstract class AppLocalizations {
   /// **'Dual Helix Chamber'**
   String get dualHelixName;
 
+  /// No description provided for @nuclearReactorName.
+  ///
+  /// In en, this message translates to:
+  /// **'Nuclear Fusion Reactor'**
+  String get nuclearReactorName;
+
   /// No description provided for @paradoxAmplifierName.
   ///
   /// In en, this message translates to:
@@ -469,6 +475,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Time Distortion Field'**
   String get timeDistortionName;
+
+  /// No description provided for @dataNodeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Node'**
+  String get dataNodeName;
+
+  /// No description provided for @synthLabName.
+  ///
+  /// In en, this message translates to:
+  /// **'Synth Lab'**
+  String get synthLabName;
+
+  /// No description provided for @neonCoreName.
+  ///
+  /// In en, this message translates to:
+  /// **'Neon Core'**
+  String get neonCoreName;
 
   /// No description provided for @riftGeneratorName.
   ///
@@ -919,6 +943,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'ERA CLEARANCE'**
   String get eraUnlockEffect;
+
+  /// No description provided for @manhattanEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'ATOMIC MULTIPLIER'**
+  String get manhattanEffect;
 
   /// No description provided for @statusDeployed.
   ///

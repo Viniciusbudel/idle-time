@@ -44,8 +44,8 @@ class HoloWorkerCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              statusColor.withValues(alpha: 0.4),
-              statusColor.withValues(alpha: 0.1),
+              statusColor.withOpacity( 0.4),
+              statusColor.withOpacity( 0.1),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -89,14 +89,14 @@ class HoloWorkerCard extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.black,
-              border: Border.all(color: statusColor.withValues(alpha: 0.5)),
+              border: Border.all(color: statusColor.withOpacity( 0.5)),
               borderRadius: BorderRadius.circular(4),
             ),
             child: WorkerIconHelper.buildIcon(
               WorkerEra.victorian,
               rarity,
               colorFilter: ColorFilter.mode(
-                statusColor.withValues(alpha: 0.8),
+                statusColor.withOpacity( 0.8),
                 BlendMode.srcIn,
               ),
             ),
@@ -112,7 +112,7 @@ class HoloWorkerCard extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    statusColor.withValues(alpha: 0.15),
+                    statusColor.withOpacity( 0.15),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.5, 1.0],
@@ -251,8 +251,8 @@ class HoloWorkerCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: statusColor.withValues(alpha: 0.2),
-            border: Border.all(color: statusColor.withValues(alpha: 0.5)),
+            color: statusColor.withOpacity( 0.2),
+            border: Border.all(color: statusColor.withOpacity( 0.5)),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(

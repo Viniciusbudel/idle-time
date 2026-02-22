@@ -197,10 +197,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dualHelixName => 'Dual Helix Chamber';
 
   @override
+  String get nuclearReactorName => 'Nuclear Fusion Reactor';
+
+  @override
   String get paradoxAmplifierName => 'Paradox Amplifier';
 
   @override
   String get timeDistortionName => 'Time Distortion Field';
+
+  @override
+  String get dataNodeName => 'Data Node';
+
+  @override
+  String get synthLabName => 'Synth Lab';
+
+  @override
+  String get neonCoreName => 'Neon Core';
 
   @override
   String get riftGeneratorName => 'Rift Generator';
@@ -442,6 +454,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eraUnlockEffect => 'ERA CLEARANCE';
+
+  @override
+  String get manhattanEffect => 'ATOMIC MULTIPLIER';
 
   @override
   String get statusDeployed => 'DEPLOYED';

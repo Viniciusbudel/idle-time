@@ -47,6 +47,6 @@ void main() {
 }
 
 // Extension to allow setting productionPerSecond for testing (mocking it)
-// Since it's a getter on GameState, we can't set it directly in copyWith easily 
-// unless we mock the workers/stations. 
+// Since it's a getter on GameState, we can't set it directly in copyWith easily
+// unless we mock the workers/stations.
 // However, the usecase takes productionRate as a param, so we test the usecase directly.

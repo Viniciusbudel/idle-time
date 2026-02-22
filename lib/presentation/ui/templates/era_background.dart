@@ -87,7 +87,7 @@ class EraBackground extends ConsumerWidget {
                   radius: 1.5,
                   colors: [
                     Colors.transparent,
-                    theme.backgroundColor.withValues(alpha: 0.6),
+                    theme.backgroundColor.withOpacity( 0.6),
                   ],
                   stops: const [0.3, 1.0],
                 ),

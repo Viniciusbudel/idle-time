@@ -290,7 +290,7 @@ class _HolePunchPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.black.withValues(alpha: 0.85);
+    final paint = Paint()..color = Colors.black.withOpacity( 0.85);
     final fullRect = Rect.fromLTWH(0, 0, size.width, size.height);
 
     if (holeRect == null) {

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'game_state.dart';
 import 'enums.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// All achievement types with their trigger conditions and rewards
 enum AchievementType {
@@ -9,21 +9,21 @@ enum AchievementType {
     'first_hire',
     'First Recruit',
     'Hire your first worker',
-    Icons.person_add,
+    AppHugeIcons.person_add,
     rewardCE: 500,
   ),
   hire10(
     'hire_10',
     'Growing Team',
     'Hire 10 workers',
-    Icons.group,
+    AppHugeIcons.group,
     rewardShards: 5,
   ),
   hire50(
     'hire_50',
     'Factory Foreman',
     'Hire 50 workers',
-    Icons.groups,
+    AppHugeIcons.groups,
     rewardShards: 20,
   ),
 
@@ -32,21 +32,21 @@ enum AchievementType {
     'earn_10k',
     'Pocket Change',
     'Earn 10,000 CE lifetime',
-    Icons.monetization_on_outlined,
+    AppHugeIcons.monetization_on_outlined,
     rewardCE: 1000,
   ),
   earn1m(
     'earn_1m',
     'Millionaire',
     'Earn 1,000,000 CE lifetime',
-    Icons.diamond_outlined,
+    AppHugeIcons.diamond_outlined,
     rewardShards: 10,
   ),
   earn1b(
     'earn_1b',
     'Billionaire',
     'Earn 1,000,000,000 CE lifetime',
-    Icons.auto_awesome,
+    AppHugeIcons.auto_awesome,
     rewardShards: 50,
   ),
 
@@ -55,21 +55,21 @@ enum AchievementType {
     'first_prestige',
     'Time Loop',
     'Perform your first prestige',
-    Icons.loop,
+    AppHugeIcons.loop,
     rewardShards: 5,
   ),
   prestige5(
     'prestige_5',
     'Temporal Expert',
     'Prestige 5 times',
-    Icons.all_inclusive,
+    AppHugeIcons.all_inclusive,
     rewardShards: 20,
   ),
   prestige10(
     'prestige_10',
     'Paradox Master',
     'Prestige 10 times',
-    Icons.cyclone,
+    AppHugeIcons.cyclone,
     rewardShards: 50,
   ),
 
@@ -78,28 +78,28 @@ enum AchievementType {
     'reach_20s',
     'Roaring Twenties',
     'Unlock the Roaring 20s era',
-    Icons.music_note,
+    AppHugeIcons.music_note,
     rewardShards: 10,
   ),
   reachAtomic(
     'reach_atomic',
     'Atomic Dawn',
     'Unlock the Atomic Age',
-    Icons.science,
+    AppHugeIcons.science,
     rewardShards: 20,
   ),
   maxTechVictorian(
     'max_tech_victorian',
     'Victorian Master',
     'Max all Victorian technologies',
-    Icons.engineering,
+    AppHugeIcons.engineering,
     rewardShards: 15,
   ),
   maxTech20s(
     'max_tech_20s',
     'Deco Master',
     'Max all Roaring 20s technologies',
-    Icons.architecture,
+    AppHugeIcons.architecture,
     rewardShards: 25,
   ),
 
@@ -108,14 +108,14 @@ enum AchievementType {
     'stations_5',
     'Growing Factory',
     'Own 5 stations',
-    Icons.factory_outlined,
+    AppHugeIcons.factory_outlined,
     rewardCE: 2000,
   ),
   stations10(
     'stations_10',
     'Industrial Giant',
     'Own 10 stations',
-    Icons.domain,
+    AppHugeIcons.domain,
     rewardShards: 10,
   ),
 
@@ -124,28 +124,28 @@ enum AchievementType {
     'rare_worker',
     'Lucky Find',
     'Obtain a Rare worker',
-    Icons.star_half,
+    AppHugeIcons.star_half,
     rewardCE: 1000,
   ),
   legendaryWorker(
     'legendary_worker',
     'Legendary Discovery',
     'Obtain a Legendary worker',
-    Icons.star,
+    AppHugeIcons.star,
     rewardShards: 20,
   ),
   paradoxWorker(
     'paradox_worker',
     'Paradox Anomaly',
     'Obtain a Paradox worker',
-    Icons.blur_on,
+    AppHugeIcons.blur_on,
     rewardShards: 50,
   ),
   eraDiversity(
     'era_diversity',
     'Time Diversity',
     'Deploy workers from 3 different eras',
-    Icons.diversity_3,
+    AppHugeIcons.diversity_3,
     rewardShards: 15,
   ),
 
@@ -154,14 +154,14 @@ enum AchievementType {
     'first_merge',
     'Synthesizer',
     'Merge workers for the first time',
-    Icons.merge,
+    AppHugeIcons.merge,
     rewardShards: 5,
   );
 
   final String id;
   final String displayName;
   final String description;
-  final IconData icon;
+  final AppIconData icon;
   final int rewardCE;
   final int rewardShards;
 

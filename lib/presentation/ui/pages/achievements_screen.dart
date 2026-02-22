@@ -4,6 +4,7 @@ import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/achievement.dart';
 import 'package:time_factory/presentation/state/achievement_provider.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class AchievementsScreen extends ConsumerWidget {
   const AchievementsScreen({super.key});
@@ -19,13 +20,13 @@ class AchievementsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white70),
+          icon: const AppIcon(AppHugeIcons.arrow_back, color: Colors.white70),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
           children: [
-            const Icon(
-              Icons.emoji_events,
+            const AppIcon(
+              AppHugeIcons.emoji_events,
               color: TimeFactoryColors.voltageYellow,
               size: 24,
             ),
@@ -49,7 +50,7 @@ class AchievementsScreen extends ConsumerWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: TimeFactoryColors.voltageYellow.withValues(alpha: 0.2),
+                  color: TimeFactoryColors.voltageYellow.withOpacity(0.2),
                   border: Border.all(
                     color: TimeFactoryColors.voltageYellow.withValues(
                       alpha: 0.5,
@@ -108,9 +109,9 @@ class _AchievementCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: unlocked
-            ? TimeFactoryColors.voltageYellow.withValues(alpha: 0.05)
-            : Colors.white.withValues(alpha: 0.03),
-        border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+            ? TimeFactoryColors.voltageYellow.withOpacity(0.05)
+            : Colors.white.withOpacity(0.03),
+        border: Border.all(color: accentColor.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -121,11 +122,11 @@ class _AchievementCard extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: accentColor.withValues(alpha: 0.15),
-              border: Border.all(color: accentColor.withValues(alpha: 0.4)),
+              color: accentColor.withOpacity(0.15),
+              border: Border.all(color: accentColor.withOpacity(0.4)),
             ),
-            child: Icon(
-              unlocked ? achievement.icon : Icons.lock_outline,
+            child: AppIcon(
+              unlocked ? achievement.icon : AppHugeIcons.lock_outline,
               color: accentColor,
               size: 22,
             ),
@@ -159,7 +160,7 @@ class _AchievementCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 4,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    backgroundColor: Colors.white.withOpacity(0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       unlocked
                           ? TimeFactoryColors.voltageYellow
@@ -175,8 +176,8 @@ class _AchievementCard extends StatelessWidget {
           const SizedBox(width: 12),
           // Reward badge
           if (unlocked)
-            const Icon(
-              Icons.check_circle,
+            const AppIcon(
+              AppHugeIcons.check_circle,
               color: TimeFactoryColors.voltageYellow,
               size: 24,
             )
@@ -199,7 +200,7 @@ class _AchievementCard extends StatelessWidget {
             '+${achievement.rewardCE}',
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               fontSize: 9,
-              color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
+              color: TimeFactoryColors.electricCyan.withOpacity(0.5),
             ),
           ),
         if (hasShards)
@@ -207,7 +208,7 @@ class _AchievementCard extends StatelessWidget {
             '+${achievement.rewardShards}💎',
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               fontSize: 9,
-              color: TimeFactoryColors.hotMagenta.withValues(alpha: 0.5),
+              color: TimeFactoryColors.hotMagenta.withOpacity(0.5),
             ),
           ),
       ],

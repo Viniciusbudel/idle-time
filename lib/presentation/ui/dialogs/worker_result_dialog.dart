@@ -38,7 +38,7 @@ class WorkerResultDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: rarityColor.withValues(alpha: 0.4),
+              color: rarityColor.withOpacity( 0.4),
               blurRadius: 30,
               spreadRadius: 2,
             ),
@@ -59,11 +59,11 @@ class WorkerResultDialog extends StatelessWidget {
               height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: rarityColor.withValues(alpha: 0.2),
+                color: rarityColor.withOpacity( 0.2),
                 border: Border.all(color: rarityColor, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: rarityColor.withValues(alpha: 0.5),
+                    color: rarityColor.withOpacity( 0.5),
                     blurRadius: 20,
                   ),
                 ],

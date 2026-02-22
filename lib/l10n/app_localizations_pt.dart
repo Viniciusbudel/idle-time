@@ -179,7 +179,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get ceSec => 'CE/SEG';
 
   @override
-  String get shards => 'FRAGMENTOS';
+  String get shards => 'SHARDS';
 
   @override
   String get mergeFailed => 'Falha na combinação';
@@ -197,10 +197,22 @@ class AppLocalizationsPt extends AppLocalizations {
   String get dualHelixName => 'Câmara de Hélice Dupla';
 
   @override
+  String get nuclearReactorName => 'Reator de Fusão Nuclear';
+
+  @override
   String get paradoxAmplifierName => 'Amplificador de Paradoxo';
 
   @override
   String get timeDistortionName => 'Campo de Distorção Temporal';
+
+  @override
+  String get dataNodeName => 'Nó de Dados';
+
+  @override
+  String get synthLabName => 'Laboratório Sintético';
+
+  @override
+  String get neonCoreName => 'Núcleo Neon';
 
   @override
   String get riftGeneratorName => 'Gerador de Fenda';
@@ -444,6 +456,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get eraUnlockEffect => 'LIBERAÇÃO DE ERA';
+
+  @override
+  String get manhattanEffect => 'MULTIPLICADOR ATÔMICO';
 
   @override
   String get statusDeployed => 'ALOCADO';

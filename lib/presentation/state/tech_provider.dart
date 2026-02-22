@@ -44,10 +44,15 @@ class TechNotifier extends StateNotifier<List<TechUpgrade>> {
     if (index == -1) return false;
 
     final tech = state[index];
-    final cost = tech.nextCost;
+
+    // 1. Calculate cost with discount
+    final gameState = ref.read(gameStateProvider);
+    final discount = TechData.calculateCostReductionMultiplier(
+      gameState.techLevels,
+    );
+    final cost = tech.getCost(discountMultiplier: discount);
 
     // Check affordablity
-    final gameState = ref.read(gameStateProvider);
     if (gameState.chronoEnergy < cost) return false;
 
     // Spend CE
@@ -60,6 +65,9 @@ class TechNotifier extends StateNotifier<List<TechUpgrade>> {
 
       // Update GameState for persistence
       ref.read(gameStateProvider.notifier).updateTechLevel(id, newLevel);
+
+      // Era Unlock Techs no longer auto-unlock the era to prevent bypassing
+      // the era advancement cost. The player must click the Era Advancement Button.
 
       return true;
     }

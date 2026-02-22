@@ -54,7 +54,7 @@ class TapEffect extends Component with HasGameRef {
         child: CircleParticle(
           radius: 20,
           paint: Paint()
-            ..color = Colors.white.withValues(alpha: 0.4)
+            ..color = Colors.white.withOpacity( 0.4)
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
         ),
       ),

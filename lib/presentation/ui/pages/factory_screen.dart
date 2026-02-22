@@ -26,6 +26,9 @@ import 'package:time_factory/presentation/ui/molecules/auto_click_indicator.dart
 import 'package:time_factory/presentation/ui/molecules/tutorial_overlay.dart';
 import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/presentation/ui/molecules/achievement_listener.dart';
+import 'package:time_factory/presentation/ui/dialogs/daily_login_dialog.dart'; // NEW
+import 'package:time_factory/presentation/state/artifact_drop_event_provider.dart';
+import 'package:time_factory/presentation/ui/atoms/artifact_drop_banner.dart';
 
 class FactoryScreen extends ConsumerStatefulWidget {
   const FactoryScreen({super.key});
@@ -47,6 +50,16 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
     super.initState();
     _game = TimeFactoryGame(ref);
     _randomizeChaosPosition();
+
+    // Check for daily rewards after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final notifier = ref.read(gameStateProvider.notifier);
+      final state = ref.read(gameStateProvider);
+      // Show if available and tutorial is passed "Welcome" (step > 0)
+      if (notifier.isDailyRewardAvailable && state.tutorialStep > 0) {
+        DailyLoginDialog.show(context);
+      }
+    });
   }
 
   void _randomizeChaosPosition() {
@@ -111,6 +124,13 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
             },
           ),
         );
+      }
+    });
+
+    // Listen to drop events
+    ref.listen(artifactDropEventProvider, (previous, next) {
+      if (next != null) {
+        ArtifactDropBanner.show(context, next);
       }
     });
 

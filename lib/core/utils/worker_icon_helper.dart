@@ -52,6 +52,8 @@ class WorkerIconHelper {
     switch (era) {
       case WorkerEra.roaring20s:
         return '20s';
+      case WorkerEra.atomicAge:
+        return 'atomic';
       default:
         return era.id;
     }

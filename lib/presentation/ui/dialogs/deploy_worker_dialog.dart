@@ -6,6 +6,7 @@ import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Dialog to deploy a worker to a station
 class DeployWorkerDialog extends ConsumerWidget {
@@ -35,7 +36,7 @@ class DeployWorkerDialog extends ConsumerWidget {
         color: TimeFactoryColors.voidBlack,
         border: Border(
           top: BorderSide(
-            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
+            color: TimeFactoryColors.electricCyan.withOpacity(0.5),
             width: 2,
           ),
         ),
@@ -64,11 +65,11 @@ class DeployWorkerDialog extends ConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: worker.era.color.withValues(alpha: 0.2),
+                    color: worker.era.color.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: worker.era.color, width: 1),
                   ),
-                  child: Icon(Icons.person, color: worker.era.color),
+                  child: AppIcon(AppHugeIcons.person, color: worker.era.color),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -83,7 +84,7 @@ class DeployWorkerDialog extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        '${worker.era.localizedName(context)} • Lv.${worker.level}',
+                        worker.era.localizedName(context),
                         style: TimeFactoryTextStyles.bodyMono.copyWith(
                           fontSize: 11,
                           color: Colors.white54,
@@ -162,9 +163,9 @@ class DeployWorkerDialog extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+        border: Border.all(color: color.withOpacity(0.5)),
       ),
       child: Text(
         text,
@@ -181,7 +182,11 @@ class DeployWorkerDialog extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.factory_outlined, size: 48, color: Colors.white24),
+          const AppIcon(
+            AppHugeIcons.factory_outlined,
+            size: 48,
+            color: Colors.white24,
+          ),
           const SizedBox(height: 12),
           Text(
             AppLocalizations.of(context)!.noStationsAvailable,
@@ -214,7 +219,7 @@ class DeployWorkerDialog extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isCurrentStation
-            ? TimeFactoryColors.acidGreen.withValues(alpha: 0.1)
+            ? TimeFactoryColors.acidGreen.withOpacity(0.1)
             : TimeFactoryColors.surfaceDark,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
@@ -229,11 +234,11 @@ class DeployWorkerDialog extends ConsumerWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
+            color: TimeFactoryColors.electricCyan.withOpacity(0.2),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Icon(
-            Icons.settings_input_component,
+          child: const AppIcon(
+            AppHugeIcons.settings_input_component,
             color: TimeFactoryColors.electricCyan,
           ),
         ),
@@ -252,7 +257,10 @@ class DeployWorkerDialog extends ConsumerWidget {
           ),
         ),
         trailing: isCurrentStation
-            ? const Icon(Icons.check_circle, color: TimeFactoryColors.acidGreen)
+            ? const AppIcon(
+                AppHugeIcons.check_circle,
+                color: TimeFactoryColors.acidGreen,
+              )
             : canDeploy
             ? ElevatedButton(
                 style: ElevatedButton.styleFrom(

@@ -19,8 +19,10 @@ class GameAssets {
   static const String temporalReactor =
       'assets/images/icons/temporal-reactor.svg';
   static const String lottieReactor = 'assets/lottie/lottie-reactor.json';
-  static const String lottieSteamPunkReactor = 'assets/lottie/steampunk-reactor.lottie';
-  static const String lottieSteamPunkReactorJson = 'assets/lottie/steampunk.json';
+  static const String lottieSteamPunkReactor =
+      'assets/lottie/steampunk-reactor.lottie';
+  static const String lottieSteamPunkReactorJson =
+      'assets/lottie/steampunk.json';
 
   // Effects
   static const String unlockParticleEffect =
@@ -35,7 +37,7 @@ class GameAssets {
   static const String eraVictorian =
       '$_imagesPath/backgrounds/era_victorian.png';
   static const String eraRoaring20s =
-      '$_imagesPath/backgrounds/era_roaring_20s.png';
+      '$_imagesPath/backgrounds/20s/roarings-20s-bg.png';
   static const String eraAtomicAge =
       '$_imagesPath/backgrounds/era_atomic_age.png';
   static const String eraCyberpunk80s =

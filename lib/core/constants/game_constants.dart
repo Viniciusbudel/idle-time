@@ -36,8 +36,8 @@ class GameConstants {
   /// CE required to unlock each era
   static const Map<String, int> eraUnlockThresholds = {
     'victorian': 0, // Unlocked by default
-    'roaring_20s': 1000000, // 1M CE
-    'atomic_age': 1000000000, // 1B CE
+    'roaring_20s': 15000000, // 15M CE
+    'atomic_age': 5000000000, // 5B CE
     'cyberpunk_80s': 1000000000000, // 1T CE
     'neo_tokyo': 100000000000000, // 100T CE
     'post_singularity': 10000000000000000, // 10Qa CE
@@ -102,7 +102,7 @@ class GameConstants {
   /// Minimum CE to prestige
   static const int prestigeMinimumCE = 1000000; // 1M
 
-  /// Prestige points per √(CE / 1M)
+  /// Base CE divisor for prestige progression formula
   static const int prestigeFormulaBase = 1000000;
 
   /// Production bonus per prestige point spent on Chrono Mastery

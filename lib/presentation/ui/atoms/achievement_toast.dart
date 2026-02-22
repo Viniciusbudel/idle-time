@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/achievement.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Animated toast that slides in when an achievement unlocks
 class AchievementToast extends StatefulWidget {
@@ -114,7 +115,7 @@ class _AchievementToastState extends State<AchievementToast>
                           ),
                         ),
                       ),
-                      child: Icon(
+                      child: AppIcon(
                         a.icon,
                         color: TimeFactoryColors.voltageYellow,
                         size: 24,
@@ -147,8 +148,8 @@ class _AchievementToastState extends State<AchievementToast>
                           Row(
                             children: [
                               if (hasCE) ...[
-                                Icon(
-                                  Icons.bolt,
+                                const AppIcon(
+                                  AppHugeIcons.bolt,
                                   color: TimeFactoryColors.electricCyan,
                                   size: 12,
                                 ),
@@ -164,8 +165,8 @@ class _AchievementToastState extends State<AchievementToast>
                               ],
                               if (hasCE && hasShards) const SizedBox(width: 8),
                               if (hasShards) ...[
-                                Icon(
-                                  Icons.diamond_outlined,
+                                const AppIcon(
+                                  AppHugeIcons.diamond_outlined,
                                   color: TimeFactoryColors.hotMagenta,
                                   size: 12,
                                 ),

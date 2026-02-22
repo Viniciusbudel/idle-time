@@ -1,5 +1,9 @@
+import 'dart:math' as math;
+
+import 'package:time_factory/core/constants/game_constants.dart';
 import 'enums.dart';
 import 'worker.dart';
+import 'worker_artifact.dart';
 import 'station.dart';
 import 'package:time_factory/core/constants/tech_data.dart';
 import 'prestige_upgrade.dart';
@@ -11,6 +15,7 @@ class GameState {
   final BigInt lifetimeChronoEnergy;
   final Map<String, Worker> workers;
   final Map<String, Station> stations;
+  final List<WorkerArtifact> inventory; // NEW: Artifact Inventory
   final double paradoxLevel;
   final bool paradoxEventActive;
   final DateTime? paradoxEventEndTime;
@@ -29,6 +34,8 @@ class GameState {
   final int totalMerges;
   final Set<String> unlockedAchievements;
   final int tutorialStep; // 0=Welcome, 1=Hire, 2=Assign, 3=Collect, 5=Complete
+  final DateTime? lastDailyClaimTime;
+  final int dailyLoginStreak;
 
   const GameState({
     required this.chronoEnergy,
@@ -36,6 +43,7 @@ class GameState {
     required this.lifetimeChronoEnergy,
     this.workers = const {},
     this.stations = const {},
+    this.inventory = const [],
     this.paradoxLevel = 0.0,
     this.paradoxEventActive = false,
     this.paradoxEventEndTime,
@@ -54,6 +62,8 @@ class GameState {
     this.totalMerges = 0,
     this.unlockedAchievements = const {},
     this.tutorialStep = 0,
+    this.lastDailyClaimTime,
+    this.dailyLoginStreak = 0,
   });
 
   /// Initial game state for new players
@@ -73,7 +83,6 @@ class GameState {
     final starterWorker = Worker(
       id: 'worker_$starterId',
       era: WorkerEra.victorian,
-      level: 1,
       baseProduction: BigInt.from(1),
       rarity: WorkerRarity.common,
       name: 'Victoria',
@@ -83,10 +92,11 @@ class GameState {
 
     return GameState(
       chronoEnergy: BigInt.from(500), // Start with some CE for tutorial
-      timeShards: 100,
+      timeShards: 10,
       lifetimeChronoEnergy: BigInt.zero,
       workers: {'worker_$starterId': starterWorker},
       stations: {'station_$starterId': starterStation},
+      inventory: [],
       unlockedEras: {'victorian'},
       completedEras: {},
       currentEraId: 'victorian',
@@ -97,6 +107,8 @@ class GameState {
       totalMerges: 0,
       unlockedAchievements: {},
       tutorialStep: 0,
+      lastDailyClaimTime: null,
+      dailyLoginStreak: 0,
     );
   }
 
@@ -107,6 +119,7 @@ class GameState {
     BigInt? lifetimeChronoEnergy,
     Map<String, Worker>? workers,
     Map<String, Station>? stations,
+    List<WorkerArtifact>? inventory,
     double? paradoxLevel,
     bool? paradoxEventActive,
     DateTime? paradoxEventEndTime,
@@ -125,6 +138,8 @@ class GameState {
     int? totalMerges,
     Set<String>? unlockedAchievements,
     int? tutorialStep,
+    DateTime? lastDailyClaimTime,
+    int? dailyLoginStreak,
   }) {
     return GameState(
       chronoEnergy: chronoEnergy ?? this.chronoEnergy,
@@ -132,6 +147,7 @@ class GameState {
       lifetimeChronoEnergy: lifetimeChronoEnergy ?? this.lifetimeChronoEnergy,
       workers: workers ?? this.workers,
       stations: stations ?? this.stations,
+      inventory: inventory ?? this.inventory,
       paradoxLevel: paradoxLevel ?? this.paradoxLevel,
       paradoxEventActive: paradoxEventActive ?? this.paradoxEventActive,
       paradoxEventEndTime: paradoxEventEndTime ?? this.paradoxEventEndTime,
@@ -151,6 +167,8 @@ class GameState {
       totalMerges: totalMerges ?? this.totalMerges,
       unlockedAchievements: unlockedAchievements ?? this.unlockedAchievements,
       tutorialStep: tutorialStep ?? this.tutorialStep,
+      lastDailyClaimTime: lastDailyClaimTime ?? this.lastDailyClaimTime,
+      dailyLoginStreak: dailyLoginStreak ?? this.dailyLoginStreak,
     );
   }
 
@@ -174,8 +192,9 @@ class GameState {
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
 
-      final chronoMasteryLevel =
-          paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0;
+      final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
+        paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
+      );
       if (chronoMasteryLevel > 0) {
         final bonus = 1.0 + (chronoMasteryLevel * 0.1);
         production =
@@ -206,8 +225,9 @@ class GameState {
       rate += (eraVariety - 1) * 0.002;
     }
 
-    final riftStabilityLevel =
-        paradoxPointsSpent[PrestigeUpgradeType.riftStability.id] ?? 0;
+    final riftStabilityLevel = PrestigeUpgradeType.riftStability.clampLevel(
+      paradoxPointsSpent[PrestigeUpgradeType.riftStability.id] ?? 0,
+    );
     if (riftStabilityLevel > 0) {
       rate *= (1.0 - riftStabilityLevel * 0.05);
     }
@@ -235,8 +255,9 @@ class GameState {
           BigInt.from(100);
 
       // Chrono Mastery
-      final chronoMasteryLevel =
-          paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0;
+      final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
+        paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
+      );
       if (chronoMasteryLevel > 0) {
         final bonus = 1.0 + (chronoMasteryLevel * 0.1);
         production =
@@ -255,10 +276,11 @@ class GameState {
 
   /// Get offline efficiency multiplier
   double get offlineEfficiency {
-    const base = 0.7;
+    const base = 0.1; // REBALANCED: 0.7 -> 0.1
     // Paradox Upgrade
-    final offlineBonusLevel =
-        paradoxPointsSpent[PrestigeUpgradeType.temporalMemory.id] ?? 0;
+    final offlineBonusLevel = PrestigeUpgradeType.temporalMemory.clampLevel(
+      paradoxPointsSpent[PrestigeUpgradeType.temporalMemory.id] ?? 0,
+    );
     // Tech Upgrade (all offline techs: clockwork_arithmometer, radio_broadcast, etc.)
     final techMultiplier = TechData.calculateOfflineEfficiencyMultiplier(
       techLevels,
@@ -282,13 +304,35 @@ class GameState {
 
   /// Calculate prestige points to gain
   int get prestigePointsToGain {
-    if (lifetimeChronoEnergy < BigInt.from(1000000)) return 0;
-    final ratio = lifetimeChronoEnergy.toDouble() / 1000000.0;
-    return ratio.isFinite ? ratio.toInt().clamp(0, 1000000) : 0;
+    final minimum = BigInt.from(GameConstants.prestigeMinimumCE);
+    if (lifetimeChronoEnergy < minimum) return 0;
+
+    // Log curve to avoid runaway PP in late eras.
+    final log10Ce = _log10BigInt(lifetimeChronoEnergy);
+    final baseLog =
+        math.log(GameConstants.prestigeFormulaBase.toDouble()) / math.ln10;
+    final growth = (log10Ce - baseLog).clamp(0.0, 24.0);
+    final points = (6.0 * growth * growth).floor();
+    return points < 1 ? 1 : points;
   }
 
   /// Check if can prestige
-  bool get canPrestige => lifetimeChronoEnergy >= BigInt.from(1000000);
+  bool get canPrestige =>
+      lifetimeChronoEnergy >= BigInt.from(GameConstants.prestigeMinimumCE);
+
+  static double _log10BigInt(BigInt value) {
+    if (value <= BigInt.zero) return 0.0;
+
+    final text = value.toString();
+    const significantDigits = 15;
+
+    if (text.length <= significantDigits) {
+      return math.log(value.toDouble()) / math.ln10;
+    }
+
+    final lead = double.parse(text.substring(0, significantDigits));
+    return (text.length - significantDigits) + (math.log(lead) / math.ln10);
+  }
 
   /// Get number of stations owned in a specific era
   int getStationCountForEra(String eraId) {
@@ -302,6 +346,7 @@ class GameState {
       'lifetimeChronoEnergy': lifetimeChronoEnergy.toString(),
       'workers': workers.map((k, v) => MapEntry(k, v.toMap())),
       'stations': stations.map((k, v) => MapEntry(k, v.toMap())),
+      'inventory': inventory.map((e) => e.toMap()).toList(),
       'paradoxLevel': paradoxLevel,
       'paradoxEventActive': paradoxEventActive,
       'paradoxEventEndTime': paradoxEventEndTime?.toIso8601String(),
@@ -320,20 +365,34 @@ class GameState {
       'totalMerges': totalMerges,
       'unlockedAchievements': unlockedAchievements.toList(),
       'tutorialStep': tutorialStep,
+      'lastDailyClaimTime': lastDailyClaimTime?.toIso8601String(),
+      'dailyLoginStreak': dailyLoginStreak,
     };
   }
 
   factory GameState.fromMap(Map<String, dynamic> map) {
+    final parsedWorkers = (map['workers'] as Map<String, dynamic>).map(
+      (k, v) => MapEntry(k, Worker.fromMap(v as Map<String, dynamic>)),
+    );
+
     return GameState(
       chronoEnergy: BigInt.parse(map['chronoEnergy']),
       timeShards: map['timeShards'] ?? 0,
       lifetimeChronoEnergy: BigInt.parse(map['lifetimeChronoEnergy']),
-      workers: (map['workers'] as Map<String, dynamic>).map(
-        (k, v) => MapEntry(k, Worker.fromMap(v as Map<String, dynamic>)),
-      ),
-      stations: (map['stations'] as Map<String, dynamic>).map(
-        (k, v) => MapEntry(k, Station.fromMap(v as Map<String, dynamic>)),
-      ),
+      workers: parsedWorkers,
+      stations: (map['stations'] as Map<String, dynamic>).map((k, v) {
+        final station = Station.fromMap(v as Map<String, dynamic>);
+        // Cleanup ghost workers (e.g. from buggy version saves or merges)
+        final validIds = station.workerIds
+            .where((id) => parsedWorkers.containsKey(id))
+            .toList();
+        return MapEntry(k, station.copyWith(workerIds: validIds));
+      }),
+      inventory:
+          (map['inventory'] as List<dynamic>?)
+              ?.map((e) => WorkerArtifact.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       paradoxLevel: (map['paradoxLevel'] as num).toDouble(),
       paradoxEventActive: map['paradoxEventActive'] ?? false,
       paradoxEventEndTime: map['paradoxEventEndTime'] != null
@@ -360,6 +419,10 @@ class GameState {
       totalMerges: map['totalMerges'] ?? 0,
       unlockedAchievements: Set<String>.from(map['unlockedAchievements'] ?? []),
       tutorialStep: map['tutorialStep'] ?? 0,
+      lastDailyClaimTime: map['lastDailyClaimTime'] != null
+          ? DateTime.parse(map['lastDailyClaimTime'])
+          : null,
+      dailyLoginStreak: map['dailyLoginStreak'] ?? 0,
     );
   }
 }

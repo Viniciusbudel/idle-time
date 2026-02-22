@@ -7,6 +7,7 @@ import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/usecases/fit_worker_to_era_usecase.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class FitWorkerDialog extends ConsumerWidget {
   final Worker worker;
@@ -37,7 +38,7 @@ class FitWorkerDialog extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: TimeFactoryColors.voltageYellow.withValues(alpha: 0.3),
+              color: TimeFactoryColors.voltageYellow.withOpacity(0.3),
               blurRadius: 20,
             ),
           ],
@@ -69,7 +70,10 @@ class FitWorkerDialog extends ConsumerWidget {
                   worker.currentProduction,
                   Colors.white54,
                 ),
-                const Icon(Icons.arrow_forward, color: Colors.white24),
+                const AppIcon(
+                  AppHugeIcons.arrow_forward,
+                  color: Colors.white24,
+                ),
                 _buildStatColumn(
                   'UPGRADED',
                   newWorker.currentProduction,

@@ -4,11 +4,16 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/domain/entities/worker.dart';
+import 'package:time_factory/domain/entities/enums.dart';
+import 'package:time_factory/presentation/state/artifact_drop_event_provider.dart';
 import 'package:time_factory/presentation/game/components/particle_effects/ce_gain_particle.dart';
 import 'package:time_factory/presentation/game/components/particle_effects/tap_effect.dart';
 import 'package:time_factory/presentation/game/components/reactor_component.dart';
 import 'package:time_factory/presentation/game/components/worker_avatar.dart';
 import 'package:time_factory/presentation/game/components/hiring_effect_component.dart';
+import 'package:time_factory/presentation/game/components/temporal_anomaly_component.dart';
+import 'package:time_factory/domain/usecases/roll_artifact_drop_usecase.dart';
+import 'package:time_factory/domain/entities/worker_artifact.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/production_provider.dart';
 import 'package:time_factory/presentation/state/tech_provider.dart';
@@ -24,6 +29,10 @@ class TimeFactoryGame extends FlameGame {
   double _fractionalAccumulator = 0.0;
   double _autoClickAccumulator = 0.0;
   static const double _tickRate = 1.0 / 30.0; // 30 ticks per second
+
+  // Anomaly Drop System
+  double _anomalySpawnTimer = 0.0;
+  double _anomalyNextSpawnTarget = 120.0;
 
   TimeFactoryGame(this.ref);
 
@@ -101,6 +110,68 @@ class TimeFactoryGame extends FlameGame {
       // If we still have accumulator left (lag), just add bulk?
       // For now, just discard excess to prevent catch-up lag spiral
       if (_autoClickAccumulator > 1.0) _autoClickAccumulator = 0;
+    }
+
+    _processAnomalySpawner(warpedDt);
+  }
+
+  void _processAnomalySpawner(double dt) {
+    // Check if an anomaly already exists
+    if (children.whereType<TemporalAnomalyComponent>().isNotEmpty) {
+      return;
+    }
+
+    _anomalySpawnTimer += dt;
+    final paradoxLevel = ref.read(gameStateProvider).paradoxLevel;
+
+    // Adjust target based on paradox (if high paradox, spawn faster)
+    double target = _anomalyNextSpawnTarget;
+    if (paradoxLevel > 0.8) {
+      target /= 2.0; // Halve the interval
+    }
+
+    if (_anomalySpawnTimer >= target) {
+      _spawnAnomaly(paradoxLevel);
+      _anomalySpawnTimer = 0.0;
+      // Next spawn between 120s and 300s (2 to 5 mins) real-time equivalent
+      _anomalyNextSpawnTarget = 120.0 + Random().nextDouble() * 180.0;
+    }
+  }
+
+  void _spawnAnomaly(double paradoxLevel) {
+    // Random position avoiding edges
+    final x = size.x * 0.2 + Random().nextDouble() * (size.x * 0.6);
+    final y = size.y * 0.2 + Random().nextDouble() * (size.y * 0.6);
+
+    final anomaly = TemporalAnomalyComponent(
+      position: Vector2(x, y),
+      onTapped: () => _handleAnomalyTap(paradoxLevel),
+    );
+
+    add(anomaly);
+  }
+
+  void _handleAnomalyTap(double paradoxLevel) {
+    final useCase = RollArtifactDropUseCase();
+    final rarity = useCase.execute(paradoxLevel);
+    // Use current era for generation (legendary/epic might get a match bonus)
+    final currentEra = ref.read(gameStateProvider).currentEraId;
+    // We need the WorkerEra enum instance, or just use the first era if not found
+    final currentWorkerEra = WorkerEra.values.firstWhere(
+      (e) => e.id == currentEra,
+      orElse: () => WorkerEra.victorian,
+    );
+
+    final artifact = WorkerArtifact.generate(rarity, currentWorkerEra);
+
+    // Attempt to add to inventory
+    final added = ref
+        .read(gameStateProvider.notifier)
+        .addArtifactToInventory(artifact);
+
+    if (added) {
+      ref.read(artifactDropEventProvider.notifier).notifyDrop(artifact);
+      spawnResourceGainEffect(size / 2, BigInt.zero); // Visual feedback
     }
   }
 

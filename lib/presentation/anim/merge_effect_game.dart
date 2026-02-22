@@ -58,9 +58,9 @@ class MergeEffectGame extends FlameGame {
     const orbCount = 3;
     const startRadius = 120.0;
     final orbColors = [
-      primaryColor.withValues(alpha: 0.9),
-      primaryColor.withValues(alpha: 0.7),
-      primaryColor.withValues(alpha: 0.5),
+      primaryColor.withOpacity( 0.9),
+      primaryColor.withOpacity( 0.7),
+      primaryColor.withOpacity( 0.5),
     ];
 
     for (int i = 0; i < orbCount; i++) {
@@ -150,7 +150,7 @@ class MergeEffectGame extends FlameGame {
           anchor: Anchor.center,
           position: center,
           paint: Paint()
-            ..color = primaryColor.withValues(alpha: 0.8)
+            ..color = primaryColor.withOpacity( 0.8)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.5
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
@@ -195,7 +195,7 @@ class MergeEffectGame extends FlameGame {
           anchor: Anchor.center,
           position: center,
           paint: Paint()
-            ..color = primaryColor.withValues(alpha: 0.3)
+            ..color = primaryColor.withOpacity( 0.3)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 8.0
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
@@ -323,7 +323,7 @@ class MergeEffectGame extends FlameGame {
                     canvas.drawCircle(
                       Offset.zero,
                       size,
-                      Paint()..color = primaryColor.withValues(alpha: opacity),
+                      Paint()..color = primaryColor.withOpacity( opacity),
                     );
                   },
                 ),
@@ -355,7 +355,7 @@ class MergeEffectGame extends FlameGame {
                       primaryColor,
                       Colors.white,
                       _random.nextDouble() * 0.4,
-                    )!.withValues(alpha: opacity);
+                    )!.withOpacity( opacity);
                   canvas.drawCircle(Offset.zero, 1.5, paint);
                 },
               ),
@@ -410,7 +410,7 @@ class _SpiralOrbParticle extends Particle {
       pos.toOffset(),
       currentSize * 2.5,
       Paint()
-        ..color = color.withValues(alpha: opacity * 0.2)
+        ..color = color.withOpacity( opacity * 0.2)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
     );
 
@@ -418,14 +418,14 @@ class _SpiralOrbParticle extends Particle {
     canvas.drawCircle(
       pos.toOffset(),
       currentSize,
-      Paint()..color = color.withValues(alpha: opacity),
+      Paint()..color = color.withOpacity( opacity),
     );
 
     // Hot center
     canvas.drawCircle(
       pos.toOffset(),
       currentSize * 0.4,
-      Paint()..color = Colors.white.withValues(alpha: opacity * 0.8),
+      Paint()..color = Colors.white.withOpacity( opacity * 0.8),
     );
   }
 }
@@ -470,7 +470,7 @@ class _OrbTrailParticle extends Particle {
     canvas.drawCircle(
       pos.toOffset(),
       1.5,
-      Paint()..color = color.withValues(alpha: opacity),
+      Paint()..color = color.withOpacity( opacity),
     );
   }
 }
@@ -508,7 +508,7 @@ class _AccretionParticle extends Particle {
     canvas.drawCircle(
       pos.toOffset(),
       1.5,
-      Paint()..color = color.withValues(alpha: opacity),
+      Paint()..color = color.withOpacity( opacity),
     );
   }
 }

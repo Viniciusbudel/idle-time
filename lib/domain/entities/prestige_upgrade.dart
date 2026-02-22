@@ -1,41 +1,41 @@
-import 'package:flutter/material.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 enum PrestigeUpgradeType {
   chronoMastery(
     'chrono_mastery',
     'Chrono Mastery',
     'Global production +10%',
-    Icons.bolt,
+    AppHugeIcons.bolt,
   ),
   eraInsight(
     'era_insight',
     'Era Insight',
     '+1 Starting Era unlocked',
-    Icons.remove_red_eye,
+    AppHugeIcons.remove_red_eye,
   ),
   riftStability(
     'rift_stability',
     'Rift Stability',
     '-5% Paradox accumulation',
-    Icons.shield,
+    AppHugeIcons.shield,
   ),
   timekeepersFavor(
     'timekeepers_favor',
     'Timekeeper\'s Favor',
     '+5% Better Gacha luck',
-    Icons.star,
+    AppHugeIcons.star,
   ),
   temporalMemory(
     'temporal_memory',
     'Temporal Memory',
     '+10% Offline earnings',
-    Icons.hourglass_top,
+    AppHugeIcons.hourglass_top,
   );
 
   final String id;
   final String displayName;
   final String description;
-  final IconData icon;
+  final AppIconData icon;
 
   const PrestigeUpgradeType(
     this.id,
@@ -46,22 +46,23 @@ enum PrestigeUpgradeType {
 
   /// Calculate cost for the NEXT level (currentLevel + 1)
   int getCost(int currentLevel) {
+    final nextLevel = currentLevel + 1;
     switch (this) {
       case PrestigeUpgradeType.chronoMastery:
-        // Linear: 1, 2, 3...
-        return 1 + currentLevel;
+        // Quadratic: 4, 10, 20, 34...
+        return 2 + (nextLevel * nextLevel * 2);
       case PrestigeUpgradeType.eraInsight:
-        // Exponential: 5, 10, 20...
-        return (5 * (1 << currentLevel)); // 1 << level is 2^level
+        // Heavy unlock tax: 22, 58, 118, 202...
+        return 10 + (nextLevel * nextLevel * 12);
       case PrestigeUpgradeType.riftStability:
-        // Arithmetic: 3, 5, 7...
-        return 3 + (currentLevel * 2);
+        // Mid-high curve: 15, 36, 71, 120...
+        return 8 + (nextLevel * nextLevel * 7);
       case PrestigeUpgradeType.timekeepersFavor:
-        // Expensive Exponential: 10, 20, 40...
-        return (10 * (1 << currentLevel));
+        // Premium utility curve: 21, 48, 93, 156...
+        return 12 + (nextLevel * nextLevel * 9);
       case PrestigeUpgradeType.temporalMemory:
-        // Linear: 2, 3, 4...
-        return 2 + currentLevel;
+        // Mid curve: 12, 30, 60, 102...
+        return 6 + (nextLevel * nextLevel * 6);
     }
   }
 
@@ -69,16 +70,22 @@ enum PrestigeUpgradeType {
   int? get maxLevel {
     switch (this) {
       case PrestigeUpgradeType.chronoMastery:
-        return null; // Infinite
+        return 25;
       case PrestigeUpgradeType.eraInsight:
-        return 8; // Max eras
+        return 4;
       case PrestigeUpgradeType.riftStability:
-        return 10; // -50% total
+        return 8;
       case PrestigeUpgradeType.timekeepersFavor:
-        return 5; // +25% luck total
+        return 10;
       case PrestigeUpgradeType.temporalMemory:
-        return 10; // +100% total
+        return 8;
     }
+  }
+
+  int clampLevel(int level) {
+    final cap = maxLevel;
+    if (cap == null) return level < 0 ? 0 : level;
+    return level.clamp(0, cap);
   }
 
   /// Get effect description for a specific level

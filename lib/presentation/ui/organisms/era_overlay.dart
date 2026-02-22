@@ -78,7 +78,7 @@ class _EraPainter extends CustomPainter {
 
   void _drawScanlines(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.03 + intensity * 0.02)
+      ..color = Colors.white.withOpacity( 0.03 + intensity * 0.02)
       ..strokeWidth = 1;
 
     // Scanlines every 4px
@@ -92,7 +92,7 @@ class _EraPainter extends CustomPainter {
     // Glitch block
     if (intensity > 0.5 && _rng.nextDouble() < 0.1) {
       final barPaint = Paint()
-        ..color = theme.primaryColor.withValues(alpha: 0.1);
+        ..color = theme.primaryColor.withOpacity( 0.1);
       final y = _rng.nextDouble() * size.height;
       final h = _rng.nextDouble() * 50;
       canvas.drawRect(Rect.fromLTWH(0, y, size.width, h), barPaint);
@@ -105,13 +105,13 @@ class _EraPainter extends CustomPainter {
       Offset.zero & size,
       Paint()
         ..color = const Color(0xFF704214)
-            .withValues(alpha: 0.1) // Brown
+            .withOpacity( 0.1) // Brown
         ..blendMode = BlendMode.softLight, // Or overlay
     );
 
     // 2. Film Grain (Simulated) - Optimized with drawPoints
     final grainPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.05)
+      ..color = Colors.black.withOpacity( 0.05)
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
 
@@ -128,7 +128,7 @@ class _EraPainter extends CustomPainter {
     if (_rng.nextDouble() < 0.05) {
       // Occasional scratch
       final scratchPaint = Paint()
-        ..color = Colors.white.withValues(alpha: 0.05)
+        ..color = Colors.white.withOpacity( 0.05)
         ..strokeWidth = 1;
       final x = _rng.nextDouble() * size.width;
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), scratchPaint);
@@ -141,7 +141,7 @@ class _EraPainter extends CustomPainter {
     final gradient = RadialGradient(
       center: Alignment.center,
       radius: 1.2, // Slightly larger
-      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.4)],
+      colors: [Colors.transparent, Colors.black.withOpacity( 0.4)],
       stops: const [0.6, 1.0],
     );
 

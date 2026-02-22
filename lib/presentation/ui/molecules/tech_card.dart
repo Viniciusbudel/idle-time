@@ -4,6 +4,7 @@ import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/presentation/ui/atoms/cyber_button.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/domain/entities/tech_upgrade.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class TechCard extends StatelessWidget {
   final String title;
@@ -12,7 +13,7 @@ class TechCard extends StatelessWidget {
   final double progress;
   final String cost;
   final VoidCallback? onUpgrade;
-  final IconData icon;
+  final AppIconData icon;
   final Color color;
   final String? effectLabel;
   final String? effectDescription;
@@ -25,7 +26,7 @@ class TechCard extends StatelessWidget {
     required this.progress,
     required this.cost,
     this.onUpgrade,
-    this.icon = Icons.science,
+    this.icon = AppHugeIcons.science,
     this.color = TimeFactoryColors.electricCyan,
     this.effectLabel,
     this.effectDescription,
@@ -38,12 +39,12 @@ class TechCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(1), // Border width
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.3), // Border color
+          color: color.withOpacity(0.3), // Border color
         ),
         child: ClipPath(
           clipper: _TechCardClipper(),
           child: Container(
-            color: TimeFactoryColors.surfaceDark.withValues(alpha: 0.9),
+            color: TimeFactoryColors.surfaceDark.withOpacity(0.9),
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,9 +57,9 @@ class TechCard extends StatelessWidget {
                       height: 48,
                       decoration: BoxDecoration(
                         color: Colors.black,
-                        border: Border.all(color: color.withValues(alpha: 0.3)),
+                        border: Border.all(color: color.withOpacity(0.3)),
                       ),
-                      child: Icon(icon, color: color),
+                      child: AppIcon(icon, color: color),
                     ),
                     const SizedBox(width: 12),
 
@@ -87,9 +88,9 @@ class TechCard extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: color.withValues(alpha: 0.1),
+                                  color: color.withOpacity(0.1),
                                   border: Border.all(
-                                    color: color.withValues(alpha: 0.3),
+                                    color: color.withOpacity(0.3),
                                   ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
@@ -138,7 +139,7 @@ class TechCard extends StatelessWidget {
                         color: color,
                         boxShadow: [
                           BoxShadow(
-                            color: color.withValues(alpha: 0.5),
+                            color: color.withOpacity(0.5),
                             blurRadius: 6,
                           ),
                         ],
@@ -168,7 +169,7 @@ class TechCard extends StatelessWidget {
                     CyberButton(
                       label: AppLocalizations.of(context)!.upgrade,
                       subLabel: cost,
-                      icon: Icons.upgrade,
+                      icon: AppHugeIcons.upgrade,
                       onTap: onUpgrade,
                       primaryColor: color,
                     ),
@@ -201,6 +202,8 @@ extension TechTypeLocalization on TechType {
         return l10n.clickPowerEffect;
       case TechType.eraUnlock:
         return l10n.eraUnlockEffect;
+      case TechType.manhattan:
+        return l10n.manhattanEffect;
     }
   }
 }

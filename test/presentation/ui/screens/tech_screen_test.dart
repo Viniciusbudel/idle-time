@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:time_factory/domain/entities/tech_upgrade.dart';
@@ -41,7 +43,15 @@ void main() {
             ),
           ),
         ],
-        child: MaterialApp(home: Scaffold(body: TechScreen())),
+        child: const MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: TechScreen()),
+        ),
       ),
     );
 

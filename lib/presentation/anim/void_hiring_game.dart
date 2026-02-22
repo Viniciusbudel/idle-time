@@ -85,7 +85,7 @@ class VoidHiringGame extends FlameGame {
           anchor: Anchor.center,
           position: center,
           paint: Paint()
-            ..color = color.withValues(alpha: 0.8)
+            ..color = color.withOpacity( 0.8)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 3.0
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
@@ -192,7 +192,7 @@ class VoidHiringGame extends FlameGame {
               speed: Vector2(cos(angle), sin(angle)) * speed,
               child: CircleParticle(
                 radius: 2.5,
-                paint: Paint()..color = color.withValues(alpha: 0.9),
+                paint: Paint()..color = color.withOpacity( 0.9),
               ),
             );
           },
@@ -248,7 +248,7 @@ class _AccretionParticle extends Particle {
     final y = sin(angle) * radius * tilt;
     final pos = center + Vector2(x, y);
     final opacity = (lifespan - progress * lifespan) / lifespan;
-    final paint = Paint()..color = color.withValues(alpha: opacity);
+    final paint = Paint()..color = color.withOpacity( opacity);
     canvas.drawCircle(pos.toOffset(), 2.0, paint);
   }
 }

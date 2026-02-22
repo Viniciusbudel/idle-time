@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class CyberButton extends StatelessWidget {
   final String label;
   final String? subLabel;
-  final IconData? icon;
+  final AppIconData? icon;
   final VoidCallback? onTap;
   final Color primaryColor;
   final Color textColor;
@@ -39,17 +40,14 @@ class CyberButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: onTap != null ? primaryColor : Colors.grey[800],
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-              width: 1,
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 16, color: textColor),
+                AppIcon(icon, size: 16, color: textColor),
                 const SizedBox(width: 8),
               ],
               Text(
@@ -64,13 +62,13 @@ class CyberButton extends StatelessWidget {
                   width: 1,
                   height: 16,
                   margin: const EdgeInsets.symmetric(horizontal: 8),
-                  color: textColor.withValues(alpha: 0.2),
+                  color: textColor.withOpacity(0.2),
                 ),
                 Text(
                   subLabel!,
                   style: TimeFactoryTextStyles.bodyMono.copyWith(
                     fontSize: 10,
-                    color: textColor.withValues(alpha: 0.8),
+                    color: textColor.withOpacity(0.8),
                     fontWeight: FontWeight.bold,
                   ),
                 ),

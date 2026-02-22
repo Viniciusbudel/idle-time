@@ -5,6 +5,7 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/presentation/ui/pages/loop_chambers_tab.dart';
 import 'package:time_factory/core/constants/spacing.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Chambers Screen - Steampunk Themed
 class ChambersScreen extends ConsumerStatefulWidget {
@@ -59,7 +60,11 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
               borderRadius: BorderRadius.circular(8),
               // hover effect simulation could go here
             ),
-            child: Icon(Icons.grid_view, color: colors.primary, size: 28),
+            child: AppIcon(
+              AppHugeIcons.grid_view,
+              color: colors.primary,
+              size: 28,
+            ),
           ),
 
           const SizedBox(width: 8),
@@ -77,7 +82,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                   letterSpacing: 2.0,
                   shadows: [
                     Shadow(
-                      color: colors.primary.withValues(alpha: 0.7),
+                      color: colors.primary.withOpacity(0.7),
                       blurRadius: 8,
                     ),
                   ],
@@ -92,7 +97,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                   letterSpacing: 2.0,
                   shadows: [
                     Shadow(
-                      color: colors.primary.withValues(alpha: 0.7),
+                      color: colors.primary.withOpacity(0.7),
                       blurRadius: 8,
                     ),
                   ],
@@ -113,14 +118,12 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.1),
-                  border: Border.all(
-                    color: colors.primary.withValues(alpha: 0.5),
-                  ),
+                  color: colors.primary.withOpacity(0.1),
+                  border: Border.all(color: colors.primary.withOpacity(0.5)),
                   borderRadius: BorderRadius.circular(4),
                   boxShadow: [
                     BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.3),
+                      color: colors.primary.withOpacity(0.3),
                       blurRadius: 8,
                     ),
                   ],
@@ -128,7 +131,11 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.person, color: colors.primary, size: 14),
+                    AppIcon(
+                      AppHugeIcons.person,
+                      color: colors.primary,
+                      size: 14,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '$idleCount IDLE',
@@ -148,7 +155,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                 'SYS.LC1',
                 style: typography.bodyMedium.copyWith(
                   fontSize: 10.0,
-                  color: colors.primary.withValues(alpha: 0.6),
+                  color: colors.primary.withOpacity(0.6),
                   letterSpacing: 2.0,
                 ),
               ),

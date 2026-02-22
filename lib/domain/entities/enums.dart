@@ -34,13 +34,13 @@ enum WorkerEra {
   BigInt get hireCost {
     const costs = {
       'victorian': 150,
-      'roaring_20s': 525, // 150 × 3.5
-      'atomic_age': 1800, // 150 × 12.0
-      'cyberpunk_80s': 6750, // 150 × 45.0
-      'neo_tokyo': 27000, // 150 × 180.0
-      'post_singularity': 112500, // 150 × 750.0
-      'ancient_rome': 450000, // 150 × 3000.0
-      'far_future': 1800000, // 150 × 12000.0
+      'roaring_20s': 100000, // 100k
+      'atomic_age': 60000000, // REBALANCED: 25M -> 60M
+      'cyberpunk_80s': 15000000000, // REBALANCED: 5B -> 15B
+      'neo_tokyo': 1000000000000, // 1T
+      'post_singularity': 200000000000000, // 200T
+      'ancient_rome': 40000000000000000, // 40Qa
+      'far_future': 8000000000000000000, // 8Qi
     };
     return BigInt.from(costs[id] ?? 150);
   }
@@ -49,10 +49,10 @@ enum WorkerEra {
 /// Worker rarity tiers - REBALANCED production multipliers
 enum WorkerRarity {
   common('common', 'Common', 1.0),
-  rare('rare', 'Rare', 2.5),
-  epic('epic', 'Epic', 6.0),
-  legendary('legendary', 'Legendary', 16.0),
-  paradox('paradox', 'Paradox', 50.0);
+  rare('rare', 'Rare', 3.5),
+  epic('epic', 'Epic', 7),
+  legendary('legendary', 'Legendary', 15.0),
+  paradox('paradox', 'Paradox', 40.0);
 
   final String id;
   final String displayName;
@@ -63,8 +63,15 @@ enum WorkerRarity {
 
 /// Station types available in the factory
 enum StationType {
-  basicLoop('basic_loop', 'Basic Loop Chamber', 3, 6, WorkerEra.victorian),
-  dualHelix('dual_helix', 'Dual Helix Chamber', 3, 6, WorkerEra.roaring20s),
+  basicLoop('basic_loop', 'Basic Loop Chamber', 3, 5, WorkerEra.victorian),
+  dualHelix('dual_helix', 'Dual Helix Chamber', 3, 8, WorkerEra.roaring20s),
+  nuclearReactor(
+    'nuclear_reactor',
+    'Nuclear Reactor',
+    3,
+    10,
+    WorkerEra.atomicAge,
+  ),
   paradoxAmplifier(
     'paradox_amplifier',
     'Paradox Amplifier',
@@ -79,6 +86,9 @@ enum StationType {
     8,
     WorkerEra.cyberpunk80s,
   ),
+  dataNode('data_node', 'Data Node', 4, 10, WorkerEra.cyberpunk80s),
+  synthLab('synth_lab', 'Synth Lab', 4, 12, WorkerEra.cyberpunk80s),
+  neonCore('neon_core', 'Neon Core', 4, 15, WorkerEra.cyberpunk80s),
   riftGenerator('rift_generator', 'Rift Generator', 3, 6, WorkerEra.neoTokyo);
 
   final String id;
