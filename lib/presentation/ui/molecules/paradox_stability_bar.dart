@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Paradox Stability Bar - Shows current paradox level with warning states
 class ParadoxStabilityBar extends StatelessWidget {
@@ -24,10 +25,10 @@ class ParadoxStabilityBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A0A0A).withOpacity( 0.9),
+        color: const Color(0xFF1A0A0A).withOpacity(0.9),
         border: Border.all(
           color: isCritical
-              ? TimeFactoryColors.hotMagenta.withOpacity( 0.5)
+              ? TimeFactoryColors.hotMagenta.withOpacity(0.5)
               : Colors.white10,
         ),
         borderRadius: BorderRadius.circular(4),
@@ -35,7 +36,11 @@ class ParadoxStabilityBar extends StatelessWidget {
       child: Row(
         children: [
           // Warning Icon
-          Icon(Icons.warning_amber_rounded, color: barColor, size: 18),
+          AppIcon(
+            AppHugeIcons.warning_amber_rounded,
+            color: barColor,
+            size: 18,
+          ),
           const SizedBox(width: 8),
 
           // Label
@@ -92,7 +97,11 @@ class ParadoxStabilityIndicator extends StatelessWidget {
           // Header Row
           Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: barColor, size: 16),
+              AppIcon(
+                AppHugeIcons.warning_amber_rounded,
+                color: barColor,
+                size: 16,
+              ),
               const SizedBox(width: 6),
               Text(
                 'PARADOX STABILITY',
@@ -123,7 +132,7 @@ class ParadoxStabilityIndicator extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.black,
               borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: barColor.withOpacity( 0.3)),
+              border: Border.all(color: barColor.withOpacity(0.3)),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(3),
@@ -134,11 +143,11 @@ class ParadoxStabilityIndicator extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          TimeFactoryColors.acidGreen.withOpacity( 0.2),
+                          TimeFactoryColors.acidGreen.withOpacity(0.2),
                           TimeFactoryColors.voltageYellow.withValues(
                             alpha: 0.2,
                           ),
-                          TimeFactoryColors.hotMagenta.withOpacity( 0.2),
+                          TimeFactoryColors.hotMagenta.withOpacity(0.2),
                         ],
                       ),
                     ),

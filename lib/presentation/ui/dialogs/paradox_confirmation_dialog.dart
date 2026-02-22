@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class ParadoxConfirmationDialog extends StatefulWidget {
   final VoidCallback onConfirm;
@@ -115,8 +116,8 @@ class _ParadoxConfirmationDialogState extends State<ParadoxConfirmationDialog>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
+                  AppIcon(
+                    AppHugeIcons.warning_amber_rounded,
                     color: _isCollapsing
                         ? Colors.white
                         : TimeFactoryColors.hotMagenta,

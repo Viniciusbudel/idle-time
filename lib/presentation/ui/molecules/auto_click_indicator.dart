@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Floating badge that shows the auto-click rate when automation tech is active.
 /// Only visible when automationLevel > 0.
@@ -64,7 +65,7 @@ class _AnimatedAutoClickBadgeState extends State<_AnimatedAutoClickBadge>
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity( 0.6),
+            color: Colors.black.withOpacity(0.6),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: TimeFactoryColors.electricCyan.withValues(
@@ -85,8 +86,8 @@ class _AnimatedAutoClickBadgeState extends State<_AnimatedAutoClickBadge>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.precision_manufacturing_rounded,
+              AppIcon(
+                AppHugeIcons.precision_manufacturing_rounded,
                 size: 14,
                 color: TimeFactoryColors.electricCyan.withValues(
                   alpha: 0.5 + _pulseAnimation.value * 0.5,

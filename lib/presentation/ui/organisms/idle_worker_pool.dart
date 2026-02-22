@@ -7,6 +7,7 @@ import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Idle worker pool widget - positioned within screen (not overlapping appbar)
 /// Matches tech page styling
@@ -39,8 +40,8 @@ class IdleWorkerPool extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            TimeFactoryColors.electricCyan.withOpacity( 0.4),
-            TimeFactoryColors.electricCyan.withOpacity( 0.1),
+            TimeFactoryColors.electricCyan.withOpacity(0.4),
+            TimeFactoryColors.electricCyan.withOpacity(0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -60,8 +61,8 @@ class IdleWorkerPool extends StatelessWidget {
             // Header row
             Row(
               children: [
-                const Icon(
-                  Icons.groups,
+                const AppIcon(
+                  AppHugeIcons.groups,
                   color: TimeFactoryColors.electricCyan,
                   size: 16,
                 ),
@@ -142,9 +143,9 @@ class IdleWorkerPool extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: TimeFactoryColors.deepPurple.withOpacity( 0.3),
+          color: TimeFactoryColors.deepPurple.withOpacity(0.3),
           border: Border.all(
-            color: TimeFactoryColors.electricCyan.withOpacity( 0.4),
+            color: TimeFactoryColors.electricCyan.withOpacity(0.4),
           ),
           borderRadius: BorderRadius.circular(4),
         ),
@@ -158,7 +159,7 @@ class IdleWorkerPool extends StatelessWidget {
                 worker.rarity,
                 colorFilter: WorkerIconHelper.isSvg(worker.era)
                     ? ColorFilter.mode(
-                        TimeFactoryColors.electricCyan.withOpacity( 0.8),
+                        TimeFactoryColors.electricCyan.withOpacity(0.8),
                         BlendMode.srcIn,
                       )
                     : null,
@@ -199,8 +200,8 @@ class IdleWorkerPool extends StatelessWidget {
         child: DropdownButton<WorkerEra>(
           value: selectedEra,
           isDense: true,
-          icon: const Icon(
-            Icons.keyboard_arrow_down,
+          icon: const AppIcon(
+            AppHugeIcons.keyboard_arrow_down,
             color: Colors.white54,
             size: 16,
           ),
@@ -242,7 +243,7 @@ class IdleWorkerPool extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           boxShadow: [
             BoxShadow(
-              color: TimeFactoryColors.electricCyan.withOpacity( 0.4),
+              color: TimeFactoryColors.electricCyan.withOpacity(0.4),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -260,7 +261,11 @@ class IdleWorkerPool extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(Icons.person_add, color: Colors.black, size: 16),
+            const AppIcon(
+              AppHugeIcons.person_add,
+              color: Colors.black,
+              size: 16,
+            ),
           ],
         ),
       ),

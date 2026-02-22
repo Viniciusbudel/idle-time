@@ -8,6 +8,7 @@ import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker_artifact.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Filter states for the artifact inventory
 enum _RarityFilter { all, common, rare, epic, legendary, paradox }
@@ -111,7 +112,10 @@ class _ArtifactInventoryDialogState
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white54),
+                  icon: const AppIcon(
+                    AppHugeIcons.close,
+                    color: Colors.white54,
+                  ),
                   onPressed: () => Navigator.pop(context),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -136,8 +140,8 @@ class _ArtifactInventoryDialogState
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.warning_amber_rounded,
+                    const AppIcon(
+                      AppHugeIcons.warning_amber_rounded,
                       color: Colors.orange,
                       size: 16,
                     ),
@@ -170,8 +174,8 @@ class _ArtifactInventoryDialogState
                   color: Colors.white24,
                   fontSize: 12,
                 ),
-                prefixIcon: const Icon(
-                  Icons.search,
+                prefixIcon: const AppIcon(
+                  AppHugeIcons.search,
                   color: TimeFactoryColors.electricCyan,
                   size: 20,
                 ),
@@ -288,8 +292,8 @@ class _ArtifactInventoryDialogState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.inventory_2_outlined,
+          AppIcon(
+            AppHugeIcons.inventory_2_outlined,
             size: 64,
             color: Colors.white.withOpacity(0.1),
           ),
@@ -357,7 +361,7 @@ class _ArtifactInventoryDialogState
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      Icon(
+                      AppIcon(
                         _rarityIcon(artifact.rarity),
                         color: rarityColor.withValues(
                           alpha: isFull ? 0.4 : 1.0,
@@ -373,8 +377,8 @@ class _ArtifactInventoryDialogState
                             color: rarityColor.withOpacity(0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
-                            Icons.touch_app_outlined,
+                          child: AppIcon(
+                            AppHugeIcons.touch_app_outlined,
                             color: rarityColor.withOpacity(0.7),
                             size: 10,
                           ),
@@ -498,7 +502,7 @@ class _ArtifactInventoryDialogState
               // Header
               Row(
                 children: [
-                  Icon(
+                  AppIcon(
                     _rarityIcon(artifact.rarity),
                     color: rarityColor,
                     size: 24,
@@ -538,8 +542,8 @@ class _ArtifactInventoryDialogState
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(
-                      Icons.close,
+                    icon: const AppIcon(
+                      AppHugeIcons.close,
                       color: Colors.white54,
                       size: 18,
                     ),
@@ -554,7 +558,7 @@ class _ArtifactInventoryDialogState
 
               // Stats
               _tooltipStat(
-                Icons.flash_on,
+                AppHugeIcons.flash_on,
                 'Base Power',
                 '+$baseBonus',
                 baseBonus > BigInt.zero
@@ -563,7 +567,7 @@ class _ArtifactInventoryDialogState
               ),
               const SizedBox(height: 8),
               _tooltipStat(
-                Icons.trending_up,
+                AppHugeIcons.trending_up,
                 'Production Bonus',
                 hasProdBonus
                     ? '+${(artifact.productionMultiplier * 100).toStringAsFixed(0)}%'
@@ -572,7 +576,7 @@ class _ArtifactInventoryDialogState
               ),
               const SizedBox(height: 8),
               _tooltipStat(
-                Icons.public,
+                AppHugeIcons.public,
                 'Era Synergy',
                 hasEraMatch
                     ? '${artifact.eraMatch!.displayName} (+10% if matched)'
@@ -597,14 +601,14 @@ class _ArtifactInventoryDialogState
   }
 
   Widget _tooltipStat(
-    IconData icon,
+    AppIconData icon,
     String label,
     String value,
     Color valueColor,
   ) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.white38),
+        AppIcon(icon, size: 16, color: Colors.white38),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -680,18 +684,18 @@ class _ArtifactInventoryDialogState
     }
   }
 
-  IconData _rarityIcon(WorkerRarity rarity) {
+  AppIconData _rarityIcon(WorkerRarity rarity) {
     switch (rarity) {
       case WorkerRarity.common:
-        return Icons.settings;
+        return AppHugeIcons.settings;
       case WorkerRarity.rare:
-        return Icons.electric_bolt;
+        return AppHugeIcons.electric_bolt;
       case WorkerRarity.epic:
-        return Icons.auto_fix_high;
+        return AppHugeIcons.auto_fix_high;
       case WorkerRarity.legendary:
-        return Icons.diamond_outlined;
+        return AppHugeIcons.diamond_outlined;
       case WorkerRarity.paradox:
-        return Icons.blur_circular;
+        return AppHugeIcons.blur_circular;
     }
   }
 }

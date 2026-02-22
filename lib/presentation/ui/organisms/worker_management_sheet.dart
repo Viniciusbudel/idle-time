@@ -14,6 +14,7 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import '../atoms/merge_effect_overlay.dart';
 import '../atoms/worker_tile.dart';
 import '../dialogs/fit_worker_dialog.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class WorkerManagementSheet extends ConsumerStatefulWidget {
   const WorkerManagementSheet({super.key});
@@ -190,7 +191,10 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: colors.textSecondary),
+                      icon: AppIcon(
+                        AppHugeIcons.close,
+                        color: colors.textSecondary,
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -348,9 +352,9 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? color.withOpacity( 0.2) : Colors.transparent,
+          color: isActive ? color.withOpacity(0.2) : Colors.transparent,
           border: Border.all(
-            color: isActive ? color : color.withOpacity( 0.3),
+            color: isActive ? color : color.withOpacity(0.3),
             width: isActive ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(20),
@@ -358,7 +362,7 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
         child: Text(
           label,
           style: typography.bodySmall.copyWith(
-            color: isActive ? color : color.withOpacity( 0.6),
+            color: isActive ? color : color.withOpacity(0.6),
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             fontSize: 11,
           ),
@@ -385,11 +389,11 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
       decoration: BoxDecoration(
         color: colors.background,
         border: Border(
-          top: BorderSide(color: rarityColor.withOpacity( 0.5), width: 1),
+          top: BorderSide(color: rarityColor.withOpacity(0.5), width: 1),
         ),
         boxShadow: [
           BoxShadow(
-            color: rarityColor.withOpacity( 0.2),
+            color: rarityColor.withOpacity(0.2),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -413,7 +417,7 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                     shape: BoxShape.circle,
                     color: filled ? rarityColor : Colors.transparent,
                     border: Border.all(
-                      color: rarityColor.withOpacity( 0.5),
+                      color: rarityColor.withOpacity(0.5),
                       width: 1.5,
                     ),
                   ),
@@ -464,7 +468,7 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.upgrade, size: 20),
+                      AppIcon(AppHugeIcons.upgrade, size: 20),
                       SizedBox(width: 8),
                       Text(
                         'FIT TO ERA',
@@ -489,19 +493,19 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
               style: ElevatedButton.styleFrom(
                 backgroundColor: _selectedWorkerIds.length >= 3
                     ? rarityColor
-                    : rarityColor.withOpacity( 0.3),
+                    : rarityColor.withOpacity(0.3),
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: _selectedWorkerIds.length >= 3 ? 8 : 0,
-                shadowColor: rarityColor.withOpacity( 0.5),
+                shadowColor: rarityColor.withOpacity(0.5),
               ),
               onPressed: _selectedWorkerIds.length >= 3 ? _performMerge : null,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.merge_type, size: 20),
+                  const AppIcon(AppHugeIcons.merge_type, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     AppLocalizations.of(context)!.merge.toUpperCase(),
@@ -620,7 +624,7 @@ class _MergeResultDialogState extends State<_MergeResultDialog>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: rarityColor.withOpacity( 0.5),
+                color: rarityColor.withOpacity(0.5),
                 blurRadius: 40,
                 spreadRadius: 4,
               ),
@@ -648,14 +652,14 @@ class _MergeResultDialogState extends State<_MergeResultDialog>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      rarityColor.withOpacity( 0.3),
-                      rarityColor.withOpacity( 0.05),
+                      rarityColor.withOpacity(0.3),
+                      rarityColor.withOpacity(0.05),
                     ],
                   ),
                   border: Border.all(color: rarityColor, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: rarityColor.withOpacity( 0.6),
+                      color: rarityColor.withOpacity(0.6),
                       blurRadius: 30,
                       spreadRadius: 4,
                     ),
@@ -695,8 +699,8 @@ class _MergeResultDialogState extends State<_MergeResultDialog>
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: rarityColor.withOpacity( 0.15),
-                  border: Border.all(color: rarityColor.withOpacity( 0.4)),
+                  color: rarityColor.withOpacity(0.15),
+                  border: Border.all(color: rarityColor.withOpacity(0.4)),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -715,7 +719,7 @@ class _MergeResultDialogState extends State<_MergeResultDialog>
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.bolt, color: colors.accent, size: 16),
+                  AppIcon(AppHugeIcons.bolt, color: colors.accent, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     '${AppLocalizations.of(context)!.production}: ${widget.worker.currentProduction} CE/s',

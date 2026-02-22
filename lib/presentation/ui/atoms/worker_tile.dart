@@ -3,6 +3,7 @@ import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Compact worker thumbnail for the management grid.
 /// Shows avatar, rarity border, selection state, and optional legacy badge.
@@ -32,20 +33,16 @@ class WorkerTile extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
-          color: isSelected
-              ? rarityColor.withOpacity( 0.2)
-              : colors.surface,
+          color: isSelected ? rarityColor.withOpacity(0.2) : colors.surface,
           border: Border.all(
-            color: isSelected
-                ? rarityColor
-                : rarityColor.withOpacity( 0.3),
+            color: isSelected ? rarityColor : rarityColor.withOpacity(0.3),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: rarityColor.withOpacity( 0.4),
+                    color: rarityColor.withOpacity(0.4),
                     blurRadius: 12,
                     spreadRadius: 1,
                   ),
@@ -65,7 +62,7 @@ class WorkerTile extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: rarityColor.withOpacity( 0.15),
+                        color: rarityColor.withOpacity(0.15),
                       ),
                       child: ClipOval(
                         child: Padding(
@@ -96,7 +93,7 @@ class WorkerTile extends StatelessWidget {
                     worker.era.displayName,
                     style: TextStyle(
                       fontSize: 7,
-                      color: colors.textSecondary.withOpacity( 0.7),
+                      color: colors.textSecondary.withOpacity(0.7),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -117,7 +114,11 @@ class WorkerTile extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: rarityColor,
                   ),
-                  child: const Icon(Icons.check, size: 12, color: Colors.black),
+                  child: const AppIcon(
+                    AppHugeIcons.check,
+                    size: 12,
+                    color: Colors.black,
+                  ),
                 ),
               ),
 

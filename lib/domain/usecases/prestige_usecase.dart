@@ -1,11 +1,14 @@
 import '../entities/game_state.dart';
+import '../entities/prestige_upgrade.dart';
 
 class PrestigeUseCase {
   GameState execute(GameState currentState) {
     if (!currentState.canPrestige) return currentState;
 
     final pointsGained = currentState.prestigePointsToGain;
-    final eraInsightLevel = currentState.paradoxPointsSpent['era_insight'] ?? 0;
+    final eraInsightLevel = PrestigeUpgradeType.eraInsight.clampLevel(
+      currentState.paradoxPointsSpent[PrestigeUpgradeType.eraInsight.id] ?? 0,
+    );
 
     // Reset to initial but keep prestige progress and persistent items
     return GameState.initial().copyWith(

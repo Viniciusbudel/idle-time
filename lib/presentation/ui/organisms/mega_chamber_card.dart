@@ -18,6 +18,7 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/ui/dialogs/upgrade_confirmation_dialog.dart';
 import 'package:time_factory/presentation/ui/dialogs/worker_detail_dialog.dart';
 import 'package:time_factory/presentation/ui/organisms/worker_management_sheet.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class MegaChamberCard extends ConsumerStatefulWidget {
   final Station station;
@@ -233,7 +234,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.bolt, color: colors.primary, size: 14),
+                  AppIcon(AppHugeIcons.bolt, color: colors.primary, size: 14),
                   const SizedBox(width: 4),
                   Text(
                     '${AppLocalizations.of(context)!.lvl} ${widget.station.level}',
@@ -317,8 +318,8 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
           // 2. Central Hologram Icon (Faded)
           Opacity(
             opacity: 0.15, // Reduced opacity for cleaner look
-            child: Icon(
-              Icons.precision_manufacturing,
+            child: AppIcon(
+              AppHugeIcons.precision_manufacturing,
               size: 80,
               color: colors.primary,
             ),
@@ -342,7 +343,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Icon(Icons.bolt, color: colors.success, size: 24),
+                  AppIcon(AppHugeIcons.bolt, color: colors.success, size: 24),
                   const SizedBox(width: 4),
                   Text(
                     NumberFormatter.format(widget.production),
@@ -416,7 +417,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
             'EFFICIENCY',
             '${(widget.station.productionBonus * 100).toInt()}%',
             colors.primary,
-            Icons.speed,
+            AppHugeIcons.speed,
             typography,
           ),
 
@@ -430,7 +431,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
             'STABILITY',
             '99.9%', // Placeholder
             colors.secondary,
-            Icons.shield,
+            AppHugeIcons.shield,
             typography,
           ),
         ],
@@ -442,7 +443,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
     String label,
     String value,
     Color color,
-    IconData icon,
+    AppIconData icon,
     ThemeTypography typography,
   ) {
     return Row(
@@ -453,7 +454,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
             color: color.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 16, color: color),
+          child: AppIcon(icon, size: 16, color: color),
         ),
         const SizedBox(width: 12),
         Column(
@@ -547,8 +548,8 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
-          child: Icon(
-            Icons.add,
+          child: AppIcon(
+            AppHugeIcons.add,
             color: colors.primary.withOpacity(0.5),
             size: 20,
           ),
@@ -603,7 +604,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                Icon(Icons.upgrade, color: colors.primary),
+                AppIcon(AppHugeIcons.upgrade, color: colors.primary),
                 const SizedBox(width: 12),
                 Text(
                   'INIT UPGRADE',

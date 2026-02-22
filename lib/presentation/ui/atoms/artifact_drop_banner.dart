@@ -4,6 +4,7 @@ import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/worker_artifact.dart';
 import 'package:time_factory/domain/entities/enums.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class ArtifactDropBanner extends StatefulWidget {
   final WorkerArtifact artifact;
@@ -119,7 +120,7 @@ class _ArtifactDropBannerState extends State<ArtifactDropBanner>
                   border: Border.all(color: rarityColor.withOpacity(0.5)),
                 ),
                 child: Center(
-                  child: Icon(
+                  child: AppIcon(
                     _rarityIcon(widget.artifact.rarity),
                     color: rarityColor,
                     size: 28,
@@ -159,18 +160,18 @@ class _ArtifactDropBannerState extends State<ArtifactDropBanner>
     );
   }
 
-  IconData _rarityIcon(WorkerRarity rarity) {
+  AppIconData _rarityIcon(WorkerRarity rarity) {
     switch (rarity) {
       case WorkerRarity.common:
-        return Icons.settings;
+        return AppHugeIcons.settings;
       case WorkerRarity.rare:
-        return Icons.electric_bolt;
+        return AppHugeIcons.electric_bolt;
       case WorkerRarity.epic:
-        return Icons.auto_fix_high;
+        return AppHugeIcons.auto_fix_high;
       case WorkerRarity.legendary:
-        return Icons.diamond_outlined;
+        return AppHugeIcons.diamond_outlined;
       case WorkerRarity.paradox:
-        return Icons.blur_circular;
+        return AppHugeIcons.blur_circular;
     }
   }
 }

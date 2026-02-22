@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 
@@ -29,58 +30,58 @@ class _NeonColors implements ThemeColors {
   const _NeonColors();
 
   @override
-  Color get primary => const Color(0xFF00E5FF); // Bright Cyan
+  Color get primary => TimeFactoryColors.primary;
 
   @override
-  Color get secondary => const Color(0xFFBD00FF); // Accent Purple
+  Color get secondary => TimeFactoryColors.secondary;
 
   @override
-  Color get background => const Color(0xFF0A0B1E); // Deep Dark Blue
+  Color get background => TimeFactoryColors.background;
 
   @override
-  Color get surface => const Color(0xFF13162F); // Card Dark
+  Color get surface => TimeFactoryColors.surface;
 
   @override
-  Color get accent => const Color(0xFF00E5FF); // Bright Cyan
+  Color get accent => TimeFactoryColors.accent;
 
   @override
-  Color get textPrimary => Colors.white;
+  Color get textPrimary => const Color(0xFFE8EEF8);
 
   @override
-  Color get textSecondary => const Color(0xFF00E5FF).withOpacity( 0.7);
+  Color get textSecondary => primary.withValues(alpha: 0.78);
 
   @override
-  Color get glassBorder => const Color(0xFF00E5FF).withOpacity( 0.5); // Neon Border
+  Color get glassBorder => primary.withValues(alpha: 0.45);
 
   @override
-  Color get success => const Color(0xFF00FF9D); // Accent Green
+  Color get success => TimeFactoryColors.success;
 
   @override
-  Color get error => const Color(0xFFBD00FF);
+  Color get error => TimeFactoryColors.error;
 
   @override
-  Color get dockBackground => const Color(0xFF13162F).withOpacity( 0.9); // Card Dark with opacity
+  Color get dockBackground => surface.withValues(alpha: 0.92);
 
   @override
-  Color get chaosButtonStart => const Color(0xFFBD00FF);
+  Color get chaosButtonStart => secondary;
 
   @override
-  Color get chaosButtonEnd => const Color(0xFF0A0B1E);
+  Color get chaosButtonEnd => background;
 
   @override
-  Color get rarityCommon => const Color(0xFFB0BEC5); // Silver/Gray
+  Color get rarityCommon => const Color(0xFF8D9CB8);
 
   @override
-  Color get rarityRare => const Color(0xFF00BFFF); // Electric Blue
+  Color get rarityRare => primary;
 
   @override
-  Color get rarityEpic => const Color(0xFFE040FB); // Neon Purple
+  Color get rarityEpic => secondary;
 
   @override
-  Color get rarityLegendary => const Color(0xFFFFD740); // Gold
+  Color get rarityLegendary => accent;
 
   @override
-  Color get rarityParadox => const Color(0xFFFF1744); // Glitch Red
+  Color get rarityParadox => error;
 }
 
 class _NeonAssets implements ThemeAssets {

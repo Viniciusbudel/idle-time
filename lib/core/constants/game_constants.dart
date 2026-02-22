@@ -102,7 +102,7 @@ class GameConstants {
   /// Minimum CE to prestige
   static const int prestigeMinimumCE = 1000000; // 1M
 
-  /// Prestige points per √(CE / 1M)
+  /// Base CE divisor for prestige progression formula
   static const int prestigeFormulaBase = 1000000;
 
   /// Production bonus per prestige point spent on Chrono Mastery

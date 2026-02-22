@@ -3,6 +3,7 @@ import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Floating HUD with resource pills - uses main cyberpunk colors
 class FloatingResourcePills extends StatelessWidget {
@@ -19,7 +20,7 @@ class FloatingResourcePills extends StatelessWidget {
           child: _ResourcePill(
             label: 'CE/SEC',
             value: NumberFormatter.formatCE(gameState.productionPerSecond),
-            icon: Icons.bolt,
+            icon: AppHugeIcons.bolt,
             color: TimeFactoryColors.electricCyan,
           ),
         ),
@@ -29,7 +30,7 @@ class FloatingResourcePills extends StatelessWidget {
           child: _ResourcePill(
             label: 'SHARDS',
             value: gameState.timeShards.toString(),
-            icon: Icons.diamond_outlined,
+            icon: AppHugeIcons.diamond_outlined,
             color: TimeFactoryColors.deepPurple,
           ),
         ),
@@ -41,7 +42,7 @@ class FloatingResourcePills extends StatelessWidget {
 class _ResourcePill extends StatelessWidget {
   final String label;
   final String value;
-  final IconData icon;
+  final AppIconData icon;
   final Color color;
 
   const _ResourcePill({
@@ -56,9 +57,9 @@ class _ResourcePill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: TimeFactoryColors.surfaceDark.withOpacity( 0.9),
+        color: TimeFactoryColors.surfaceDark.withOpacity(0.9),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity( 0.3)),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
         children: [
@@ -67,10 +68,10 @@ class _ResourcePill extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: color.withOpacity( 0.2),
+              color: color.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 16),
+            child: AppIcon(icon, color: color, size: 16),
           ),
           const SizedBox(width: 10),
 

@@ -73,31 +73,38 @@ class TechUpgrade {
     switch (type) {
       case TechType.automation:
         final amount = id == 'neural_net'
-            ? 25.0
+            ? 12.0
             : id == 'transistors'
-            ? 5.0
+            ? 3.0
             : 0.5;
         return 'Auto-Clicker: ${(level * amount).toStringAsFixed(1)} /sec';
       case TechType.efficiency:
         double pctChange = 7.5;
-        if (id == 'nuclear_fission')
-          pctChange = 25.0;
-        else if (id == 'space_race')
-          pctChange = 50.0;
-        else if (id == 'cybernetics')
-          pctChange = 100.0;
+        if (id == 'nuclear_fission') {
+          pctChange = 12.0;
+        } else if (id == 'space_race') {
+          pctChange = 22.0;
+        } else if (id == 'cybernetics') {
+          pctChange = 35.0;
+        }
         final pct = level * pctChange;
         return 'Production: +${pct.toStringAsFixed(pct == pct.roundToDouble() ? 0 : 1)}%';
       case TechType.timeWarp:
         double pctChange = 5.0;
-        if (id == 'neon_overdrive') pctChange = 15.0;
+        if (id == 'neon_overdrive') {
+          pctChange = 10.0;
+        }
         final pct = level * pctChange;
         return 'Game Speed: +${pct.toStringAsFixed(pct == pct.roundToDouble() ? 0 : 1)}%';
       case TechType.costReduction:
-        final reduction = id == 'bessemer_process' ? level * 3 : level * 5;
+        final reduction = id == 'bessemer_process'
+            ? level * 3
+            : ((id == 'plastic_molding' || id == 'synth_alloys')
+                  ? level * 4
+                  : level * 5);
         return 'Upgrade Cost: −$reduction%';
       case TechType.offline:
-        final pct = level * 5;
+        final pct = id == 'arpanet' ? level * 4 : level * 5;
         return 'Offline Gains: +$pct%';
       case TechType.clickPower:
         return 'Click Power: +${level * 100}%';

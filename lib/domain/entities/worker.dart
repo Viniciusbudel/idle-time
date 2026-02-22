@@ -157,12 +157,33 @@ class WorkerFactory {
     WorkerRarity.paradox: 0.2,
   };
 
-  /// Roll for rarity using weighted random
-  static WorkerRarity rollRarity() {
-    final totalWeight = rarityWeights.values.fold(0.0, (a, b) => a + b);
+  /// Roll for rarity using weighted random.
+  /// [luckFactor] softly shifts weight away from common rarity.
+  static WorkerRarity rollRarity({double luckFactor = 0.0}) {
+    final adjustedWeights = Map<WorkerRarity, double>.from(rarityWeights);
+    final clampedLuck = luckFactor.clamp(0.0, 0.6);
+
+    if (clampedLuck > 0) {
+      final commonWeight = adjustedWeights[WorkerRarity.common] ?? 0.0;
+      final redistribution = commonWeight * (clampedLuck * 0.55);
+
+      adjustedWeights[WorkerRarity.common] = commonWeight - redistribution;
+      adjustedWeights[WorkerRarity.rare] =
+          (adjustedWeights[WorkerRarity.rare] ?? 0.0) + (redistribution * 0.52);
+      adjustedWeights[WorkerRarity.epic] =
+          (adjustedWeights[WorkerRarity.epic] ?? 0.0) + (redistribution * 0.30);
+      adjustedWeights[WorkerRarity.legendary] =
+          (adjustedWeights[WorkerRarity.legendary] ?? 0.0) +
+          (redistribution * 0.13);
+      adjustedWeights[WorkerRarity.paradox] =
+          (adjustedWeights[WorkerRarity.paradox] ?? 0.0) +
+          (redistribution * 0.05);
+    }
+
+    final totalWeight = adjustedWeights.values.fold(0.0, (a, b) => a + b);
     double roll = _random.nextDouble() * totalWeight;
 
-    for (final entry in rarityWeights.entries) {
+    for (final entry in adjustedWeights.entries) {
       roll -= entry.value;
       if (roll <= 0) {
         return entry.key;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Loop Reset Timer - Countdown to next prestige/loop reset
 class LoopResetTimer extends StatefulWidget {
@@ -77,8 +78,8 @@ class _LoopResetTimerState extends State<LoopResetTimer> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Clock Icon
-          const Icon(
-            Icons.schedule,
+          const AppIcon(
+            AppHugeIcons.schedule,
             color: TimeFactoryColors.electricCyan,
             size: 16,
           ),

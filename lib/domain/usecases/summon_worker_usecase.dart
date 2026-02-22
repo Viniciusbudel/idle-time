@@ -1,6 +1,7 @@
 import '../entities/game_state.dart';
 import '../entities/worker.dart';
 import '../entities/enums.dart';
+import '../entities/prestige_upgrade.dart';
 
 /// Use case for summoning new workers using the Temporal Rift Gacha system.
 /// Use case for summoning new workers using the Temporal Rift Gacha system.
@@ -11,7 +12,11 @@ class SummonWorkerUseCase {
     GameState state, {
     WorkerEra? targetEra,
   }) {
-    final rarity = WorkerFactory.rollRarity();
+    final timekeepersLevel = PrestigeUpgradeType.timekeepersFavor.clampLevel(
+      state.paradoxPointsSpent[PrestigeUpgradeType.timekeepersFavor.id] ?? 0,
+    );
+    final luckFactor = timekeepersLevel * 0.05;
+    final rarity = WorkerFactory.rollRarity(luckFactor: luckFactor);
     final era =
         targetEra ??
         WorkerEra.values.firstWhere(

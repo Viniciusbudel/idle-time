@@ -13,6 +13,7 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/presentation/ui/atoms/cyber_button.dart';
 import 'package:time_factory/presentation/ui/dialogs/artifact_inventory_dialog.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class WorkerDetailDialog extends ConsumerStatefulWidget {
   final Worker worker;
@@ -122,7 +123,10 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white54),
+                      icon: const AppIcon(
+                        AppHugeIcons.close,
+                        color: Colors.white54,
+                      ),
                       onPressed: () => Navigator.pop(context),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -224,7 +228,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                               'Total Production',
                               '${NumberFormatter.format(currentWorker.currentProduction)}/s',
                               TimeFactoryColors.acidGreen,
-                              icon: Icons.bolt,
+                              icon: AppHugeIcons.bolt,
                             ),
                             const Divider(color: Colors.white12, height: 24),
                             _buildStatRow(
@@ -233,7 +237,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                               currentWorker.chronalAttunement >= 1.0
                                   ? TimeFactoryColors.electricCyan
                                   : Colors.orangeAccent,
-                              icon: Icons.auto_awesome_motion,
+                              icon: AppHugeIcons.auto_awesome_motion,
                             ),
                             const Divider(color: Colors.white12, height: 24),
                             _buildStatRow(
@@ -242,14 +246,14 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                                 currentWorker.totalBasePower,
                               ),
                               Colors.white70,
-                              icon: Icons.flash_on,
+                              icon: AppHugeIcons.flash_on,
                             ),
                             const Divider(color: Colors.white12, height: 24),
                             _buildStatRow(
                               'Total Multiplier',
                               '${currentWorker.totalMultiplier.toStringAsFixed(2)}x',
                               TimeFactoryColors.voltageYellow,
-                              icon: Icons.trending_up,
+                              icon: AppHugeIcons.trending_up,
                             ),
                             if (currentWorker.maxArtifactSlots > 0 ||
                                 currentWorker.equippedArtifacts.isNotEmpty) ...[
@@ -261,7 +265,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                                         currentWorker.maxArtifactSlots
                                     ? TimeFactoryColors.hotMagenta
                                     : TimeFactoryColors.voltageYellow,
-                                icon: Icons.auto_awesome,
+                                icon: AppHugeIcons.auto_awesome,
                               ),
                             ],
                           ],
@@ -291,8 +295,8 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                       child: CyberButton(
                         label: currentWorker.isDeployed ? 'UNASSIGN' : 'MANAGE',
                         icon: currentWorker.isDeployed
-                            ? Icons.logout
-                            : Icons.settings,
+                            ? AppHugeIcons.logout
+                            : AppHugeIcons.settings,
                         primaryColor: currentWorker.isDeployed
                             ? TimeFactoryColors.voltageYellow
                             : TimeFactoryColors.electricCyan,
@@ -345,12 +349,12 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
     String label,
     String value,
     Color valueColor, {
-    IconData? icon,
+    AppIconData? icon,
   }) {
     return Row(
       children: [
         if (icon != null) ...[
-          Icon(icon, size: 16, color: Colors.white24),
+          AppIcon(icon, size: 16, color: Colors.white24),
           const SizedBox(width: AppSpacing.sm),
         ],
         Text(
@@ -509,8 +513,8 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
               : [],
         ),
         child: Center(
-          child: Icon(
-            _flashingSlotIndex == index ? Icons.check : Icons.add,
+          child: AppIcon(
+            _flashingSlotIndex == index ? AppHugeIcons.check : AppHugeIcons.add,
             color: _flashingSlotIndex == index
                 ? TimeFactoryColors.acidGreen
                 : TimeFactoryColors.electricCyan,
@@ -593,7 +597,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            AppIcon(
               _rarityIcon(artifact.rarity),
               color: isFlashing ? TimeFactoryColors.acidGreen : rarityColor,
               size: 24,
@@ -612,18 +616,18 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
     );
   }
 
-  IconData _rarityIcon(WorkerRarity rarity) {
+  AppIconData _rarityIcon(WorkerRarity rarity) {
     switch (rarity) {
       case WorkerRarity.common:
-        return Icons.settings;
+        return AppHugeIcons.settings;
       case WorkerRarity.rare:
-        return Icons.electric_bolt;
+        return AppHugeIcons.electric_bolt;
       case WorkerRarity.epic:
-        return Icons.auto_fix_high;
+        return AppHugeIcons.auto_fix_high;
       case WorkerRarity.legendary:
-        return Icons.diamond_outlined;
+        return AppHugeIcons.diamond_outlined;
       case WorkerRarity.paradox:
-        return Icons.blur_circular;
+        return AppHugeIcons.blur_circular;
     }
   }
 }

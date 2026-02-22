@@ -7,6 +7,7 @@ import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/ui/pages/achievements_screen.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -23,7 +24,7 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.primary),
+          icon: AppIcon(AppHugeIcons.arrow_back, color: colors.primary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -45,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _buildInfoTile(
-            Icons.language,
+            AppHugeIcons.language,
             AppLocalizations.of(context)!.settingsLanguage,
             currentLocale.toUpperCase(),
             colors,
@@ -61,12 +62,12 @@ class SettingsScreen extends ConsumerWidget {
               );
             },
             child: _buildSettingCard(
-              icon: Icons.emoji_events,
+              icon: AppHugeIcons.emoji_events,
               title: 'Achievements',
               colors: colors,
               iconColor: TimeFactoryColors.voltageYellow,
-              trailing: const Icon(
-                Icons.chevron_right,
+              trailing: const AppIcon(
+                AppHugeIcons.chevron_right,
                 color: Colors.white38,
                 size: 20,
               ),
@@ -92,13 +93,13 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           _buildInfoTile(
-            Icons.info_outline,
+            AppHugeIcons.info_outline,
             AppLocalizations.of(context)!.settingsVersion,
             '0.1.0',
             colors,
           ),
           _buildInfoTile(
-            Icons.code,
+            AppHugeIcons.code,
             AppLocalizations.of(context)!.settingsDeveloper,
             'Budel co',
             colors,
@@ -134,7 +135,7 @@ class SettingsScreen extends ConsumerWidget {
 
   Widget _buildResetTile(BuildContext context, WidgetRef ref, dynamic colors) {
     return _buildSettingCard(
-      icon: Icons.warning_amber_rounded,
+      icon: AppHugeIcons.warning_amber_rounded,
       title: AppLocalizations.of(context)!.settingsResetProgress,
       colors: colors,
       iconColor: TimeFactoryColors.hotMagenta,
@@ -143,7 +144,7 @@ class SettingsScreen extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.red.withOpacity( 0.5)),
+            border: Border.all(color: Colors.red.withOpacity(0.5)),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -160,7 +161,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildInfoTile(
-    IconData icon,
+    AppIconData icon,
     String title,
     String value,
     dynamic colors,
@@ -180,7 +181,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildSettingCard({
-    required IconData icon,
+    required AppIconData icon,
     required String title,
     required dynamic colors,
     required Widget trailing,
@@ -190,16 +191,16 @@ class SettingsScreen extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity( 0.04),
+        color: Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity( 0.08)),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: Row(
         children: [
-          Icon(
+          AppIcon(
             icon,
             size: 20,
-            color: iconColor ?? colors.primary.withOpacity( 0.7),
+            color: iconColor ?? colors.primary.withOpacity(0.7),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -225,11 +226,11 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFF0A0E17),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.red.withOpacity( 0.5)),
+          side: BorderSide(color: Colors.red.withOpacity(0.5)),
         ),
         title: Row(
           children: [
-            const Icon(Icons.warning, color: Colors.red, size: 24),
+            const AppIcon(AppHugeIcons.warning, color: Colors.red, size: 24),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

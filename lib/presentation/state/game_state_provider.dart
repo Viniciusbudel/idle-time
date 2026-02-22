@@ -208,7 +208,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final base = _calculateManualClickValue();
 
     // 3. Add to state
-    addChronoEnergy(BigInt.from(10000000000));
+    addChronoEnergy(base);
 
     // Tutorial: Step 3 -> 4 (Collect)
     if (state.tutorialStep == 3) {
@@ -257,9 +257,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
   // Helper to get next worker cost (Exponential)
   BigInt getNextWorkerCost(WorkerEra era) {
     final currentHires = state.eraHires[era.id] ?? 0;
-    // Base cost * 1.40^count (40% increase per hire - REBALANCED max ~30)
+    // Era-specific growth to keep late-era hiring in check.
+    final growth = switch (era.id) {
+      'atomic_age' => 1.48,
+      'cyberpunk_80s' => 1.58,
+      _ => 1.40,
+    };
     // Using double for calculation then back to BigInt
-    final multiplier = pow(1.40, currentHires).toDouble();
+    final multiplier = pow(growth, currentHires).toDouble();
     final cost = (era.hireCost.toDouble() * multiplier).toInt();
     return BigInt.from(cost);
   }

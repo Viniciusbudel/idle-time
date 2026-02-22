@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Paradox meter showing temporal instability level
 class ParadoxMeter extends StatelessWidget {
@@ -30,9 +31,9 @@ class ParadoxMeter extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(compact ? 8 : 12),
       decoration: BoxDecoration(
-        color: TimeFactoryColors.midnightBlue.withOpacity( 0.8),
+        color: TimeFactoryColors.midnightBlue.withOpacity(0.8),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: barColor.withOpacity( 0.5), width: 1),
+        border: Border.all(color: barColor.withOpacity(0.5), width: 1),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -44,12 +45,12 @@ class ParadoxMeter extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
+                    AppIcon(
                       isCritical
-                          ? Icons.warning_amber
+                          ? AppHugeIcons.warning_amber
                           : isWarning
-                          ? Icons.error_outline
-                          : Icons.access_time,
+                          ? AppHugeIcons.error_outline
+                          : AppHugeIcons.access_time,
                       color: barColor,
                       size: compact ? 16 : 20,
                     ),
@@ -157,10 +158,7 @@ class _ParadoxProgressBarState extends State<_ParadoxProgressBar>
           decoration: BoxDecoration(
             color: TimeFactoryColors.voidBlack,
             borderRadius: BorderRadius.circular(widget.height / 2),
-            border: Border.all(
-              color: widget.color.withOpacity( 0.3),
-              width: 1,
-            ),
+            border: Border.all(color: widget.color.withOpacity(0.3), width: 1),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(widget.height / 2),
@@ -172,14 +170,11 @@ class _ParadoxProgressBarState extends State<_ParadoxProgressBar>
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        widget.color.withOpacity( 0.8),
-                        widget.color,
-                      ],
+                      colors: [widget.color.withOpacity(0.8), widget.color],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: widget.color.withOpacity( 0.5),
+                        color: widget.color.withOpacity(0.5),
                         blurRadius: 10,
                         spreadRadius: 1,
                       ),
@@ -211,15 +206,15 @@ class ParadoxIndicator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity( 0.2),
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity( 0.5)),
+        border: Border.all(color: color.withOpacity(0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            isWarning ? Icons.warning_amber : Icons.access_time,
+          AppIcon(
+            isWarning ? AppHugeIcons.warning_amber : AppHugeIcons.access_time,
             color: color,
             size: 14,
           ),

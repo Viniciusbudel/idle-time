@@ -35,8 +35,8 @@ enum WorkerEra {
     const costs = {
       'victorian': 150,
       'roaring_20s': 100000, // 100k
-      'atomic_age': 25000000, // 25M
-      'cyberpunk_80s': 5000000000, // 5B
+      'atomic_age': 60000000, // REBALANCED: 25M -> 60M
+      'cyberpunk_80s': 15000000000, // REBALANCED: 5B -> 15B
       'neo_tokyo': 1000000000000, // 1T
       'post_singularity': 200000000000000, // 200T
       'ancient_rome': 40000000000000000, // 40Qa

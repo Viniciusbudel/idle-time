@@ -5,6 +5,7 @@ import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/daily_reward.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/ui/molecules/glass_card.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class DailyLoginDialog extends ConsumerWidget {
   const DailyLoginDialog({super.key});
@@ -222,7 +223,7 @@ class _DayCard extends StatelessWidget {
             const SizedBox(height: 4),
             Expanded(child: Center(child: _buildIcon())),
             if (state == _DayState.claimed)
-              const Icon(Icons.check, color: Colors.green, size: 16)
+              const AppIcon(AppHugeIcons.check, color: Colors.green, size: 16)
             else
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
@@ -237,20 +238,20 @@ class _DayCard extends StatelessWidget {
   Widget _buildIcon() {
     switch (reward.type) {
       case DailyRewardType.chronoEnergy:
-        return const Icon(
-          Icons.flash_on,
+        return const AppIcon(
+          AppHugeIcons.flash_on,
           color: TimeFactoryColors.electricCyan,
           size: 24,
         );
       case DailyRewardType.timeShard:
-        return const Icon(
-          Icons.auto_awesome,
+        return const AppIcon(
+          AppHugeIcons.auto_awesome,
           color: TimeFactoryColors.hotMagenta,
           size: 24,
         );
       case DailyRewardType.worker:
-        return const Icon(
-          Icons.person,
+        return const AppIcon(
+          AppHugeIcons.person,
           color: TimeFactoryColors.paradoxPurple,
           size: 32,
         );

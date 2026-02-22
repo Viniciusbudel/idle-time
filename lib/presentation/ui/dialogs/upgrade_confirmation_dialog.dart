@@ -6,6 +6,7 @@ import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/presentation/ui/molecules/glass_card.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class UpgradeConfirmationDialog extends StatelessWidget {
   final Station station;
@@ -74,8 +75,8 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                   _buildStatBox('LEVEL', station.level.toString()),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    child: Icon(
-                      Icons.arrow_forward,
+                    child: AppIcon(
+                      AppHugeIcons.arrow_forward,
                       color: TimeFactoryColors.electricCyan,
                     ),
                   ),
@@ -100,8 +101,8 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.xs),
-                  const Icon(
-                    Icons.arrow_right_alt,
+                  const AppIcon(
+                    AppHugeIcons.arrow_right_alt,
                     color: Colors.white54,
                     size: 16,
                   ),
@@ -146,7 +147,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: TimeFactoryColors.electricCyan
-                          .withOpacity( 0.2),
+                          .withOpacity(0.2),
                       foregroundColor: TimeFactoryColors.electricCyan,
                       side: const BorderSide(
                         color: TimeFactoryColors.electricCyan,
@@ -168,13 +169,11 @@ class UpgradeConfirmationDialog extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: highlight
-            ? TimeFactoryColors.electricCyan.withOpacity( 0.1)
+            ? TimeFactoryColors.electricCyan.withOpacity(0.1)
             : Colors.black26,
         borderRadius: BorderRadius.circular(8),
         border: highlight
-            ? Border.all(
-                color: TimeFactoryColors.electricCyan.withOpacity( 0.5),
-              )
+            ? Border.all(color: TimeFactoryColors.electricCyan.withOpacity(0.5))
             : null,
       ),
       child: Column(

@@ -4,6 +4,7 @@ import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/offline_earnings.dart';
 import 'package:time_factory/presentation/ui/atoms/animated_number.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Dialog shown when returning after being offline
 /// Features Neo-Retro Brutalism UI principles
@@ -126,8 +127,8 @@ class _OfflineEarningsDialogState extends State<OfflineEarningsDialog>
                         letterSpacing: 4,
                       ),
                     ),
-                    const Icon(
-                      Icons.satellite_alt_outlined,
+                    const AppIcon(
+                      AppHugeIcons.satellite_alt_outlined,
                       color: Colors.black,
                     ),
                   ],
@@ -148,8 +149,8 @@ class _OfflineEarningsDialogState extends State<OfflineEarningsDialog>
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.timer_off_outlined,
+                          const AppIcon(
+                            AppHugeIcons.timer_off_outlined,
                             color: Colors.white54,
                             size: 20,
                           ),
@@ -201,8 +202,8 @@ class _OfflineEarningsDialogState extends State<OfflineEarningsDialog>
                         children: [
                           const Padding(
                             padding: EdgeInsets.only(bottom: 6),
-                            child: Icon(
-                              Icons.bolt,
+                            child: AppIcon(
+                              AppHugeIcons.bolt,
                               color: TimeFactoryColors.electricCyan,
                               size: 32,
                             ),

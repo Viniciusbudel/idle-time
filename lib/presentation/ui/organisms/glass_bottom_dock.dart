@@ -7,6 +7,7 @@ import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/presentation/state/theme_provider.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class GlassBottomDock extends ConsumerWidget {
   final int selectedIndex;
@@ -56,7 +57,7 @@ class GlassBottomDock extends ConsumerWidget {
               children: [
                 _buildNavItem(
                   0,
-                  Icons.grid_view,
+                  AppHugeIcons.grid_view,
                   AppLocalizations.of(context)!.chambers,
                   colors,
                   theme,
@@ -64,7 +65,7 @@ class GlassBottomDock extends ConsumerWidget {
                 ),
                 _buildNavItem(
                   1,
-                  Icons.factory,
+                  AppHugeIcons.factory,
                   AppLocalizations.of(context)!.factory,
                   colors,
                   theme,
@@ -72,7 +73,7 @@ class GlassBottomDock extends ConsumerWidget {
                 ),
                 _buildNavItem(
                   2,
-                  Icons.auto_awesome,
+                  AppHugeIcons.auto_awesome,
                   AppLocalizations.of(context)!.summon,
                   colors,
                   theme,
@@ -80,14 +81,14 @@ class GlassBottomDock extends ConsumerWidget {
                 ),
                 _buildNavItem(
                   3,
-                  Icons.memory,
+                  AppHugeIcons.memory,
                   AppLocalizations.of(context)!.tech,
                   colors,
                   theme,
                 ),
                 _buildNavItem(
                   4,
-                  Icons.military_tech,
+                  AppHugeIcons.military_tech,
                   AppLocalizations.of(context)!.prestige,
                   colors,
                   theme,
@@ -102,16 +103,14 @@ class GlassBottomDock extends ConsumerWidget {
 
   Widget _buildNavItem(
     int index,
-    IconData icon,
+    AppIconData icon,
     String label,
     ThemeColors colors,
     GameTheme theme, {
     Key? key,
   }) {
     final isSelected = selectedIndex == index;
-    final color = isSelected
-        ? colors.primary
-        : colors.primary.withOpacity( 0.6);
+    final color = isSelected ? colors.primary : colors.primary.withOpacity(0.6);
 
     return Expanded(
       child: GestureDetector(
@@ -138,7 +137,7 @@ class GlassBottomDock extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(2),
                   boxShadow: [
                     BoxShadow(
-                      color: colors.primary.withOpacity( 0.8),
+                      color: colors.primary.withOpacity(0.8),
                       blurRadius: 6,
                       spreadRadius: 1,
                     ),
@@ -148,14 +147,14 @@ class GlassBottomDock extends ConsumerWidget {
             else
               const SizedBox(height: 7), // Spacer to keep icons aligned
             // Icon with Glow
-            Icon(
+            AppIcon(
               icon,
               size: 26,
               color: color,
               shadows: isSelected
                   ? [
                       Shadow(
-                        color: colors.primary.withOpacity( 0.8),
+                        color: colors.primary.withOpacity(0.8),
                         blurRadius: 8,
                       ),
                     ]
@@ -189,7 +188,7 @@ class GlassBottomDock extends ConsumerWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: colors.primary.withOpacity( 0.8),
+                      color: colors.primary.withOpacity(0.8),
                       blurRadius: 4,
                     ),
                   ],

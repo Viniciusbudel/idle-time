@@ -145,20 +145,20 @@ class TechData {
       name: 'Nuclear Fission',
       description: 'Harnessing the atom for limitless power.',
       type: TechType.efficiency,
-      baseCost: BigInt.from(50000000), // 50M
-      costMultiplier: 1.6,
+      baseCost: BigInt.from(120000000), // REBALANCED: 50M -> 120M
+      costMultiplier: 2.05, // REBALANCED: 1.6 -> 2.05
       eraId: 'atomic_age',
-      maxLevel: 10,
+      maxLevel: 8, // REBALANCED: 10 -> 8
     ),
     TechUpgrade(
       id: 'transistors',
       name: 'Transistors',
       description: 'Tiny switches that revolutionize computing.',
       type: TechType.automation,
-      baseCost: BigInt.from(100000000), // 100M
-      costMultiplier: 1.8,
+      baseCost: BigInt.from(220000000), // REBALANCED: 100M -> 220M
+      costMultiplier: 2.15, // REBALANCED: 1.8 -> 2.15
       eraId: 'atomic_age',
-      maxLevel: 10,
+      maxLevel: 8, // REBALANCED: 10 -> 8
     ),
     // Tier 2
     TechUpgrade(
@@ -166,8 +166,8 @@ class TechData {
       name: 'Plastic Molding',
       description: 'Cheap, durable materials for mass production.',
       type: TechType.costReduction,
-      baseCost: BigInt.from(250000000), // 250M
-      costMultiplier: 2.0,
+      baseCost: BigInt.from(650000000), // REBALANCED: 250M -> 650M
+      costMultiplier: 2.35, // REBALANCED: 2.0 -> 2.35
       eraId: 'atomic_age',
       maxLevel: 5,
     ),
@@ -176,10 +176,10 @@ class TechData {
       name: 'Space Race',
       description: 'Pushing the boundaries of technology for national pride.',
       type: TechType.efficiency,
-      baseCost: BigInt.from(500000000), // 500M
-      costMultiplier: 2.2,
+      baseCost: BigInt.from(1800000000), // REBALANCED: 500M -> 1.8B
+      costMultiplier: 2.45, // REBALANCED: 2.2 -> 2.45
       eraId: 'atomic_age',
-      maxLevel: 5,
+      maxLevel: 4, // REBALANCED: 5 -> 4
     ),
     // Tier 3
     TechUpgrade(
@@ -187,8 +187,8 @@ class TechData {
       name: 'ARPANET',
       description: 'Decentralized networks ensure production never stops.',
       type: TechType.offline,
-      baseCost: BigInt.from(1000000000), // 1B
-      costMultiplier: 2.5,
+      baseCost: BigInt.from(4200000000), // REBALANCED: 1B -> 4.2B
+      costMultiplier: 2.9, // REBALANCED: 2.5 -> 2.9
       eraId: 'atomic_age',
       maxLevel: 5,
     ),
@@ -198,8 +198,8 @@ class TechData {
       name: 'Microchip Revolution',
       description: 'The digital age dawns. Unlocks Cyberpunk Era.',
       type: TechType.eraUnlock,
-      baseCost: BigInt.from(100000000000), // 100B
-      costMultiplier: 3.0,
+      baseCost: BigInt.from(450000000000), // REBALANCED: 100B -> 450B
+      costMultiplier: 3.4, // REBALANCED: 3.0 -> 3.4
       eraId: 'atomic_age',
       maxLevel: 1,
     ),
@@ -212,20 +212,20 @@ class TechData {
       name: 'Cybernetics',
       description: 'Mechanical upgrades for flesh bodies. Flawless output.',
       type: TechType.efficiency,
-      baseCost: BigInt.from(500000000000), // 500B
-      costMultiplier: 2.0,
+      baseCost: BigInt.from(2200000000000), // REBALANCED: 500B -> 2.2T
+      costMultiplier: 2.35, // REBALANCED: 2.0 -> 2.35
       eraId: 'cyberpunk_80s',
-      maxLevel: 10,
+      maxLevel: 8, // REBALANCED: 10 -> 8
     ),
     TechUpgrade(
       id: 'neural_net',
       name: 'Neural Net Processing',
       description: 'Algorithms that think. Complete automation.',
       type: TechType.automation,
-      baseCost: BigInt.from(1000000000000), // 1T
-      costMultiplier: 2.2,
+      baseCost: BigInt.from(4000000000000), // REBALANCED: 1T -> 4T
+      costMultiplier: 2.5, // REBALANCED: 2.2 -> 2.5
       eraId: 'cyberpunk_80s',
-      maxLevel: 10,
+      maxLevel: 8, // REBALANCED: 10 -> 8
     ),
     // Tier 2
     TechUpgrade(
@@ -233,8 +233,8 @@ class TechData {
       name: 'Synth-Alloys',
       description: 'Stronger, lighter, cheaper material for stations.',
       type: TechType.costReduction,
-      baseCost: BigInt.from(2500000000000), // 2.5T
-      costMultiplier: 2.5,
+      baseCost: BigInt.from(9000000000000), // REBALANCED: 2.5T -> 9T
+      costMultiplier: 2.9, // REBALANCED: 2.5 -> 2.9
       eraId: 'cyberpunk_80s',
       maxLevel: 5,
     ),
@@ -243,8 +243,8 @@ class TechData {
       name: 'Neon Overdrive',
       description: 'Overclocking the system to bend time itself.',
       type: TechType.timeWarp,
-      baseCost: BigInt.from(5000000000000), // 5T
-      costMultiplier: 2.5,
+      baseCost: BigInt.from(18000000000000), // REBALANCED: 5T -> 18T
+      costMultiplier: 3.0, // REBALANCED: 2.5 -> 3.0
       eraId: 'cyberpunk_80s',
       maxLevel: 5,
     ),
@@ -254,8 +254,8 @@ class TechData {
       name: 'Virtual Reality Matrix',
       description: 'The ultimate escape to digital realms. Unlocks Neo-Tokyo.',
       type: TechType.eraUnlock,
-      baseCost: BigInt.from(100000000000000), // 100T
-      costMultiplier: 3.5,
+      baseCost: BigInt.from(600000000000000), // REBALANCED: 100T -> 600T
+      costMultiplier: 3.9, // REBALANCED: 3.5 -> 3.9
       eraId: 'cyberpunk_80s',
       maxLevel: 1,
     ),
@@ -283,27 +283,27 @@ class TechData {
     }
 
     // ATOMIC AGE
-    // Nuclear Fission: +25% per level
+    // Nuclear Fission: +12% per level
     final fissionLevel = techLevels['nuclear_fission'] ?? 0;
-    multiplier += fissionLevel * 0.25;
+    multiplier += fissionLevel * 0.12;
 
-    // Space Race: +50% per level
+    // Space Race: +22% per level
     final spaceLevel = techLevels['space_race'] ?? 0;
-    multiplier += spaceLevel * 0.5;
+    multiplier += spaceLevel * 0.22;
 
-    // Microchip Revolution (x100 Global Multiplier)
+    // Microchip Revolution (x25 Global Multiplier)
     if ((techLevels['microchip_revolution'] ?? 0) > 0) {
-      multiplier *= 100.0;
+      multiplier *= 25.0;
     }
 
     // CYBERPUNK 80s
-    // Cybernetics: +100% per level
+    // Cybernetics: +35% per level
     final cyberneticsLevel = techLevels['cybernetics'] ?? 0;
-    multiplier += cyberneticsLevel * 1.0;
+    multiplier += cyberneticsLevel * 0.35;
 
-    // Virtual Reality (x1000 Global Multiplier)
+    // Virtual Reality (x120 Global Multiplier)
     if ((techLevels['virtual_reality'] ?? 0) > 0) {
-      multiplier *= 1000.0;
+      multiplier *= 120.0;
     }
 
     return multiplier;
@@ -315,9 +315,9 @@ class TechData {
     final governorLevel = techLevels['centrifugal_governor'] ?? 0;
     multiplier += governorLevel * 0.05;
 
-    // Neon Overdrive - +15% per level
+    // Neon Overdrive - +10% per level
     final overdriveLevel = techLevels['neon_overdrive'] ?? 0;
-    multiplier += overdriveLevel * 0.15;
+    multiplier += overdriveLevel * 0.10;
 
     return multiplier;
   }
@@ -334,14 +334,14 @@ class TechData {
     multiplier -= assemblyLevel * 0.05; // NERFED from 0.08
 
     // ATOMIC AGE
-    // Plastic Molding: -5% per level
+    // Plastic Molding: -4% per level
     final plasticLevel = techLevels['plastic_molding'] ?? 0;
-    multiplier -= plasticLevel * 0.05;
+    multiplier -= plasticLevel * 0.04;
 
     // CYBERPUNK 80s
-    // Synth-Alloys: -5% per level
+    // Synth-Alloys: -4% per level
     final synthLevel = techLevels['synth_alloys'] ?? 0;
-    multiplier -= synthLevel * 0.05;
+    multiplier -= synthLevel * 0.04;
 
     return multiplier.clamp(0.5, 1.0); // PHASE 2: Cap at 50% min (was 10%)
   }
@@ -366,9 +366,9 @@ class TechData {
     multiplier += radioLevel * 0.05;
 
     // ATOMIC AGE
-    // ARPANET: +5% per level (REBALANCED: from 20%)
+    // ARPANET: +4% per level (REBALANCED: from 20%)
     final arpanetLevel = techLevels['arpanet'] ?? 0;
-    multiplier += arpanetLevel * 0.05;
+    multiplier += arpanetLevel * 0.04;
 
     return multiplier;
   }
@@ -382,14 +382,14 @@ class TechData {
     clicksPerSecond += jacquard * 0.5;
 
     // ATOMIC AGE
-    // Transistors: +5.0 clicks/sec per level
+    // Transistors: +3.0 clicks/sec per level
     final transistors = techLevels['transistors'] ?? 0;
-    clicksPerSecond += transistors * 5.0;
+    clicksPerSecond += transistors * 3.0;
 
     // CYBERPUNK 80s
-    // Neural Net: +25.0 clicks/sec per level
+    // Neural Net: +12.0 clicks/sec per level
     final neuralNet = techLevels['neural_net'] ?? 0;
-    clicksPerSecond += neuralNet * 25.0;
+    clicksPerSecond += neuralNet * 12.0;
 
     // TODO: Add future automation techs here
 

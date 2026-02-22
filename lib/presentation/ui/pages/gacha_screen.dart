@@ -13,6 +13,7 @@ import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/presentation/ui/atoms/void_hiring_overlay.dart';
 import 'package:time_factory/presentation/ui/dialogs/worker_result_dialog.dart';
 import 'package:time_factory/core/constants/tutorial_keys.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Gacha Screen - Temporal Rift Summoning Interface
 class GachaScreen extends ConsumerStatefulWidget {
@@ -71,7 +72,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
                       Text(
                         'TEMPORAL RIFT ACTIVE',
                         style: theme.typography.bodyMedium.copyWith(
-                          color: colors.primary.withOpacity( 0.7),
+                          color: colors.primary.withOpacity(0.7),
                           letterSpacing: 3.0,
                           fontWeight: FontWeight.bold,
                         ),
@@ -80,7 +81,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
                       Text(
                         'Summon workers from across time',
                         style: theme.typography.bodySmall.copyWith(
-                          color: colors.textSecondary.withOpacity( 0.5),
+                          color: colors.textSecondary.withOpacity(0.5),
                         ),
                       ),
                     ],
@@ -128,15 +129,17 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity( 0.5),
-                    border: Border.all(
-                      color: colors.primary.withOpacity( 0.3),
-                    ),
+                    color: Colors.black.withOpacity(0.5),
+                    border: Border.all(color: colors.primary.withOpacity(0.3)),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.diamond, color: colors.primary, size: 16),
+                      AppIcon(
+                        AppHugeIcons.diamond,
+                        color: colors.primary,
+                        size: 16,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         '$timeShards',
@@ -172,7 +175,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
         // Subtle outer glow
         boxShadow: [
           BoxShadow(
-            color: colors.primary.withOpacity( 0.1),
+            color: colors.primary.withOpacity(0.1),
             blurRadius: 50,
             spreadRadius: 10,
           ),
@@ -223,7 +226,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         decoration: BoxDecoration(
           color: canHire
-              ? colors.accent.withOpacity( 0.2)
+              ? colors.accent.withOpacity(0.2)
               : Colors.grey.shade900,
           borderRadius: BorderRadius.circular(theme.dimens.cornerRadius),
           border: Border.all(color: canHire ? colors.accent : Colors.white10),
@@ -284,7 +287,7 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
           boxShadow: canSummon
               ? [
                   BoxShadow(
-                    color: colors.primary.withOpacity( 0.5),
+                    color: colors.primary.withOpacity(0.5),
                     blurRadius: 15.0,
                     spreadRadius: 2.0,
                   ),
@@ -303,8 +306,8 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
                 ),
               )
             else
-              Icon(
-                Icons.auto_awesome,
+              AppIcon(
+                AppHugeIcons.auto_awesome,
                 color: canSummon ? colors.textPrimary : Colors.grey,
                 size: 20,
               ),

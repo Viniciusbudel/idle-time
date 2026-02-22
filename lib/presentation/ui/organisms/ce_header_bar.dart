@@ -8,6 +8,7 @@ import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/production_provider.dart';
 import 'package:time_factory/presentation/ui/pages/settings_screen.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Premium header following the HTML prototype:
 /// CE/sec (left) | Large CE icon + number (center) | Shards (right)
@@ -32,8 +33,8 @@ class ResourceAppBar extends ConsumerWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withOpacity( 0.95),
-            Colors.black.withOpacity( 0.8),
+            Colors.black.withOpacity(0.95),
+            Colors.black.withOpacity(0.8),
             Colors.transparent,
           ],
           stops: const [0.0, 0.6, 1.0],
@@ -64,7 +65,7 @@ class ResourceAppBar extends ConsumerWidget {
               child: _SideStat(
                 label: AppLocalizations.of(context)!.ceSec,
                 value: NumberFormatter.formatCompactDouble(productionPerSecond),
-                icon: Icons.bolt,
+                icon: AppHugeIcons.bolt,
                 iconColor: TimeFactoryColors.electricCyan.withValues(
                   alpha: 0.7,
                 ),
@@ -95,7 +96,7 @@ class ResourceAppBar extends ConsumerWidget {
                   child: _SideStat(
                     label: AppLocalizations.of(context)!.shards,
                     value: timeShards.toString(),
-                    icon: Icons.diamond_outlined,
+                    icon: AppHugeIcons.diamond_outlined,
                     iconColor: TimeFactoryColors.hotMagenta.withValues(
                       alpha: 0.7,
                     ),
@@ -110,8 +111,8 @@ class ResourceAppBar extends ConsumerWidget {
                       MaterialPageRoute(builder: (_) => const SettingsScreen()),
                     );
                   },
-                  child: Icon(
-                    Icons.settings,
+                  child: AppIcon(
+                    AppHugeIcons.settings,
                     size: 18,
                     color: TimeFactoryColors.electricCyan.withValues(
                       alpha: 0.5,
@@ -164,9 +165,9 @@ class _CenterDisplay extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.black.withOpacity( 0.4),
+                color: Colors.black.withOpacity(0.4),
                 border: Border.all(
-                  color: TimeFactoryColors.electricCyan.withOpacity( 0.5),
+                  color: TimeFactoryColors.electricCyan.withOpacity(0.5),
                   width: 1,
                 ),
                 boxShadow: [
@@ -202,11 +203,11 @@ class _CenterDisplay extends StatelessWidget {
             letterSpacing: 2,
             shadows: [
               Shadow(
-                color: TimeFactoryColors.electricCyan.withOpacity( 0.8),
+                color: TimeFactoryColors.electricCyan.withOpacity(0.8),
                 blurRadius: 10,
               ),
               Shadow(
-                color: TimeFactoryColors.electricCyan.withOpacity( 0.4),
+                color: TimeFactoryColors.electricCyan.withOpacity(0.4),
                 blurRadius: 20,
               ),
             ],
@@ -219,7 +220,7 @@ class _CenterDisplay extends StatelessWidget {
         Text(
           AppLocalizations.of(context)!.chronoEnergy.toUpperCase(),
           style: TimeFactoryTextStyles.label.copyWith(
-            color: TimeFactoryColors.electricCyan.withOpacity( 0.8),
+            color: TimeFactoryColors.electricCyan.withOpacity(0.8),
             letterSpacing: 3,
           ),
         ),
@@ -231,7 +232,7 @@ class _CenterDisplay extends StatelessWidget {
 class _SideStat extends StatelessWidget {
   final String label;
   final String value;
-  final IconData icon;
+  final AppIconData icon;
   final Color iconColor;
   final bool iconFirst;
   final CrossAxisAlignment alignment;
@@ -268,7 +269,7 @@ class _SideStat extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (iconFirst) ...[
-                Icon(icon, size: 12, color: iconColor),
+                AppIcon(icon, size: 12, color: iconColor),
                 const SizedBox(width: 4),
               ],
               Text(
@@ -280,7 +281,7 @@ class _SideStat extends StatelessWidget {
               ),
               if (!iconFirst) ...[
                 const SizedBox(width: 4),
-                Icon(icon, size: 12, color: iconColor),
+                AppIcon(icon, size: 12, color: iconColor),
               ],
             ],
           ),

@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:time_factory/core/constants/game_constants.dart';
 import 'enums.dart';
 import 'worker.dart';
 import 'worker_artifact.dart';
@@ -189,8 +192,9 @@ class GameState {
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
 
-      final chronoMasteryLevel =
-          paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0;
+      final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
+        paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
+      );
       if (chronoMasteryLevel > 0) {
         final bonus = 1.0 + (chronoMasteryLevel * 0.1);
         production =
@@ -221,8 +225,9 @@ class GameState {
       rate += (eraVariety - 1) * 0.002;
     }
 
-    final riftStabilityLevel =
-        paradoxPointsSpent[PrestigeUpgradeType.riftStability.id] ?? 0;
+    final riftStabilityLevel = PrestigeUpgradeType.riftStability.clampLevel(
+      paradoxPointsSpent[PrestigeUpgradeType.riftStability.id] ?? 0,
+    );
     if (riftStabilityLevel > 0) {
       rate *= (1.0 - riftStabilityLevel * 0.05);
     }
@@ -250,8 +255,9 @@ class GameState {
           BigInt.from(100);
 
       // Chrono Mastery
-      final chronoMasteryLevel =
-          paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0;
+      final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
+        paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
+      );
       if (chronoMasteryLevel > 0) {
         final bonus = 1.0 + (chronoMasteryLevel * 0.1);
         production =
@@ -272,8 +278,9 @@ class GameState {
   double get offlineEfficiency {
     const base = 0.1; // REBALANCED: 0.7 -> 0.1
     // Paradox Upgrade
-    final offlineBonusLevel =
-        paradoxPointsSpent[PrestigeUpgradeType.temporalMemory.id] ?? 0;
+    final offlineBonusLevel = PrestigeUpgradeType.temporalMemory.clampLevel(
+      paradoxPointsSpent[PrestigeUpgradeType.temporalMemory.id] ?? 0,
+    );
     // Tech Upgrade (all offline techs: clockwork_arithmometer, radio_broadcast, etc.)
     final techMultiplier = TechData.calculateOfflineEfficiencyMultiplier(
       techLevels,
@@ -297,13 +304,35 @@ class GameState {
 
   /// Calculate prestige points to gain
   int get prestigePointsToGain {
-    if (lifetimeChronoEnergy < BigInt.from(1000000)) return 0;
-    final ratio = lifetimeChronoEnergy.toDouble() / 1000000.0;
-    return ratio.isFinite ? ratio.toInt().clamp(0, 1000000) : 0;
+    final minimum = BigInt.from(GameConstants.prestigeMinimumCE);
+    if (lifetimeChronoEnergy < minimum) return 0;
+
+    // Log curve to avoid runaway PP in late eras.
+    final log10Ce = _log10BigInt(lifetimeChronoEnergy);
+    final baseLog =
+        math.log(GameConstants.prestigeFormulaBase.toDouble()) / math.ln10;
+    final growth = (log10Ce - baseLog).clamp(0.0, 24.0);
+    final points = (6.0 * growth * growth).floor();
+    return points < 1 ? 1 : points;
   }
 
   /// Check if can prestige
-  bool get canPrestige => lifetimeChronoEnergy >= BigInt.from(1000000);
+  bool get canPrestige =>
+      lifetimeChronoEnergy >= BigInt.from(GameConstants.prestigeMinimumCE);
+
+  static double _log10BigInt(BigInt value) {
+    if (value <= BigInt.zero) return 0.0;
+
+    final text = value.toString();
+    const significantDigits = 15;
+
+    if (text.length <= significantDigits) {
+      return math.log(value.toDouble()) / math.ln10;
+    }
+
+    final lead = double.parse(text.substring(0, significantDigits));
+    return (text.length - significantDigits) + (math.log(lead) / math.ln10);
+  }
 
   /// Get number of stations owned in a specific era
   int getStationCountForEra(String eraId) {

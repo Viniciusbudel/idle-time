@@ -10,6 +10,7 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/tech_provider.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class EraAdvanceButton extends ConsumerWidget {
   const EraAdvanceButton({super.key});
@@ -61,7 +62,7 @@ class EraAdvanceButton extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isReady
-              ? TimeFactoryColors.electricCyan.withOpacity( 0.1)
+              ? TimeFactoryColors.electricCyan.withOpacity(0.1)
               : Colors.black54,
           border: Border.all(
             color: isReady ? TimeFactoryColors.electricCyan : Colors.white10,
@@ -87,14 +88,14 @@ class EraAdvanceButton extends ConsumerWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isReady
-                    ? TimeFactoryColors.electricCyan.withOpacity( 0.2)
+                    ? TimeFactoryColors.electricCyan.withOpacity(0.2)
                     : Colors.white10,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: AppIcon(
                 isEraComplete
-                    ? Icons.history_edu
-                    : Icons.lock_clock, // Lock icon if tech not done
+                    ? AppHugeIcons.history_edu
+                    : AppHugeIcons.lock_clock, // Lock icon if tech not done
                 color: isReady
                     ? TimeFactoryColors.electricCyan
                     : Colors.white24,
