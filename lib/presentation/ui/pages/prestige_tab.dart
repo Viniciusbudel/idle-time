@@ -5,6 +5,7 @@ import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/prestige_upgrade.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/ui/atoms/cyber_button.dart';
+import 'package:time_factory/presentation/ui/dialogs/paradox_confirmation_dialog.dart';
 import 'package:time_factory/presentation/ui/molecules/glass_card.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 
@@ -46,7 +47,7 @@ class PrestigeTab extends ConsumerWidget {
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: TimeFactoryColors.hotMagenta.withOpacity( 0.3),
+                    color: TimeFactoryColors.hotMagenta.withOpacity(0.3),
                   ),
                 ),
                 child: Row(
@@ -80,7 +81,14 @@ class PrestigeTab extends ConsumerWidget {
                 primaryColor: gameState.canPrestige
                     ? TimeFactoryColors.hotMagenta
                     : Colors.grey,
-                onTap: gameState.canPrestige ? () => notifier.prestige() : null,
+                onTap: gameState.canPrestige
+                    ? () {
+                        ParadoxConfirmationDialog.show(
+                          context,
+                          onConfirm: () => notifier.prestige(),
+                        );
+                      }
+                    : null,
               ),
             ],
           ),
@@ -181,7 +189,7 @@ class PrestigeTab extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: TimeFactoryColors.hotMagenta.withOpacity( 0.1),
+            color: TimeFactoryColors.hotMagenta.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: TimeFactoryColors.hotMagenta),
           ),

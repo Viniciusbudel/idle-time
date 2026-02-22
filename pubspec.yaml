@@ -38,6 +38,7 @@ dependencies:
   flame_lottie: ^0.4.2+19
   flutter_local_notifications: ^17.2.2
   timezone: ^0.9.4
+  video_player: ^2.8.1
 
 dev_dependencies:
   flutter_test:
@@ -63,11 +64,14 @@ flutter:
     - assets/images/backgrounds/
     - assets/images/backgrounds/victorian/
     - assets/images/backgrounds/atomic/
+    - assets/images/backgrounds/20s/
+    - assets/images/backgrounds/cyberpunk/
     - assets/images/effects/
     - assets/images/icons/
     - assets/images/workers/
     - assets/lottie/
     - assets/data/
+    - assets/videos/
 
   fonts:
     - family: Orbitron

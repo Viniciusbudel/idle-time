@@ -59,10 +59,10 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
       decoration: BoxDecoration(
         color: const Color(0xFF0A1520),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        border: Border.all(color: rarityColor.withOpacity( 0.2), width: 1),
+        border: Border.all(color: rarityColor.withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: rarityColor.withOpacity( 0.1),
+            color: rarityColor.withOpacity(0.1),
             blurRadius: 30,
             spreadRadius: 2,
             offset: const Offset(0, -10),
@@ -85,9 +85,9 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      rarityColor.withOpacity( 0.0),
-                      rarityColor.withOpacity( 0.8),
-                      rarityColor.withOpacity( 0.0),
+                      rarityColor.withOpacity(0.0),
+                      rarityColor.withOpacity(0.8),
+                      rarityColor.withOpacity(0.0),
                     ],
                   ),
                 ),
@@ -146,14 +146,14 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                           height: 100,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: rarityColor.withOpacity( 0.1),
+                            color: rarityColor.withOpacity(0.1),
                             border: Border.all(
-                              color: rarityColor.withOpacity( 0.5),
+                              color: rarityColor.withOpacity(0.5),
                               width: 2,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: rarityColor.withOpacity( 0.2),
+                                color: rarityColor.withOpacity(0.2),
                                 blurRadius: 20,
                                 spreadRadius: 2,
                               ),
@@ -251,12 +251,14 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                               TimeFactoryColors.voltageYellow,
                               icon: Icons.trending_up,
                             ),
-                            if (currentWorker.equippedArtifacts.isNotEmpty) ...[
+                            if (currentWorker.maxArtifactSlots > 0 ||
+                                currentWorker.equippedArtifacts.isNotEmpty) ...[
                               const Divider(color: Colors.white12, height: 24),
                               _buildStatRow(
                                 'Artifact Slots',
-                                '${currentWorker.equippedArtifacts.length} / 5',
-                                currentWorker.equippedArtifacts.length >= 5
+                                '${currentWorker.equippedArtifacts.length} / ${currentWorker.maxArtifactSlots}',
+                                currentWorker.equippedArtifacts.length >=
+                                        currentWorker.maxArtifactSlots
                                     ? TimeFactoryColors.hotMagenta
                                     : TimeFactoryColors.voltageYellow,
                                 icon: Icons.auto_awesome,
@@ -280,9 +282,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF0D1B22),
                   border: Border(
-                    top: BorderSide(
-                      color: Colors.white.withOpacity( 0.05),
-                    ),
+                    top: BorderSide(color: Colors.white.withOpacity(0.05)),
                   ),
                 ),
                 child: Row(
@@ -326,9 +326,9 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity( 0.15),
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity( 0.5)),
+        border: Border.all(color: color.withOpacity(0.5)),
       ),
       child: Text(
         text,
@@ -374,6 +374,55 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
   }
 
   Widget _buildArtifactsSection(BuildContext context, Worker worker) {
+    if (worker.maxArtifactSlots == 0 && worker.equippedArtifacts.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'TEMPORAL ARTIFACTS',
+                style: TimeFactoryTextStyles.header.copyWith(
+                  color: TimeFactoryColors.electricCyan,
+                  fontSize: 14,
+                  letterSpacing: 2,
+                ),
+              ),
+              Text(
+                '0/0 EQUIP',
+                style: TimeFactoryTextStyles.bodyMono.copyWith(
+                  color: Colors.white54,
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Text(
+              'COMMON WORKERS CANNOT EQUIP ARTIFACTS',
+              style: TimeFactoryTextStyles.bodyMono.copyWith(
+                color: Colors.white54,
+                fontSize: 10,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final slotsCount = worker.maxArtifactSlots > worker.equippedArtifacts.length
+        ? worker.maxArtifactSlots
+        : worker.equippedArtifacts.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -389,7 +438,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
               ),
             ),
             Text(
-              '${worker.equippedArtifacts.length}/5 EQUIP',
+              '${worker.equippedArtifacts.length}/${worker.maxArtifactSlots} EQUIP',
               style: TimeFactoryTextStyles.bodyMono.copyWith(
                 color: Colors.white54,
                 fontSize: 10,
@@ -402,7 +451,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
           height: 70,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: 5,
+            itemCount: slotsCount,
             separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
             itemBuilder: (context, index) {
               if (index < worker.equippedArtifacts.length) {
@@ -440,19 +489,19 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
         width: 60,
         decoration: BoxDecoration(
           color: _flashingSlotIndex == index
-              ? TimeFactoryColors.acidGreen.withOpacity( 0.3)
+              ? TimeFactoryColors.acidGreen.withOpacity(0.3)
               : Colors.black12,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: _flashingSlotIndex == index
                 ? TimeFactoryColors.acidGreen
-                : TimeFactoryColors.electricCyan.withOpacity( 0.3),
+                : TimeFactoryColors.electricCyan.withOpacity(0.3),
             width: _flashingSlotIndex == index ? 2 : 1,
           ),
           boxShadow: _flashingSlotIndex == index
               ? [
                   BoxShadow(
-                    color: TimeFactoryColors.acidGreen.withOpacity( 0.4),
+                    color: TimeFactoryColors.acidGreen.withOpacity(0.4),
                     blurRadius: 12,
                     spreadRadius: 2,
                   ),
@@ -525,8 +574,8 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
         width: 60,
         decoration: BoxDecoration(
           color: isFlashing
-              ? TimeFactoryColors.acidGreen.withOpacity( 0.3)
-              : rarityColor.withOpacity( 0.1),
+              ? TimeFactoryColors.acidGreen.withOpacity(0.3)
+              : rarityColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isFlashing ? TimeFactoryColors.acidGreen : rarityColor,
@@ -535,8 +584,8 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
           boxShadow: [
             BoxShadow(
               color: isFlashing
-                  ? TimeFactoryColors.acidGreen.withOpacity( 0.5)
-                  : rarityColor.withOpacity( 0.2),
+                  ? TimeFactoryColors.acidGreen.withOpacity(0.5)
+                  : rarityColor.withOpacity(0.2),
               blurRadius: isFlashing ? 16 : 8,
             ),
           ],

@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,36 +43,18 @@ class MegaChamberCard extends ConsumerStatefulWidget {
   ConsumerState<MegaChamberCard> createState() => _MegaChamberCardState();
 }
 
-class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
+class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
   @override
   Widget build(BuildContext context) {
+    // Force Neon Theme
     // Force Neon Theme
     const theme = NeonTheme();
     final colors = theme.colors;
     final typography = theme.typography;
 
-    // "Cyber Void" Background
+    // dynamically derive card UI accent from its specific era
+    final neonCyan = widget.station.type.era.color;
     final cyberDark = const Color(0xFF050A10);
-    final neonCyan = colors.primary;
-    // final neonPurple = colors.secondary; // Unused
 
     return Container(
       margin: const EdgeInsets.all(AppSpacing.md),
@@ -81,12 +62,12 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         color: cyberDark,
         borderRadius: BorderRadius.circular(16),
         // Double border effect
-        border: Border.all(color: neonCyan.withOpacity(0.5), width: 1.0),
+        border: Border.all(color: neonCyan.withOpacity(0.3), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: neonCyan.withOpacity(0.5),
-            blurRadius: 15,
-            spreadRadius: 2,
+            color: neonCyan.withOpacity(0.2),
+            blurRadius: 10,
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -94,18 +75,13 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            // Background Grid Animation
+            // Static Background Grid
             Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return CustomPaint(
-                    painter: _CyberGridPainter(
-                      color: neonCyan.withOpacity(0.5),
-                      offset: _controller.value * 20,
-                    ),
-                  );
-                },
+              child: CustomPaint(
+                painter: _CyberGridPainter(
+                  color: neonCyan.withOpacity(0.15),
+                  offset: 0,
+                ),
               ),
             ),
 
@@ -155,9 +131,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                         decoration: BoxDecoration(
                           color: neonCyan.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: neonCyan.withOpacity(0.5),
-                          ),
+                          border: Border.all(color: neonCyan.withOpacity(0.5)),
                         ),
                         child: Text(
                           '${widget.assignedWorkers.length} / ${widget.station.maxWorkerSlots} ${AppLocalizations.of(context)!.online}',
@@ -291,9 +265,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: colors.secondary.withOpacity(0.5),
-                  ),
+                  border: Border.all(color: colors.secondary.withOpacity(0.5)),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -343,40 +315,12 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
           ),
 
           // 2. Central Hologram Icon (Faded)
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(
-                  0,
-                  math.sin(_controller.value * math.pi * 2) * 5,
-                ),
-                child: child,
-              );
-            },
-            child: Opacity(
-              opacity: 0.4, // Reduced opacity to let text pop
-              child: Icon(
-                Icons.precision_manufacturing,
-                size: 80,
-                color: colors.primary.withOpacity(0.5),
-              ),
-            ),
-          ),
-
-          // 3. Scanline Overlay
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return CustomPaint(
-                  painter: _ScanlinePainter(
-                    color: colors.primary.withOpacity(0.5),
-                    activeLineColor: colors.primary.withOpacity(0.5),
-                    progress: _controller.value,
-                  ),
-                );
-              },
+          Opacity(
+            opacity: 0.15, // Reduced opacity for cleaner look
+            child: Icon(
+              Icons.precision_manufacturing,
+              size: 80,
+              color: colors.primary,
             ),
           ),
 
@@ -438,9 +382,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: colors.primary.withOpacity(0.5),
-                ),
+                border: Border.all(color: colors.primary.withOpacity(0.5)),
               ),
               child: Text(
                 'SYS :: ONLINE',
@@ -462,9 +404,9 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: colors.primary.withOpacity(0.5),
+        color: colors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colors.primary.withOpacity(0.5)),
+        border: Border.all(color: colors.primary.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -508,7 +450,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.5),
+            color: color.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 16, color: color),
@@ -570,38 +512,13 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: colors.primary.withOpacity(0.5),
-          border: Border.all(color: colors.primary.withOpacity(0.5)),
+          color: Colors.black.withOpacity(0.6),
+          border: Border.all(color: colors.primary.withOpacity(0.3)),
           borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: colors.primary.withOpacity(0.5),
-              blurRadius: 8,
-            ),
-          ],
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Worker Avatar Icon
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
-            ),
-            // Holo Scanline Overlay
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _ScanlinePainter(
-                    color: colors.primary.withOpacity(0.5),
-                    activeLineColor: Colors.transparent,
-                    progress: 0,
-                    lineCount: 10,
-                  ),
-                ),
-              ),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
         ),
       ),
     );
@@ -656,14 +573,11 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        color: colors.primary.withOpacity(0.5),
-        border: Border.all(color: colors.primary),
+        color: colors.primary.withOpacity(0.2),
+        border: Border.all(color: colors.primary.withOpacity(0.5)),
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
-          BoxShadow(
-            color: colors.primary.withOpacity(0.5),
-            blurRadius: 10,
-          ),
+          BoxShadow(color: colors.primary.withOpacity(0.1), blurRadius: 4),
         ],
       ),
       child: Material(
@@ -820,46 +734,4 @@ class _TechCornerPainter extends CustomPainter {
   @override
   bool shouldRepaint(_TechCornerPainter oldDelegate) =>
       color != oldDelegate.color;
-}
-
-class _ScanlinePainter extends CustomPainter {
-  final Color color;
-  final Color activeLineColor;
-  final double progress;
-  final int lineCount;
-
-  _ScanlinePainter({
-    required this.color,
-    required this.activeLineColor,
-    required this.progress,
-    this.lineCount = 40,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    final activePaint = Paint()
-      ..color = activeLineColor
-      ..strokeWidth = 2.0;
-
-    final lineHeight = size.height / lineCount;
-
-    // Static lines
-    for (int i = 0; i < lineCount; i++) {
-      if (i % 2 == 0) {
-        canvas.drawRect(
-          Rect.fromLTWH(0, i * lineHeight, size.width, lineHeight),
-          paint,
-        );
-      }
-    }
-
-    // Moving scanline
-    final y = progress * size.height;
-    canvas.drawLine(Offset(0, y), Offset(size.width, y), activePaint);
-  }
-
-  @override
-  bool shouldRepaint(_ScanlinePainter oldDelegate) =>
-      progress != oldDelegate.progress || color != oldDelegate.color;
 }

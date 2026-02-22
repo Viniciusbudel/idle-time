@@ -18,8 +18,9 @@ class FitWorkerToEraUseCase {
 
     // Era Gap: How many eras behind is the worker?
     final gap = _calculateEraGap(worker.era, currentEra);
-    if (gap <= 0)
+    if (gap <= 0) {
       return BigInt.zero; // Should not happen if eras are ordered correctly
+    }
 
     final baseCost = currentEra.hireCost;
     final rarityMult = worker.rarity.productionMultiplier;

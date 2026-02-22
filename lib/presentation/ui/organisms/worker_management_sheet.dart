@@ -461,12 +461,12 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                       );
                     }
                   },
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.upgrade, size: 20),
-                      const SizedBox(width: 8),
-                      const Text(
+                      Icon(Icons.upgrade, size: 20),
+                      SizedBox(width: 8),
+                      Text(
                         'FIT TO ERA',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,

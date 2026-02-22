@@ -8,8 +8,8 @@ class TechData {
       name: 'Pressurized Boilers',
       description: 'Higher pressure means more power.',
       type: TechType.efficiency,
-      baseCost: BigInt.from(1000), // PHASE 2: 100 → 1000 (×10)
-      costMultiplier: 2.1, // PHASE 2: 1.5 → 2.5
+      baseCost: BigInt.from(2000), // REBALANCED: 1000 -> 3000
+      costMultiplier: 2.5, // REBALANCED: 2.1 -> 3.5
       eraId: 'victorian',
       maxLevel: 10,
     ),
@@ -18,8 +18,8 @@ class TechData {
       name: 'Centrifugal Governor',
       description: 'The spinning balls of industry. Stabilizes steam flow.',
       type: TechType.timeWarp,
-      baseCost: BigInt.from(2500), // PHASE 2: 250 → 2500 (×10)
-      costMultiplier: 2.5, // PHASE 2: 1.6 → 2.5
+      baseCost: BigInt.from(3500), // REBALANCED: 2500 -> 7500
+      costMultiplier: 2.5, // REBALANCED: 2.5 -> 4.0
       eraId: 'victorian',
       maxLevel: 5,
     ),
@@ -29,8 +29,8 @@ class TechData {
       name: 'Bessemer Process',
       description: 'The age of steel begins. Massive cost savings.',
       type: TechType.costReduction,
-      baseCost: BigInt.from(5000), // PHASE 2: 500 → 5000 (×10)
-      costMultiplier: 2.0, // PHASE 2: 1.4 → 2.0
+      baseCost: BigInt.from(8000), // REBALANCED: 5000 -> 15000
+      costMultiplier: 2.5, // REBALANCED: 2.0 -> 3.0
       eraId: 'victorian',
       maxLevel: 5,
     ),
@@ -39,8 +39,8 @@ class TechData {
       name: 'Jacquard Punch-Cards',
       description: 'The original industrial programming via looms.',
       type: TechType.automation,
-      baseCost: BigInt.from(8000), // PHASE 2: 1000 → 10000 (×10)
-      costMultiplier: 2.5, // PHASE 2: 1.5 → 2.5
+      baseCost: BigInt.from(24000), // REBALANCED: 8000 -> 24000
+      costMultiplier: 4.0, // REBALANCED: 2.5 -> 4.0
       eraId: 'victorian',
       maxLevel: 5,
     ),
@@ -51,8 +51,8 @@ class TechData {
       description:
           'A thunderous assembly of brass cogs and perforated cards that automates the ledger, continuing calculations even whilst the operator slumbers.',
       type: TechType.offline,
-      baseCost: BigInt.from(8000), // REBALANCED: 50000 → 8000
-      costMultiplier: 2.0, // REBALANCED: 3.0 → 2.0
+      baseCost: BigInt.from(40000), // REBALANCED: 8000 -> 40000
+      costMultiplier: 3.5, // REBALANCED: 2.0 -> 3.5
       eraId: 'victorian',
       maxLevel: 5,
     ),
@@ -61,8 +61,8 @@ class TechData {
       name: 'Pneumatic Hammer',
       description: 'Compressed air for maximum impact.',
       type: TechType.clickPower,
-      baseCost: BigInt.from(7500), // PHASE 2: 750 → 7500 (×10)
-      costMultiplier: 2.5, // PHASE 2: 1.5 → 2.5
+      baseCost: BigInt.from(30000), // REBALANCED: 7500 -> 30000
+      costMultiplier: 3.5, // REBALANCED: 2.5 -> 3.5
       eraId: 'victorian',
       maxLevel: 5,
     ),
@@ -87,8 +87,8 @@ class TechData {
       description:
           'Real-time data for real-time profits. Accelerates decision making.',
       type: TechType.efficiency,
-      baseCost: BigInt.from(47000), // 50K
-      costMultiplier: 1.5,
+      baseCost: BigInt.from(1500000), // REBALANCED: 47k -> 150k
+      costMultiplier: 1.75, // REBALANCED: 1.5 -> 2.5
       eraId: 'roaring_20s',
       maxLevel: 15,
     ),
@@ -98,10 +98,10 @@ class TechData {
       description:
           'Fordist efficiency. Standardized parts reduce costs massively.',
       type: TechType.costReduction,
-      baseCost: BigInt.from(150000), // 150K
-      costMultiplier: 1.6,
+      baseCost: BigInt.from(5000000), // REBALANCED: 150k -> 500k
+      costMultiplier: 2.0, // REBALANCED: 1.6 -> 2.8
       eraId: 'roaring_20s',
-      maxLevel: 6,
+      maxLevel: 5,
     ),
     // Tier 2
     TechUpgrade(
@@ -110,8 +110,8 @@ class TechData {
       description:
           'Reaching workers in their homes. Productivity never sleeps.',
       type: TechType.offline,
-      baseCost: BigInt.from(200000), // REBALANCED: 300000 → 200000
-      costMultiplier: 1.7, // REBALANCED: 1.7 → 1.5
+      baseCost: BigInt.from(800000), // REBALANCED: 200k -> 800k
+      costMultiplier: 2.5, // REBALANCED: 1.7 -> 2.5
       eraId: 'roaring_20s',
       maxLevel: 5,
     ),
@@ -120,8 +120,8 @@ class TechData {
       name: 'Jazz Improvisation',
       description: 'Chaotic rhythm increases manual input efficiency.',
       type: TechType.clickPower,
-      baseCost: BigInt.from(200000), // 500K
-      costMultiplier: 1.5,
+      baseCost: BigInt.from(1000000), // REBALANCED: 200k -> 1M
+      costMultiplier: 3.0, // REBALANCED: 1.5 -> 3.0
       eraId: 'roaring_20s',
       maxLevel: 10,
     ),
@@ -131,7 +131,7 @@ class TechData {
       name: 'The Manhattan Project',
       description: 'Splitting the atom... and time. Unlocks Atomic Age.',
       type: TechType.manhattan,
-      baseCost: BigInt.from(50000000), // 50M
+      baseCost: BigInt.from(600000000), // REBALANCED: 50M -> 500M
       costMultiplier: 2.0,
       eraId: 'roaring_20s',
       maxLevel: 1,
@@ -203,6 +203,62 @@ class TechData {
       eraId: 'atomic_age',
       maxLevel: 1,
     ),
+
+    // ================= CYBERPUNK 80s (1980s) =================
+
+    // Tier 1
+    TechUpgrade(
+      id: 'cybernetics',
+      name: 'Cybernetics',
+      description: 'Mechanical upgrades for flesh bodies. Flawless output.',
+      type: TechType.efficiency,
+      baseCost: BigInt.from(500000000000), // 500B
+      costMultiplier: 2.0,
+      eraId: 'cyberpunk_80s',
+      maxLevel: 10,
+    ),
+    TechUpgrade(
+      id: 'neural_net',
+      name: 'Neural Net Processing',
+      description: 'Algorithms that think. Complete automation.',
+      type: TechType.automation,
+      baseCost: BigInt.from(1000000000000), // 1T
+      costMultiplier: 2.2,
+      eraId: 'cyberpunk_80s',
+      maxLevel: 10,
+    ),
+    // Tier 2
+    TechUpgrade(
+      id: 'synth_alloys',
+      name: 'Synth-Alloys',
+      description: 'Stronger, lighter, cheaper material for stations.',
+      type: TechType.costReduction,
+      baseCost: BigInt.from(2500000000000), // 2.5T
+      costMultiplier: 2.5,
+      eraId: 'cyberpunk_80s',
+      maxLevel: 5,
+    ),
+    TechUpgrade(
+      id: 'neon_overdrive',
+      name: 'Neon Overdrive',
+      description: 'Overclocking the system to bend time itself.',
+      type: TechType.timeWarp,
+      baseCost: BigInt.from(5000000000000), // 5T
+      costMultiplier: 2.5,
+      eraId: 'cyberpunk_80s',
+      maxLevel: 5,
+    ),
+    // Capstone
+    TechUpgrade(
+      id: 'virtual_reality',
+      name: 'Virtual Reality Matrix',
+      description: 'The ultimate escape to digital realms. Unlocks Neo-Tokyo.',
+      type: TechType.eraUnlock,
+      baseCost: BigInt.from(100000000000000), // 100T
+      costMultiplier: 3.5,
+      eraId: 'cyberpunk_80s',
+      maxLevel: 1,
+    ),
   ];
 
   static double calculateEfficiencyMultiplier(Map<String, int> techLevels) {
@@ -210,7 +266,7 @@ class TechData {
 
     // Pressurized Boilers (Efficiency) - PHASE 2: +10% → +5%
     final boilerLevel = techLevels['steam_boilers'] ?? 0;
-    multiplier += boilerLevel * 0.05; // NERFED from 0.1
+    multiplier += boilerLevel * 0.075; // NERFED from 0.1
 
     // Jacquard Punch-Cards (Efficiency/Automation) - PHASE 2: +5% → +2.5%
     final jacquardLevel = techLevels['jacquard_punchcards'] ?? 0;
@@ -221,9 +277,9 @@ class TechData {
     final tickerLevel = techLevels['ticker_tape'] ?? 0;
     multiplier += tickerLevel * 0.075; // NERFED from 0.15
 
-    // Hybrid Era Unlock: Manhattan Project (x20 Global Multiplier)
+    // Hybrid Era Unlock: Manhattan Project (x2 Global Multiplier)
     if ((techLevels['manhattan_project'] ?? 0) > 0) {
-      multiplier *= 20.0;
+      multiplier *= 2.0;
     }
 
     // ATOMIC AGE
@@ -240,6 +296,16 @@ class TechData {
       multiplier *= 100.0;
     }
 
+    // CYBERPUNK 80s
+    // Cybernetics: +100% per level
+    final cyberneticsLevel = techLevels['cybernetics'] ?? 0;
+    multiplier += cyberneticsLevel * 1.0;
+
+    // Virtual Reality (x1000 Global Multiplier)
+    if ((techLevels['virtual_reality'] ?? 0) > 0) {
+      multiplier *= 1000.0;
+    }
+
     return multiplier;
   }
 
@@ -248,6 +314,11 @@ class TechData {
     // Centrifugal Governor - +5% per level
     final governorLevel = techLevels['centrifugal_governor'] ?? 0;
     multiplier += governorLevel * 0.05;
+
+    // Neon Overdrive - +15% per level
+    final overdriveLevel = techLevels['neon_overdrive'] ?? 0;
+    multiplier += overdriveLevel * 0.15;
+
     return multiplier;
   }
 
@@ -266,6 +337,11 @@ class TechData {
     // Plastic Molding: -5% per level
     final plasticLevel = techLevels['plastic_molding'] ?? 0;
     multiplier -= plasticLevel * 0.05;
+
+    // CYBERPUNK 80s
+    // Synth-Alloys: -5% per level
+    final synthLevel = techLevels['synth_alloys'] ?? 0;
+    multiplier -= synthLevel * 0.05;
 
     return multiplier.clamp(0.5, 1.0); // PHASE 2: Cap at 50% min (was 10%)
   }
@@ -290,9 +366,9 @@ class TechData {
     multiplier += radioLevel * 0.05;
 
     // ATOMIC AGE
-    // ARPANET: +20% per level
+    // ARPANET: +5% per level (REBALANCED: from 20%)
     final arpanetLevel = techLevels['arpanet'] ?? 0;
-    multiplier += arpanetLevel * 0.20;
+    multiplier += arpanetLevel * 0.05;
 
     return multiplier;
   }
@@ -309,6 +385,11 @@ class TechData {
     // Transistors: +5.0 clicks/sec per level
     final transistors = techLevels['transistors'] ?? 0;
     clicksPerSecond += transistors * 5.0;
+
+    // CYBERPUNK 80s
+    // Neural Net: +25.0 clicks/sec per level
+    final neuralNet = techLevels['neural_net'] ?? 0;
+    clicksPerSecond += neuralNet * 25.0;
 
     // TODO: Add future automation techs here
 

@@ -50,14 +50,30 @@ class Worker {
       name: name ?? this.name,
       specialAbility: specialAbility ?? this.specialAbility,
       isDeployed: isDeployed ?? this.isDeployed,
-      deployedStationId: deployedStationId,
+      deployedStationId: deployedStationId ?? this.deployedStationId,
       equippedArtifacts: equippedArtifacts ?? this.equippedArtifacts,
       chronalAttunement: chronalAttunement ?? this.chronalAttunement,
     );
   }
 
+  /// Number of artifact slots based on rarity
+  int get maxArtifactSlots {
+    switch (rarity) {
+      case WorkerRarity.common:
+        return 0;
+      case WorkerRarity.rare:
+        return 1;
+      case WorkerRarity.epic:
+        return 2;
+      case WorkerRarity.legendary:
+        return 3;
+      case WorkerRarity.paradox:
+        return 5;
+    }
+  }
+
   /// Check if the worker can equip another artifact
-  bool get canEquipArtifact => equippedArtifacts.length < 5;
+  bool get canEquipArtifact => equippedArtifacts.length < maxArtifactSlots;
 
   /// Get the base power (flat sum: base + artifact bonuses) * individual attunement
   double get totalBasePower {
@@ -74,7 +90,7 @@ class Worker {
     for (var artifact in equippedArtifacts) {
       artifactMult += artifact.productionMultiplier;
       if (artifact.eraMatch == era) {
-        artifactMult += 0.1;
+        artifactMult += 0.02; // REBALANCED: +10% -> +2%
       }
     }
     return artifactMult * era.multiplier * rarity.productionMultiplier;
@@ -168,10 +184,29 @@ class WorkerFactory {
     final rolledAttunement =
         chronalAttunement ?? (0.85 + (_random.nextDouble() * 0.3));
 
+    // Base production scales with rarity to reward merging
+    BigInt baseProd = BigInt.from(3);
+    switch (rarity) {
+      case WorkerRarity.rare:
+        baseProd = BigInt.from(4);
+        break;
+      case WorkerRarity.epic:
+        baseProd = BigInt.from(7);
+        break;
+      case WorkerRarity.legendary:
+        baseProd = BigInt.from(15);
+        break;
+      case WorkerRarity.paradox:
+        baseProd = BigInt.from(25);
+        break;
+      default:
+        baseProd = BigInt.from(3);
+    }
+
     return Worker(
       id: 'worker_${_idCounter}_${DateTime.now().millisecondsSinceEpoch}',
       era: era,
-      baseProduction: BigInt.from(3),
+      baseProduction: baseProd, // REBALANCED: Scales with rarity
       rarity: rarity,
       name: name ?? WorkerNameRegistry.getName(era, rarity),
       specialAbility: specialAbility,

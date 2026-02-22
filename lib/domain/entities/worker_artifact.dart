@@ -29,25 +29,26 @@ class WorkerArtifact {
 
     switch (rarity) {
       case WorkerRarity.common:
-        basePower = BigInt.from(5);
+        basePower = BigInt.from(1); // REBALANCED: 5 -> 2
+        prodMult = 0.02; // REBALANCED: 0.0 -> 0.02
         break;
       case WorkerRarity.rare:
-        basePower = BigInt.from(25);
-        prodMult = 0.05;
+        basePower = BigInt.from(2); // REBALANCED: 25 -> 10
+        prodMult = 0.05; // REBALANCED: 0.05
         break;
       case WorkerRarity.epic:
-        basePower = BigInt.from(100);
-        prodMult = 0.15;
+        basePower = BigInt.from(5); // REBALANCED: 100 -> 40
+        prodMult = 0.08; // REBALANCED: 0.15 -> 0.08
         eraMatch = currentEra;
         break;
       case WorkerRarity.legendary:
-        basePower = BigInt.from(500);
-        prodMult = 0.30;
+        basePower = BigInt.from(10); // REBALANCED: 500 -> 150
+        prodMult = 0.12; // REBALANCED: 0.30 -> 0.12
         eraMatch = currentEra;
         break;
       case WorkerRarity.paradox:
-        basePower = BigInt.from(2000);
-        prodMult = 1.0; // +100%
+        basePower = BigInt.from(15); // REBALANCED: 2000 -> 500
+        prodMult = 0.20; // REBALANCED: 1.0 (100%) -> 0.20 (20%)
         break;
     }
 

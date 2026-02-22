@@ -34,13 +34,13 @@ enum WorkerEra {
   BigInt get hireCost {
     const costs = {
       'victorian': 150,
-      'roaring_20s': 525, // 150 × 3.5
-      'atomic_age': 1800, // 150 × 12.0
-      'cyberpunk_80s': 6750, // 150 × 45.0
-      'neo_tokyo': 27000, // 150 × 180.0
-      'post_singularity': 112500, // 150 × 750.0
-      'ancient_rome': 450000, // 150 × 3000.0
-      'far_future': 1800000, // 150 × 12000.0
+      'roaring_20s': 100000, // 100k
+      'atomic_age': 25000000, // 25M
+      'cyberpunk_80s': 5000000000, // 5B
+      'neo_tokyo': 1000000000000, // 1T
+      'post_singularity': 200000000000000, // 200T
+      'ancient_rome': 40000000000000000, // 40Qa
+      'far_future': 8000000000000000000, // 8Qi
     };
     return BigInt.from(costs[id] ?? 150);
   }
@@ -50,9 +50,9 @@ enum WorkerEra {
 enum WorkerRarity {
   common('common', 'Common', 1.0),
   rare('rare', 'Rare', 3.5),
-  epic('epic', 'Epic', 13),
-  legendary('legendary', 'Legendary', 40.0),
-  paradox('paradox', 'Paradox', 150.0);
+  epic('epic', 'Epic', 7),
+  legendary('legendary', 'Legendary', 15.0),
+  paradox('paradox', 'Paradox', 40.0);
 
   final String id;
   final String displayName;
@@ -86,6 +86,9 @@ enum StationType {
     8,
     WorkerEra.cyberpunk80s,
   ),
+  dataNode('data_node', 'Data Node', 4, 10, WorkerEra.cyberpunk80s),
+  synthLab('synth_lab', 'Synth Lab', 4, 12, WorkerEra.cyberpunk80s),
+  neonCore('neon_core', 'Neon Core', 4, 15, WorkerEra.cyberpunk80s),
   riftGenerator('rift_generator', 'Rift Generator', 3, 6, WorkerEra.neoTokyo);
 
   final String id;

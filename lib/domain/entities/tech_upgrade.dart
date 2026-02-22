@@ -72,20 +72,32 @@ class TechUpgrade {
   String get bonusDescription {
     switch (type) {
       case TechType.automation:
-        return 'Auto-Clicker: ${(level * 0.5).toStringAsFixed(1)} /sec';
+        final amount = id == 'neural_net'
+            ? 25.0
+            : id == 'transistors'
+            ? 5.0
+            : 0.5;
+        return 'Auto-Clicker: ${(level * amount).toStringAsFixed(1)} /sec';
       case TechType.efficiency:
-        // Boilers: +5%/lvl, Ticker Tape: +7.5%/lvl
-        final pct = id == 'ticker_tape' ? level * 7.5 : level * 5.0;
+        double pctChange = 7.5;
+        if (id == 'nuclear_fission')
+          pctChange = 25.0;
+        else if (id == 'space_race')
+          pctChange = 50.0;
+        else if (id == 'cybernetics')
+          pctChange = 100.0;
+        final pct = level * pctChange;
         return 'Production: +${pct.toStringAsFixed(pct == pct.roundToDouble() ? 0 : 1)}%';
       case TechType.timeWarp:
-        return 'Game Speed: +${level * 5}%';
+        double pctChange = 5.0;
+        if (id == 'neon_overdrive') pctChange = 15.0;
+        final pct = level * pctChange;
+        return 'Game Speed: +${pct.toStringAsFixed(pct == pct.roundToDouble() ? 0 : 1)}%';
       case TechType.costReduction:
-        // Bessemer: -3%/lvl, Assembly Line: -5%/lvl
         final reduction = id == 'bessemer_process' ? level * 3 : level * 5;
         return 'Upgrade Cost: −$reduction%';
       case TechType.offline:
-        // Clockwork: +10%/lvl, Radio: +15%/lvl
-        final pct = id == 'radio_broadcast' ? level * 5 : level * 5;
+        final pct = level * 5;
         return 'Offline Gains: +$pct%';
       case TechType.clickPower:
         return 'Click Power: +${level * 100}%';

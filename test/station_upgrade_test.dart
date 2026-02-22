@@ -10,20 +10,20 @@ void main() {
       expect(TechData.calculateCostReductionMultiplier({}), 1.0);
 
       // Bessemer Process only
-      // 1.0 - (1 * 0.05) = 0.95
+      // 1.0 - (1 * 0.03) = 0.97
       expect(
         TechData.calculateCostReductionMultiplier({'bessemer_process': 1}),
-        0.95,
+        0.97,
       );
-      // 1.0 - (5 * 0.05) = 0.75
+      // 1.0 - (5 * 0.03) = 0.85
       expect(
         TechData.calculateCostReductionMultiplier({'bessemer_process': 5}),
-        0.75,
+        0.85,
       );
     });
 
     test('Station.getUpgradeCost applies discount correctly', () {
-      final station = Station(
+      final station = const Station(
         id: 'test',
         type: StationType.basicLoop,
         level: 1,
@@ -32,18 +32,18 @@ void main() {
         workerIds: [],
       );
 
-      // Base upgrade cost logic: 500 * (2.0 ^ level)
-      // Level 1: 500 * 2.0 = 1000
+      // Base upgrade cost logic: 500 * (2.8 ^ level)
+      // Level 1: 500 * 2.8 = 1400
       final baseCost = station.getUpgradeCost(discountMultiplier: 1.0);
-      expect(baseCost, BigInt.from(1000));
+      expect(baseCost, BigInt.from(1400));
 
       // With 50% discount
       final discountedCost = station.getUpgradeCost(discountMultiplier: 0.5);
-      expect(discountedCost, BigInt.from(500));
+      expect(discountedCost, BigInt.from(700));
 
       // With 10% discount (0.9 multiplier)
       final discountedCost2 = station.getUpgradeCost(discountMultiplier: 0.9);
-      expect(discountedCost2, BigInt.from(900)); // 1000 * 0.9 = 900
+      expect(discountedCost2, BigInt.from(1260)); // 1400 * 0.9 = 1260
     });
   });
 }

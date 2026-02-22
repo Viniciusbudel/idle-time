@@ -109,6 +109,12 @@ extension StationTypeLocalization on StationType {
         return l10n.paradoxAmplifierName;
       case StationType.timeDistortion:
         return l10n.timeDistortionName;
+      case StationType.dataNode:
+        return l10n.dataNodeName;
+      case StationType.synthLab:
+        return l10n.synthLabName;
+      case StationType.neonCore:
+        return l10n.neonCoreName;
       case StationType.riftGenerator:
         return l10n.riftGeneratorName;
     }

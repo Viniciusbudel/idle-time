@@ -27,6 +27,8 @@ import 'package:time_factory/presentation/ui/molecules/tutorial_overlay.dart';
 import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/presentation/ui/molecules/achievement_listener.dart';
 import 'package:time_factory/presentation/ui/dialogs/daily_login_dialog.dart'; // NEW
+import 'package:time_factory/presentation/state/artifact_drop_event_provider.dart';
+import 'package:time_factory/presentation/ui/atoms/artifact_drop_banner.dart';
 
 class FactoryScreen extends ConsumerStatefulWidget {
   const FactoryScreen({super.key});
@@ -122,6 +124,13 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
             },
           ),
         );
+      }
+    });
+
+    // Listen to drop events
+    ref.listen(artifactDropEventProvider, (previous, next) {
+      if (next != null) {
+        ArtifactDropBanner.show(context, next);
       }
     });
 

@@ -3,7 +3,6 @@ import 'package:time_factory/domain/entities/tech_upgrade.dart';
 import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/core/constants/game_constants.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
-import 'package:time_factory/domain/entities/enums.dart';
 
 /// Provider for the list of all tech upgrades
 final techProvider = StateNotifierProvider<TechNotifier, List<TechUpgrade>>((
@@ -67,22 +66,8 @@ class TechNotifier extends StateNotifier<List<TechUpgrade>> {
       // Update GameState for persistence
       ref.read(gameStateProvider.notifier).updateTechLevel(id, newLevel);
 
-      // Handle Era Unlock Techs
-      if (tech.type == TechType.eraUnlock || tech.type == TechType.manhattan) {
-        final eraOrder = GameConstants.eraOrder;
-        final currentEraIndex = eraOrder.indexOf(tech.eraId);
-        if (currentEraIndex != -1 && currentEraIndex < eraOrder.length - 1) {
-          final nextEraId = eraOrder[currentEraIndex + 1];
-          try {
-            final nextEra = WorkerEra.values.firstWhere(
-              (e) => e.id == nextEraId,
-            );
-            ref.read(gameStateProvider.notifier).unlockEra(nextEra);
-          } catch (e) {
-            // Era not found in enum
-          }
-        }
-      }
+      // Era Unlock Techs no longer auto-unlock the era to prevent bypassing
+      // the era advancement cost. The player must click the Era Advancement Button.
 
       return true;
     }

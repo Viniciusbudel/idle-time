@@ -17,10 +17,10 @@ class CalculateOfflineEarningsUseCase {
       return null;
     }
 
-    // Cap at 24 hours
+    // Cap at 12 hours (REBALANCED)
     Duration effectiveDuration = difference;
-    if (difference.inHours > 24) {
-      effectiveDuration = const Duration(hours: 24);
+    if (difference.inHours > 12) {
+      effectiveDuration = const Duration(hours: 12);
     }
 
     // 2. Calculate Rate

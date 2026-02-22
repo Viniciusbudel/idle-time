@@ -89,7 +89,7 @@ class GameState {
 
     return GameState(
       chronoEnergy: BigInt.from(500), // Start with some CE for tutorial
-      timeShards: 100,
+      timeShards: 10,
       lifetimeChronoEnergy: BigInt.zero,
       workers: {'worker_$starterId': starterWorker},
       stations: {'station_$starterId': starterStation},
@@ -270,7 +270,7 @@ class GameState {
 
   /// Get offline efficiency multiplier
   double get offlineEfficiency {
-    const base = 0.7;
+    const base = 0.1; // REBALANCED: 0.7 -> 0.1
     // Paradox Upgrade
     final offlineBonusLevel =
         paradoxPointsSpent[PrestigeUpgradeType.temporalMemory.id] ?? 0;
@@ -342,16 +342,23 @@ class GameState {
   }
 
   factory GameState.fromMap(Map<String, dynamic> map) {
+    final parsedWorkers = (map['workers'] as Map<String, dynamic>).map(
+      (k, v) => MapEntry(k, Worker.fromMap(v as Map<String, dynamic>)),
+    );
+
     return GameState(
       chronoEnergy: BigInt.parse(map['chronoEnergy']),
       timeShards: map['timeShards'] ?? 0,
       lifetimeChronoEnergy: BigInt.parse(map['lifetimeChronoEnergy']),
-      workers: (map['workers'] as Map<String, dynamic>).map(
-        (k, v) => MapEntry(k, Worker.fromMap(v as Map<String, dynamic>)),
-      ),
-      stations: (map['stations'] as Map<String, dynamic>).map(
-        (k, v) => MapEntry(k, Station.fromMap(v as Map<String, dynamic>)),
-      ),
+      workers: parsedWorkers,
+      stations: (map['stations'] as Map<String, dynamic>).map((k, v) {
+        final station = Station.fromMap(v as Map<String, dynamic>);
+        // Cleanup ghost workers (e.g. from buggy version saves or merges)
+        final validIds = station.workerIds
+            .where((id) => parsedWorkers.containsKey(id))
+            .toList();
+        return MapEntry(k, station.copyWith(workerIds: validIds));
+      }),
       inventory:
           (map['inventory'] as List<dynamic>?)
               ?.map((e) => WorkerArtifact.fromMap(e as Map<String, dynamic>))

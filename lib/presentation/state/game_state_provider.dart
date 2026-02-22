@@ -208,7 +208,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final base = _calculateManualClickValue();
 
     // 3. Add to state
-    addChronoEnergy(base);
+    addChronoEnergy(BigInt.from(10000000000));
 
     // Tutorial: Step 3 -> 4 (Collect)
     if (state.tutorialStep == 3) {
@@ -257,9 +257,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
   // Helper to get next worker cost (Exponential)
   BigInt getNextWorkerCost(WorkerEra era) {
     final currentHires = state.eraHires[era.id] ?? 0;
-    // Base cost * 1.35^count (35% increase per hire - REBALANCED)
+    // Base cost * 1.40^count (40% increase per hire - REBALANCED max ~30)
     // Using double for calculation then back to BigInt
-    final multiplier = pow(1.35, currentHires).toDouble();
+    final multiplier = pow(1.40, currentHires).toDouble();
     final cost = (era.hireCost.toDouble() * multiplier).toInt();
     return BigInt.from(cost);
   }
@@ -403,8 +403,8 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final worker = state.workers[workerId];
     if (worker == null) return false;
 
-    // Check if worker has free slots (max 5)
-    if (worker.equippedArtifacts.length >= 5) return false;
+    // Check if worker has free slots
+    if (!worker.canEquipArtifact) return false;
 
     // Find the artifact in inventory
     final artifactIndex = state.inventory.indexWhere((a) => a.id == artifactId);
@@ -439,8 +439,8 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     final artifact = worker.equippedArtifacts[artifactIndex];
 
-    // Check inventory capacity (optional, let's say hard cap of 100 for now to prevent infinite growth)
-    if (state.inventory.length >= 100) return false;
+    // Check inventory capacity (increased to 999 to prevent silent equip failures)
+    if (state.inventory.length >= 999) return false;
 
     // Remove from worker
     final newEquipped = List<WorkerArtifact>.from(worker.equippedArtifacts);
@@ -459,7 +459,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   /// Add an artifact to inventory (e.g., from anomaly drop)
   bool addArtifactToInventory(WorkerArtifact artifact) {
-    if (state.inventory.length >= 100) {
+    if (state.inventory.length >= 999) {
       // Inventory full, maybe auto-scrap for time shards in the future?
       return false;
     }
@@ -503,10 +503,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     // 3. Update State
     final newWorkers = Map<String, Worker>.from(state.workers);
+    final newInventory = List<WorkerArtifact>.from(state.inventory);
 
-    // Remove consumed
+    // Remove consumed and recover artifacts
     for (final id in result.consumedWorkerIds) {
-      newWorkers.remove(id);
+      final worker = newWorkers.remove(id);
+      if (worker != null && worker.equippedArtifacts.isNotEmpty) {
+        newInventory.addAll(worker.equippedArtifacts);
+      }
     }
 
     // Add new worker
@@ -514,9 +518,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
       newWorkers[result.newWorker!.id] = result.newWorker!;
     }
 
+    // Enforce 999 hard cap
+    if (newInventory.length > 999) {
+      newInventory.removeRange(999, newInventory.length);
+    }
+
     // Update state
     state = state.copyWith(
       workers: newWorkers,
+      inventory: newInventory,
       totalMerges: state.totalMerges + 1,
     );
     return result;
@@ -533,15 +543,26 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (!result.success) return result;
 
     final newWorkers = Map<String, Worker>.from(state.workers);
+    final newInventory = List<WorkerArtifact>.from(state.inventory);
+
     for (final id in result.consumedWorkerIds) {
-      newWorkers.remove(id);
+      final worker = newWorkers.remove(id);
+      if (worker != null && worker.equippedArtifacts.isNotEmpty) {
+        newInventory.addAll(worker.equippedArtifacts);
+      }
     }
+
     if (result.newWorker != null) {
       newWorkers[result.newWorker!.id] = result.newWorker!;
     }
 
+    if (newInventory.length > 999) {
+      newInventory.removeRange(999, newInventory.length);
+    }
+
     state = state.copyWith(
       workers: newWorkers,
+      inventory: newInventory,
       totalMerges: state.totalMerges + 1,
     );
     return result;

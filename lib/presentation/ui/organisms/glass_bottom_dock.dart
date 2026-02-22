@@ -29,7 +29,7 @@ class GlassBottomDock extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
       height: 72,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         // color: colors.dockBackground.withOpacity( 0.9),
         // borderRadius: BorderRadius.circular(24),
         // border: Border.all(

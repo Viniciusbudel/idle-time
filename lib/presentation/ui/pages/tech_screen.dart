@@ -320,7 +320,7 @@ class _EraAdvancementButton extends ConsumerWidget {
             child: Container(
               width: double.infinity,
               height: 70,
-              margin: EdgeInsets.only(bottom: 85),
+              margin: const EdgeInsets.only(bottom: 85),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [

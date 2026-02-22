@@ -59,6 +59,9 @@ class _EraBackgroundAnimatorState extends State<EraBackgroundAnimator>
       case EraAnimationType.digitalRain:
         count = 50;
         break;
+      case EraAnimationType.cyberScan:
+        count = 40; // Add particles for neon rain
+        break;
       default:
         count = 0;
     }
@@ -164,7 +167,7 @@ class _EraAnimationPainter extends CustomPainter {
   void _paintFog(Canvas canvas, Size size) {
     // Simulated fog layers moving horizontally
     final paint = Paint()
-      ..color = primaryColor.withOpacity( 0.1)
+      ..color = primaryColor.withOpacity(0.1)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30);
 
     final offset1 = (animationValue * size.width) % size.width;
@@ -195,7 +198,7 @@ class _EraAnimationPainter extends CustomPainter {
       final progress = (animationValue * p.speed + p.y) % 1.0;
       final opacity = (sin(progress * pi * 2) + 1) / 2 * p.opacity;
 
-      paint.color = primaryColor.withOpacity( opacity * 0.8);
+      paint.color = primaryColor.withOpacity(opacity * 0.8);
 
       canvas.drawCircle(
         Offset(p.x * size.width, p.y * size.height),
@@ -219,17 +222,14 @@ class _EraAnimationPainter extends CustomPainter {
       final radius = maxRadius * progress;
       final opacity = (1.0 - progress) * 0.5;
 
-      paint.color = primaryColor.withOpacity( opacity);
+      paint.color = primaryColor.withOpacity(opacity);
       canvas.drawCircle(center, radius, paint);
     }
 
     // Rotating Sweep
     final sweepPaint = Paint()
       ..shader = SweepGradient(
-        colors: [
-          primaryColor.withOpacity( 0.0),
-          primaryColor.withOpacity( 0.15),
-        ],
+        colors: [primaryColor.withOpacity(0.0), primaryColor.withOpacity(0.15)],
         stops: const [0.75, 1.0],
         transform: GradientRotation(animationValue * 2 * pi),
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -239,7 +239,7 @@ class _EraAnimationPainter extends CustomPainter {
 
   void _paintCyberScan(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = primaryColor.withOpacity( 0.5)
+      ..color = primaryColor.withOpacity(0.5)
       ..strokeWidth = 2.0;
 
     // Moving horizontal line (Scanline)
@@ -253,10 +253,7 @@ class _EraAnimationPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          primaryColor.withOpacity( 0.0),
-          primaryColor.withOpacity( 0.2),
-        ],
+        colors: [primaryColor.withOpacity(0.0), primaryColor.withOpacity(0.2)],
         stops: const [0.0, 1.0],
       ).createShader(Rect.fromLTWH(0, scanY - 50, size.width, 50));
 
@@ -264,13 +261,16 @@ class _EraAnimationPainter extends CustomPainter {
 
     // Grid effect
     final gridPaint = Paint()
-      ..color = secondaryColor.withOpacity( 0.1)
+      ..color = secondaryColor.withOpacity(0.1)
       ..strokeWidth = 1.0;
 
     // Vertical lines
     for (double x = 0; x < size.width; x += 40) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
     }
+
+    // Add neon rain fallback using the digital rain mechanic
+    _paintDigitalRain(canvas, size);
   }
 
   void _paintDigitalRain(Canvas canvas, Size size) {
@@ -288,7 +288,7 @@ class _EraAnimationPainter extends CustomPainter {
             (type == EraAnimationType.digitalRain
                     ? const Color(0xFF00FF00)
                     : primaryColor)
-                .withOpacity( opacity)
+                .withOpacity(opacity)
         ..style = PaintingStyle.fill;
 
       // Draw short vertical dashes (code rain)
@@ -296,7 +296,7 @@ class _EraAnimationPainter extends CustomPainter {
 
       // Values: Head of the stream is brighter
       final headPaint = Paint()
-        ..color = Colors.white.withOpacity( opacity)
+        ..color = Colors.white.withOpacity(opacity)
         ..style = PaintingStyle.fill;
 
       canvas.drawRect(
@@ -326,7 +326,7 @@ class _EraAnimationPainter extends CustomPainter {
       final pos = Offset(center.dx + dx * 2, center.dy + dy * 2);
 
       // Opacity grows with speed/progress
-      paint.color = Colors.white.withOpacity( progress * p.opacity);
+      paint.color = Colors.white.withOpacity(progress * p.opacity);
 
       if (size.contains(pos)) {
         canvas.drawCircle(pos, p.size * progress, paint);

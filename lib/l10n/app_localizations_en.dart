@@ -206,6 +206,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timeDistortionName => 'Time Distortion Field';
 
   @override
+  String get dataNodeName => 'Data Node';
+
+  @override
+  String get synthLabName => 'Synth Lab';
+
+  @override
+  String get neonCoreName => 'Neon Core';
+
+  @override
   String get riftGeneratorName => 'Rift Generator';
 
   @override

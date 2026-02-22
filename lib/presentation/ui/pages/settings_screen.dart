@@ -65,7 +65,7 @@ class SettingsScreen extends ConsumerWidget {
               title: 'Achievements',
               colors: colors,
               iconColor: TimeFactoryColors.voltageYellow,
-              trailing: Icon(
+              trailing: const Icon(
                 Icons.chevron_right,
                 color: Colors.white38,
                 size: 20,
@@ -94,13 +94,13 @@ class SettingsScreen extends ConsumerWidget {
           _buildInfoTile(
             Icons.info_outline,
             AppLocalizations.of(context)!.settingsVersion,
-            '1.0.0',
+            '0.1.0',
             colors,
           ),
           _buildInfoTile(
             Icons.code,
             AppLocalizations.of(context)!.settingsDeveloper,
-            'Paradox Industries',
+            'Budel co',
             colors,
           ),
         ],

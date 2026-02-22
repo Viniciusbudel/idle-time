@@ -147,7 +147,7 @@ class _AchievementToastState extends State<AchievementToast>
                           Row(
                             children: [
                               if (hasCE) ...[
-                                Icon(
+                                const Icon(
                                   Icons.bolt,
                                   color: TimeFactoryColors.electricCyan,
                                   size: 12,
@@ -164,7 +164,7 @@ class _AchievementToastState extends State<AchievementToast>
                               ],
                               if (hasCE && hasShards) const SizedBox(width: 8),
                               if (hasShards) ...[
-                                Icon(
+                                const Icon(
                                   Icons.diamond_outlined,
                                   color: TimeFactoryColors.hotMagenta,
                                   size: 12,

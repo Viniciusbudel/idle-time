@@ -17,7 +17,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final station = Station(
+    final station = const Station(
       id: 'test_station',
       type: StationType.basicLoop,
       gridX: 0,
@@ -59,7 +59,7 @@ void main() {
     expect(find.text('SYS :: ONLINE'), findsOneWidget);
 
     // Verify Stats HUD
-    expect(find.text('EFF'), findsOneWidget);
+    expect(find.text('EFFICIENCY'), findsOneWidget);
     expect(find.textContaining('100%'), findsOneWidget);
 
     expect(find.text('STABILITY'), findsOneWidget);

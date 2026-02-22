@@ -63,8 +63,14 @@ class Station {
         return 0.0;
       case StationType.timeDistortion:
         return 2.0 + (level - 1) * 0.125; // NERFED from 0.25
+      case StationType.dataNode:
+        return 2.5 + (level - 1) * 0.15;
+      case StationType.synthLab:
+        return 3.5 + (level - 1) * 0.20;
+      case StationType.neonCore:
+        return 5.0 + (level - 1) * 0.25;
       case StationType.riftGenerator:
-        return 1.5 + (level - 1) * 0.1; // NERFED from 0.2
+        return 8.0 + (level - 1) * 0.5; // Re-scaled to NeoTokyo
     }
   }
 
@@ -101,12 +107,12 @@ class Station {
   }
 
   /// Upgrade cost with optional discount
-  /// REBALANCED: Growth changed from 1.6 to 2.0 per level
+  /// REBALANCED: Growth changed from 2.0 to 2.8 per level
   BigInt getUpgradeCost({double discountMultiplier = 1.0}) {
     final baseCost = _getBaseCost();
     final multiplier = BigInt.from(
-      (2.0 * 100).toInt(),
-    ); // CHANGED from 1.6 to 2.0
+      (2.8 * 100).toInt(),
+    ); // CHANGED from 2.0 to 2.8
     BigInt cost = baseCost;
 
     for (int i = 0; i < level; i++) {
@@ -133,8 +139,14 @@ class Station {
         return BigInt.from(5000);
       case StationType.timeDistortion:
         return BigInt.from(10000);
+      case StationType.dataNode:
+        return BigInt.from(40000);
+      case StationType.synthLab:
+        return BigInt.from(150000);
+      case StationType.neonCore:
+        return BigInt.from(500000);
       case StationType.riftGenerator:
-        return BigInt.from(25000);
+        return BigInt.from(2000000);
     }
   }
 
@@ -142,7 +154,12 @@ class Station {
   double get paradoxRate {
     switch (type) {
       case StationType.riftGenerator:
+        return 0.005 * level;
+      case StationType.neonCore:
+        return 0.003 * level;
+      case StationType.synthLab:
         return 0.002 * level;
+      case StationType.dataNode:
       case StationType.timeDistortion:
         return 0.001 * level;
       default:
@@ -190,8 +207,14 @@ class StationFactory {
         baseCost = BigInt.from(5000);
       case StationType.timeDistortion:
         baseCost = BigInt.from(10000);
+      case StationType.dataNode:
+        baseCost = BigInt.from(40000);
+      case StationType.synthLab:
+        baseCost = BigInt.from(150000);
+      case StationType.neonCore:
+        baseCost = BigInt.from(500000);
       case StationType.riftGenerator:
-        baseCost = BigInt.from(25000);
+        baseCost = BigInt.from(2000000);
     }
 
     final multiplier = BigInt.from((1.8 * 100).toInt());

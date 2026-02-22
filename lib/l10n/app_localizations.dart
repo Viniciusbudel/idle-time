@@ -476,6 +476,24 @@ abstract class AppLocalizations {
   /// **'Time Distortion Field'**
   String get timeDistortionName;
 
+  /// No description provided for @dataNodeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Node'**
+  String get dataNodeName;
+
+  /// No description provided for @synthLabName.
+  ///
+  /// In en, this message translates to:
+  /// **'Synth Lab'**
+  String get synthLabName;
+
+  /// No description provided for @neonCoreName.
+  ///
+  /// In en, this message translates to:
+  /// **'Neon Core'**
+  String get neonCoreName;
+
   /// No description provided for @riftGeneratorName.
   ///
   /// In en, this message translates to:
