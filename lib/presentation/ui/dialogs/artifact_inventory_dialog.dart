@@ -6,6 +6,7 @@ import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker_artifact.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
@@ -36,11 +37,33 @@ class _ArtifactInventoryDialogState
     extends ConsumerState<ArtifactInventoryDialog> {
   String _searchQuery = '';
   _RarityFilter _activeFilter = _RarityFilter.all;
+  WorkerRarity _selectedCraftRarity = WorkerRarity.rare;
+  WorkerEra? _selectedCraftEra;
 
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameStateProvider);
     final worker = gameState.workers[widget.workerId];
+    final artifactDust = gameState.artifactDust;
+    final currentEra = WorkerEra.values.firstWhere(
+      (era) => era.id == gameState.currentEraId,
+      orElse: () => WorkerEra.victorian,
+    );
+    final unlockedCraftEras = WorkerEra.values
+        .where((era) => gameState.unlockedEras.contains(era.id))
+        .toList();
+    if (unlockedCraftEras.isEmpty) {
+      unlockedCraftEras.add(currentEra);
+    }
+    final selectedCraftEra =
+        _selectedCraftEra != null &&
+            unlockedCraftEras.contains(_selectedCraftEra)
+        ? _selectedCraftEra!
+        : currentEra;
+    final pityThreshold = ref
+        .read(gameStateProvider.notifier)
+        .getArtifactCraftPityThreshold();
+    final pityProgress = gameState.artifactCraftStreak.clamp(0, pityThreshold);
 
     if (worker == null) return const SizedBox.shrink();
 
@@ -67,7 +90,7 @@ class _ArtifactInventoryDialogState
         color: const Color(0xFF0A1520),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         border: Border.all(
-          color: TimeFactoryColors.electricCyan.withOpacity(0.3),
+          color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -103,7 +126,7 @@ class _ArtifactInventoryDialogState
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${gameState.inventory.length}/100 SLOTS',
+                      '${gameState.inventory.length}/100 SLOTS • $artifactDust DUST',
                       style: TimeFactoryTextStyles.bodyMono.copyWith(
                         color: Colors.white54,
                         fontSize: 12,
@@ -134,9 +157,11 @@ class _ArtifactInventoryDialogState
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.12),
+                  color: Colors.orange.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.withOpacity(0.6)),
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: 0.6),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -148,7 +173,9 @@ class _ArtifactInventoryDialogState
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'ALL ${worker.maxArtifactSlots} SLOTS FILLED — Unequip an artifact first.',
+                        AppLocalizations.of(
+                          context,
+                        )!.allArtifactSlotsFilled(worker.maxArtifactSlots),
                         style: TimeFactoryTextStyles.bodyMono.copyWith(
                           fontSize: 11,
                           color: Colors.orange,
@@ -162,6 +189,22 @@ class _ArtifactInventoryDialogState
 
           if (isFull) const SizedBox(height: AppSpacing.sm),
 
+          // Forge controls
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: _buildForgePanel(
+              context: context,
+              artifactDust: artifactDust,
+              pityProgress: pityProgress,
+              pityThreshold: pityThreshold,
+              inventoryHasSpace: gameState.inventory.length < 999,
+              selectedCraftEra: selectedCraftEra,
+              availableCraftEras: unlockedCraftEras,
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.sm),
+
           // Search Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -169,7 +212,7 @@ class _ArtifactInventoryDialogState
               onChanged: (value) => setState(() => _searchQuery = value),
               style: TimeFactoryTextStyles.body.copyWith(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'SEARCH ARTIFACTS...',
+                hintText: AppLocalizations.of(context)!.searchArtifacts,
                 hintStyle: TimeFactoryTextStyles.bodyMono.copyWith(
                   color: Colors.white24,
                   fontSize: 12,
@@ -229,7 +272,7 @@ class _ArtifactInventoryDialogState
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? chipColor.withOpacity(0.25)
+                            ? chipColor.withValues(alpha: 0.25)
                             : Colors.black26,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
@@ -238,7 +281,7 @@ class _ArtifactInventoryDialogState
                         ),
                       ),
                       child: Text(
-                        _filterLabel(filter),
+                        _filterLabel(context, filter),
                         style: TimeFactoryTextStyles.bodyMono.copyWith(
                           fontSize: 11,
                           color: isSelected ? chipColor : Colors.white54,
@@ -287,6 +330,219 @@ class _ArtifactInventoryDialogState
     );
   }
 
+  Widget _buildForgePanel({
+    required BuildContext context,
+    required int artifactDust,
+    required int pityProgress,
+    required int pityThreshold,
+    required bool inventoryHasSpace,
+    required WorkerEra selectedCraftEra,
+    required List<WorkerEra> availableCraftEras,
+  }) {
+    final notifier = ref.read(gameStateProvider.notifier);
+    final craftCost = notifier.getArtifactCraftCost(_selectedCraftRarity);
+    final canCraft = artifactDust >= craftCost && inventoryHasSpace;
+    final craftOptions = [
+      WorkerRarity.rare,
+      WorkerRarity.epic,
+      WorkerRarity.legendary,
+      WorkerRarity.paradox,
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: TimeFactoryColors.hotMagenta.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const AppIcon(
+                AppHugeIcons.auto_awesome,
+                size: 16,
+                color: TimeFactoryColors.hotMagenta,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'ARTIFACT FORGE',
+                style: TimeFactoryTextStyles.bodyMono.copyWith(
+                  fontSize: 11,
+                  color: TimeFactoryColors.hotMagenta,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'Pity $pityProgress/$pityThreshold',
+                style: TimeFactoryTextStyles.bodyMono.copyWith(
+                  fontSize: 10,
+                  color: Colors.white54,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: craftOptions.map((rarity) {
+              final selected = rarity == _selectedCraftRarity;
+              return GestureDetector(
+                onTap: () => setState(() => _selectedCraftRarity = rarity),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? rarity.color.withValues(alpha: 0.22)
+                        : Colors.black45,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: selected ? rarity.color : Colors.white24,
+                    ),
+                  ),
+                  child: Text(
+                    rarity.displayName.toUpperCase(),
+                    style: TimeFactoryTextStyles.bodyMono.copyWith(
+                      fontSize: 9,
+                      color: selected ? rarity.color : Colors.white60,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Text(
+                'Target Era:',
+                style: TimeFactoryTextStyles.bodyMono.copyWith(
+                  fontSize: 10,
+                  color: Colors.white60,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black38,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<WorkerEra>(
+                      value: selectedCraftEra,
+                      isExpanded: true,
+                      dropdownColor: const Color(0xFF0A1520),
+                      style: TimeFactoryTextStyles.bodyMono.copyWith(
+                        fontSize: 10,
+                        color: Colors.white,
+                      ),
+                      icon: const AppIcon(
+                        AppHugeIcons.keyboard_arrow_down,
+                        color: Colors.white54,
+                        size: 16,
+                      ),
+                      items: availableCraftEras
+                          .map(
+                            (era) => DropdownMenuItem<WorkerEra>(
+                              value: era,
+                              child: Text(
+                                era.displayName,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (era) {
+                        if (era == null) return;
+                        setState(() => _selectedCraftEra = era);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Text(
+                'Cost: $craftCost Dust',
+                style: TimeFactoryTextStyles.bodyMono.copyWith(
+                  fontSize: 11,
+                  color: artifactDust >= craftCost
+                      ? Colors.white70
+                      : Colors.redAccent,
+                ),
+              ),
+              if (!inventoryHasSpace) ...[
+                const SizedBox(width: 8),
+                Text(
+                  'Inventory Full',
+                  style: TimeFactoryTextStyles.bodyMono.copyWith(
+                    fontSize: 10,
+                    color: Colors.redAccent,
+                  ),
+                ),
+              ],
+              const Spacer(),
+              ElevatedButton(
+                onPressed: canCraft
+                    ? () {
+                        final result = notifier.craftArtifact(
+                          minimumRarity: _selectedCraftRarity,
+                          targetEra: selectedCraftEra,
+                        );
+                        if (result == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.craftFailedDustOrInventory,
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                        final pityText = result.pityTriggered ? ' [PITY]' : '';
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Crafted ${result.artifact.rarity.displayName} artifact$pityText (${selectedCraftEra.displayName}): ${result.artifact.name}',
+                            ),
+                          ),
+                        );
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: TimeFactoryColors.hotMagenta,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.white12,
+                ),
+                child: Text(AppLocalizations.of(context)!.craft),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -295,7 +551,7 @@ class _ArtifactInventoryDialogState
           AppIcon(
             AppHugeIcons.inventory_2_outlined,
             size: 64,
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
@@ -309,7 +565,9 @@ class _ArtifactInventoryDialogState
           Text(
             _activeFilter == _RarityFilter.all
                 ? 'Find artifacts from Temporal Anomalies.'
-                : 'No ${_filterLabel(_activeFilter)} artifacts in inventory.',
+                : AppLocalizations.of(
+                    context,
+                  )!.noArtifactsByFilter(_filterLabel(context, _activeFilter)),
             style: TimeFactoryTextStyles.body.copyWith(color: Colors.white38),
             textAlign: TextAlign.center,
           ),
@@ -345,10 +603,10 @@ class _ArtifactInventoryDialogState
       },
       child: Container(
         decoration: BoxDecoration(
-          color: rarityColor.withOpacity(0.05),
+          color: rarityColor.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: rarityColor.withOpacity(isFull ? 0.15 : 0.3),
+            color: rarityColor.withValues(alpha: isFull ? 0.15 : 0.3),
           ),
         ),
         child: Stack(
@@ -374,12 +632,12 @@ class _ArtifactInventoryDialogState
                         child: Container(
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: rarityColor.withOpacity(0.2),
+                            color: rarityColor.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: AppIcon(
                             AppHugeIcons.touch_app_outlined,
-                            color: rarityColor.withOpacity(0.7),
+                            color: rarityColor.withValues(alpha: 0.7),
                             size: 10,
                           ),
                         ),
@@ -403,7 +661,9 @@ class _ArtifactInventoryDialogState
                         bottom: Radius.circular(11),
                       ),
                       border: Border(
-                        top: BorderSide(color: rarityColor.withOpacity(0.3)),
+                        top: BorderSide(
+                          color: rarityColor.withValues(alpha: 0.3),
+                        ),
                       ),
                     ),
                     child: Column(
@@ -462,7 +722,7 @@ class _ArtifactInventoryDialogState
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(11),
                   ),
                 ),
@@ -479,6 +739,9 @@ class _ArtifactInventoryDialogState
     final hasProdBonus = artifact.productionMultiplier > 0;
     final hasEraMatch = artifact.eraMatch != null;
     final baseBonus = artifact.basePowerBonus;
+    final salvageValue = ref
+        .read(gameStateProvider.notifier)
+        .getArtifactDustValue(artifact);
 
     showDialog(
       context: context,
@@ -490,9 +753,12 @@ class _ArtifactInventoryDialogState
           decoration: BoxDecoration(
             color: const Color(0xFF0A1520),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: rarityColor.withOpacity(0.6)),
+            border: Border.all(color: rarityColor.withValues(alpha: 0.6)),
             boxShadow: [
-              BoxShadow(color: rarityColor.withOpacity(0.2), blurRadius: 20),
+              BoxShadow(
+                color: rarityColor.withValues(alpha: 0.2),
+                blurRadius: 20,
+              ),
             ],
           ),
           child: Column(
@@ -526,7 +792,7 @@ class _ArtifactInventoryDialogState
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: rarityColor.withOpacity(0.2),
+                            color: rarityColor.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -583,10 +849,45 @@ class _ArtifactInventoryDialogState
                     : 'None',
                 hasEraMatch ? TimeFactoryColors.voltageYellow : Colors.white38,
               ),
+              const SizedBox(height: 8),
+              _tooltipStat(
+                AppHugeIcons.auto_awesome,
+                'Salvage',
+                '+$salvageValue Dust',
+                TimeFactoryColors.hotMagenta,
+              ),
 
               const Divider(color: Colors.white12, height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    final gained = ref
+                        .read(gameStateProvider.notifier)
+                        .salvageArtifact(artifact.id);
+                    if (gained > 0) {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            AppLocalizations.of(
+                              context,
+                            )!.salvagedArtifactDust(gained),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: TimeFactoryColors.hotMagenta),
+                    foregroundColor: TimeFactoryColors.hotMagenta,
+                  ),
+                  child: Text(AppLocalizations.of(context)!.salvage),
+                ),
+              ),
+              const SizedBox(height: 8),
               Text(
-                'Hold-press to inspect · Tap to equip',
+                AppLocalizations.of(context)!.holdPressInspectTapEquip,
                 style: TimeFactoryTextStyles.bodyMono.copyWith(
                   fontSize: 10,
                   color: Colors.white38,
@@ -650,20 +951,20 @@ class _ArtifactInventoryDialogState
     }
   }
 
-  String _filterLabel(_RarityFilter f) {
+  String _filterLabel(BuildContext context, _RarityFilter f) {
     switch (f) {
       case _RarityFilter.all:
-        return 'ALL';
+        return AppLocalizations.of(context)!.all;
       case _RarityFilter.common:
-        return '★ COMMON';
+        return '★ ${AppLocalizations.of(context)!.common.toUpperCase()}';
       case _RarityFilter.rare:
-        return '★★ RARE';
+        return '★★ ${AppLocalizations.of(context)!.rare.toUpperCase()}';
       case _RarityFilter.epic:
-        return '★★★ EPIC';
+        return '★★★ ${AppLocalizations.of(context)!.epic.toUpperCase()}';
       case _RarityFilter.legendary:
-        return '★★★★ LEGENDARY';
+        return '★★★★ ${AppLocalizations.of(context)!.legendary.toUpperCase()}';
       case _RarityFilter.paradox:
-        return '✦ PARADOX';
+        return '✦ ${AppLocalizations.of(context)!.paradox.toUpperCase()}';
     }
   }
 

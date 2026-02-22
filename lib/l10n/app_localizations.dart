@@ -1099,6 +1099,514 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Great work. Your goal is to reach 1 MILLION CE to trigger a PRESTIGE EVENT and collapse the timeline. Good luck.'**
   String get tutorialGoalBody;
+
+  /// No description provided for @achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'ACHIEVEMENTS'**
+  String get achievements;
+
+  /// No description provided for @ack.
+  ///
+  /// In en, this message translates to:
+  /// **'ACK'**
+  String get ack;
+
+  /// No description provided for @activeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activeTitle;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'ALL'**
+  String get all;
+
+  /// No description provided for @artifactRollChance.
+  ///
+  /// In en, this message translates to:
+  /// **'Artifact roll chance: {percent}%'**
+  String artifactRollChance(int percent);
+
+  /// No description provided for @auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get auto;
+
+  /// No description provided for @availableMissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Missions ({count})'**
+  String availableMissions(int count);
+
+  /// No description provided for @awesome.
+  ///
+  /// In en, this message translates to:
+  /// **'AWESOME'**
+  String get awesome;
+
+  /// No description provided for @chronoEnergyUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'CHRONO ENERGY'**
+  String get chronoEnergyUpper;
+
+  /// No description provided for @claim.
+  ///
+  /// In en, this message translates to:
+  /// **'CLAIM'**
+  String get claim;
+
+  /// No description provided for @claimAll.
+  ///
+  /// In en, this message translates to:
+  /// **'CLAIM ALL'**
+  String get claimAll;
+
+  /// No description provided for @claimedRewardsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Claimed {count} reward(s)'**
+  String claimedRewardsCount(int count);
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETED'**
+  String get completed;
+
+  /// No description provided for @confirmSelectedWorkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm ({selected}/{required})'**
+  String confirmSelectedWorkers(int selected, int required);
+
+  /// No description provided for @confirmUpgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'CONFIRM UPGRADE'**
+  String get confirmUpgrade;
+
+  /// No description provided for @craft.
+  ///
+  /// In en, this message translates to:
+  /// **'CRAFT'**
+  String get craft;
+
+  /// No description provided for @durationHoursMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m'**
+  String durationHoursMinutes(int hours, int minutes);
+
+  /// No description provided for @durationMinutesSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m {seconds}s'**
+  String durationMinutesSeconds(int minutes, int seconds);
+
+  /// No description provided for @durationSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds}s'**
+  String durationSeconds(int seconds);
+
+  /// No description provided for @expeditionCompletedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{slot} | +{ce} CE | +{shards} TS'**
+  String expeditionCompletedTitle(String slot, String ce, int shards);
+
+  /// No description provided for @expeditionFailureLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost {workers} worker(s) and {artifacts} artifact(s)'**
+  String expeditionFailureLoss(int workers, int artifacts);
+
+  /// No description provided for @expeditionReward.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPEDITION REWARD'**
+  String get expeditionReward;
+
+  /// No description provided for @expeditionRiskBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'{risk}  x{ceMultiplier}  +{shards}TS  {artifactChance}%'**
+  String expeditionRiskBadge(
+    String risk,
+    String ceMultiplier,
+    int shards,
+    int artifactChance,
+  );
+
+  /// No description provided for @expeditionStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'{slot} started ({risk}) with {workers} worker(s)'**
+  String expeditionStarted(String slot, String risk, int workers);
+
+  /// No description provided for @expeditionStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPEDITION STATUS'**
+  String get expeditionStatus;
+
+  /// No description provided for @expeditionWorkersAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'{workers} worker(s) assigned | reward profile: x{ceMultiplier} CE, +{shards} TS, {artifactChance}% artifact'**
+  String expeditionWorkersAssigned(
+    int workers,
+    String ceMultiplier,
+    int shards,
+    int artifactChance,
+  );
+
+  /// No description provided for @expeditionWorkersReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Need {required} idle worker(s) | {available} ready'**
+  String expeditionWorkersReady(int required, int available);
+
+  /// No description provided for @expeditionWorkersReadyInsufficient.
+  ///
+  /// In en, this message translates to:
+  /// **'Need {required} idle worker(s) | only {available} ready'**
+  String expeditionWorkersReadyInsufficient(int required, int available);
+
+  /// No description provided for @failureReportAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Failure report acknowledged'**
+  String get failureReportAcknowledged;
+
+  /// No description provided for @hireSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'HIRE SUCCESSFUL!'**
+  String get hireSuccessful;
+
+  /// No description provided for @holdPressInspectTapEquip.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold-press to inspect ? Tap to equip'**
+  String get holdPressInspectTapEquip;
+
+  /// No description provided for @idleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Idle'**
+  String get idleTitle;
+
+  /// No description provided for @initiateExpedition.
+  ///
+  /// In en, this message translates to:
+  /// **'INITIATE EXPEDITION'**
+  String get initiateExpedition;
+
+  /// No description provided for @labelValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {value}'**
+  String labelValue(String label, String value);
+
+  /// No description provided for @manage.
+  ///
+  /// In en, this message translates to:
+  /// **'MANAGE'**
+  String get manage;
+
+  /// No description provided for @missionControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Mission Control'**
+  String get missionControl;
+
+  /// No description provided for @missions.
+  ///
+  /// In en, this message translates to:
+  /// **'MISSIONS'**
+  String get missions;
+
+  /// No description provided for @nextCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Next completion: {slot} in {duration}'**
+  String nextCompletion(String slot, String duration);
+
+  /// No description provided for @noActiveExpeditions.
+  ///
+  /// In en, this message translates to:
+  /// **'No active expeditions'**
+  String get noActiveExpeditions;
+
+  /// No description provided for @noArtifactsByFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'No {filter} artifacts in inventory.'**
+  String noArtifactsByFilter(String filter);
+
+  /// No description provided for @noChambersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No chambers yet'**
+  String get noChambersYet;
+
+  /// No description provided for @noRewardsWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'No rewards waiting'**
+  String get noRewardsWaiting;
+
+  /// No description provided for @noWorkersByRarity.
+  ///
+  /// In en, this message translates to:
+  /// **'No {rarity} workers'**
+  String noWorkersByRarity(String rarity);
+
+  /// No description provided for @paradoxPointsAbbrev.
+  ///
+  /// In en, this message translates to:
+  /// **'PP'**
+  String get paradoxPointsAbbrev;
+
+  /// No description provided for @readyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get readyTitle;
+
+  /// No description provided for @resourceYieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'RESOURCE YIELD: {ce} CE'**
+  String resourceYieldLabel(String ce);
+
+  /// No description provided for @resourceYieldUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'RESOURCE YIELD: --'**
+  String get resourceYieldUnavailable;
+
+  /// No description provided for @salvage.
+  ///
+  /// In en, this message translates to:
+  /// **'SALVAGE'**
+  String get salvage;
+
+  /// No description provided for @salvagedArtifactDust.
+  ///
+  /// In en, this message translates to:
+  /// **'Salvaged artifact: +{dust} Dust'**
+  String salvagedArtifactDust(int dust);
+
+  /// No description provided for @searchArtifacts.
+  ///
+  /// In en, this message translates to:
+  /// **'SEARCH ARTIFACTS...'**
+  String get searchArtifacts;
+
+  /// No description provided for @selectWorkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Select {required} worker(s)'**
+  String selectWorkers(int required);
+
+  /// No description provided for @selectedWorkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected {selected}/{required}'**
+  String selectedWorkers(int selected, int required);
+
+  /// No description provided for @tapWorkerIconsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap worker icons above to assign or swap the crew.'**
+  String get tapWorkerIconsHint;
+
+  /// No description provided for @timeShardsAbbrev.
+  ///
+  /// In en, this message translates to:
+  /// **'TS'**
+  String get timeShardsAbbrev;
+
+  /// No description provided for @timeShardsUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'TIME SHARDS'**
+  String get timeShardsUpper;
+
+  /// No description provided for @unableClaimExpedition.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to claim expedition result.'**
+  String get unableClaimExpedition;
+
+  /// No description provided for @unableStartExpedition.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to start expedition with selected workers.'**
+  String get unableStartExpedition;
+
+  /// No description provided for @unassign.
+  ///
+  /// In en, this message translates to:
+  /// **'UNASSIGN'**
+  String get unassign;
+
+  /// No description provided for @welcome.
+  ///
+  /// In en, this message translates to:
+  /// **'WELCOME'**
+  String get welcome;
+
+  /// No description provided for @allArtifactSlotsFilled.
+  ///
+  /// In en, this message translates to:
+  /// **'ALL {slots} SLOTS FILLED - Unequip an artifact first.'**
+  String allArtifactSlotsFilled(int slots);
+
+  /// No description provided for @craftFailedDustOrInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Craft failed (dust or inventory limit).'**
+  String get craftFailedDustOrInventory;
+
+  /// No description provided for @upgradeMaxed.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} maxed'**
+  String upgradeMaxed(String title);
+
+  /// No description provided for @upgradeCostsPp.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} costs {cost} PP'**
+  String upgradeCostsPp(String title, int cost);
+
+  /// No description provided for @locked.
+  ///
+  /// In en, this message translates to:
+  /// **'LOCKED'**
+  String get locked;
+
+  /// No description provided for @prestigesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Prestiges: {count}'**
+  String prestigesCount(int count);
+
+  /// No description provided for @activeExpeditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Expeditions ({count})'**
+  String activeExpeditions(int count);
+
+  /// No description provided for @queuedRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued rewards: +{ce} CE | +{shards} TS'**
+  String queuedRewards(String ce, int shards);
+
+  /// No description provided for @successProbabilityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SUCCESS PROBABILITY: {percent}%'**
+  String successProbabilityLabel(int percent);
+
+  /// No description provided for @expeditionFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{slot} | FAILED'**
+  String expeditionFailedTitle(String slot);
+
+  /// No description provided for @max.
+  ///
+  /// In en, this message translates to:
+  /// **'MAX'**
+  String get max;
+
+  /// No description provided for @retrofitProtocol.
+  ///
+  /// In en, this message translates to:
+  /// **'RETROFIT PROTOCOL'**
+  String get retrofitProtocol;
+
+  /// No description provided for @upgradeLegacyUnitPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade legacy unit to current temporal standards?'**
+  String get upgradeLegacyUnitPrompt;
+
+  /// No description provided for @current.
+  ///
+  /// In en, this message translates to:
+  /// **'CURRENT'**
+  String get current;
+
+  /// No description provided for @upgraded.
+  ///
+  /// In en, this message translates to:
+  /// **'UPGRADED'**
+  String get upgraded;
+
+  /// No description provided for @techTreeChronalStabilizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Chronal Stabilizer'**
+  String get techTreeChronalStabilizer;
+
+  /// No description provided for @techTreeChronalStabilizerDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduces paradox buildup by 15%'**
+  String get techTreeChronalStabilizerDescription;
+
+  /// No description provided for @techTreeQuantumDrill.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantum Drill'**
+  String get techTreeQuantumDrill;
+
+  /// No description provided for @techTreeQuantumDrillDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Increases mining efficiency by 25%'**
+  String get techTreeQuantumDrillDescription;
+
+  /// No description provided for @techTreeNeuralNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Neural Network'**
+  String get techTreeNeuralNetwork;
+
+  /// No description provided for @techTreeNeuralNetworkDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Workers automate tasks 10% faster'**
+  String get techTreeNeuralNetworkDescription;
+
+  /// No description provided for @techTreeCostCe.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} CE'**
+  String techTreeCostCe(String amount);
+
+  /// No description provided for @techCost.
+  ///
+  /// In en, this message translates to:
+  /// **'COST: {value}'**
+  String techCost(String value);
+
+  /// No description provided for @techCostCe.
+  ///
+  /// In en, this message translates to:
+  /// **'COST: {value} CE'**
+  String techCostCe(String value);
 }
 
 class _AppLocalizationsDelegate

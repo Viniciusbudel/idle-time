@@ -39,8 +39,11 @@ class LoopChambersTab extends ConsumerWidget {
       });
 
     if (allStations.isEmpty) {
-      return const Center(
-        child: Text('No chambers yet', style: TextStyle(color: Colors.white38)),
+      return Center(
+        child: Text(
+          AppLocalizations.of(context)!.noChambersYet,
+          style: const TextStyle(color: Colors.white38),
+        ),
       );
     }
 

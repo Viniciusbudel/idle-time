@@ -220,8 +220,7 @@ class TimeFactoryGame extends FlameGame {
       }
     }
 
-    // Check era unlocks periodically (visual check or tooltip updates?)
-    // Logic is handled in provider, so we don't need to trigger checkEraUnlocks here
+    // Era advancement is explicitly player-driven via the Tech screen.
   }
 
   void syncWorkers(List<Worker> activeWorkers, {bool animate = false}) {

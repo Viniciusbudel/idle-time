@@ -23,6 +23,7 @@ import 'package:time_factory/presentation/ui/dialogs/era_unlock_dialog.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/presentation/ui/molecules/time_warp_indicator.dart';
 import 'package:time_factory/presentation/ui/molecules/auto_click_indicator.dart';
+import 'package:time_factory/presentation/ui/molecules/daily_objective_panel.dart';
 import 'package:time_factory/presentation/ui/molecules/tutorial_overlay.dart';
 import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/presentation/ui/molecules/achievement_listener.dart';
@@ -288,6 +289,9 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
 
         // Auto-Click Indicator (below time warp)
         const Positioned(top: 70, left: 16, child: AutoClickIndicator()),
+
+        // Daily Objectives (top-right, below header)
+        const Positioned(top: 44, right: 16, child: DailyObjectivePanel()),
 
         // System Monitor Text (bottom right)
         Positioned(

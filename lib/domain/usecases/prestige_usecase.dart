@@ -20,6 +20,8 @@ class PrestigeUseCase {
       unlockedEras: _calculateStartingEras(eraInsightLevel),
       timeShards: currentState.timeShards,
       inventory: currentState.inventory,
+      artifactDust: currentState.artifactDust,
+      artifactCraftStreak: currentState.artifactCraftStreak,
     );
   }
 

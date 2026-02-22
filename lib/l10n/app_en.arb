@@ -16,7 +16,7 @@
   "currentOutput": "CURRENT OUTPUT",
   "perSecond": "/ SEC",
   "sysOnline": "SYS :: ONLINE",
-  "efficiency": "EFFICIENCY",
+  "efficiency": "EFF",
   "stability": "STABILITY",
   "systemUpgrade": "SYSTEM UPGRADE",
   "initUpgrade": "INIT UPGRADE",
@@ -128,7 +128,6 @@
   "factoryFloorFull": "Factory Floor Full (Max 5 Chambers)!",
   "needCEToConstruct": "Need {cost} CE to construct!",
   "statusLabel": "STATUS:",
-  "efficiency": "EFF",
   "optimal": "OPTIMAL",
   "stable": "STABLE",
   "critical": "CRITICAL",
@@ -137,8 +136,6 @@
   "assign": "ASSIGN",
   "upgrade": "UPGRADE",
   "advanceToEra": "ADVANCE TO {era}",
-  "eraLocked": "ERA LOCKED",
-  "researchIncomplete": "RESEARCH INCOMPLETE",
   "timelineMaximized": "TIMELINE MAXIMIZED",
   "advanceTimeline": "ADVANCE TIMELINE",
   "techIncomplete": "TECH INCOMPLETE",
@@ -196,5 +193,382 @@
   "tutorialProduceTitle": "SYSTEM: ONLINE",
   "tutorialProduceBody": "Production is stable. Tap the REACTOR to manually accelerate time and collect energy.",
   "tutorialGoalTitle": "OBJECTIVE: COLLAPSE",
-  "tutorialGoalBody": "Great work. Your goal is to reach 1 MILLION CE to trigger a PRESTIGE EVENT and collapse the timeline. Good luck."
+  "tutorialGoalBody": "Great work. Your goal is to reach 1 MILLION CE to trigger a PRESTIGE EVENT and collapse the timeline. Good luck.",
+  "achievements": "ACHIEVEMENTS",
+  "ack": "ACK",
+  "activeTitle": "Active",
+  "all": "ALL",
+  "artifactRollChance": "Artifact roll chance: {percent}%",
+  "auto": "Auto",
+  "availableMissions": "Available Missions ({count})",
+  "awesome": "AWESOME",
+  "chronoEnergyUpper": "CHRONO ENERGY",
+  "claim": "CLAIM",
+  "claimAll": "CLAIM ALL",
+  "claimedRewardsCount": "Claimed {count} reward(s)",
+  "completed": "COMPLETED",
+  "confirmSelectedWorkers": "Confirm ({selected}/{required})",
+  "confirmUpgrade": "CONFIRM UPGRADE",
+  "craft": "CRAFT",
+  "durationHoursMinutes": "{hours}h {minutes}m",
+  "durationMinutesSeconds": "{minutes}m {seconds}s",
+  "durationSeconds": "{seconds}s",
+  "expeditionCompletedTitle": "{slot} | +{ce} CE | +{shards} TS",
+  "expeditionFailureLoss": "Lost {workers} worker(s) and {artifacts} artifact(s)",
+  "expeditionReward": "EXPEDITION REWARD",
+  "expeditionRiskBadge": "{risk}  x{ceMultiplier}  +{shards}TS  {artifactChance}%",
+  "expeditionStarted": "{slot} started ({risk}) with {workers} worker(s)",
+  "expeditionStatus": "EXPEDITION STATUS",
+  "expeditionWorkersAssigned": "{workers} worker(s) assigned | reward profile: x{ceMultiplier} CE, +{shards} TS, {artifactChance}% artifact",
+  "expeditionWorkersReady": "Need {required} idle worker(s) | {available} ready",
+  "expeditionWorkersReadyInsufficient": "Need {required} idle worker(s) | only {available} ready",
+  "failureReportAcknowledged": "Failure report acknowledged",
+  "hireSuccessful": "HIRE SUCCESSFUL!",
+  "holdPressInspectTapEquip": "Hold-press to inspect ? Tap to equip",
+  "idleTitle": "Idle",
+  "initiateExpedition": "INITIATE EXPEDITION",
+  "labelValue": "{label}: {value}",
+  "manage": "MANAGE",
+  "missionControl": "Mission Control",
+  "missions": "MISSIONS",
+  "nextCompletion": "Next completion: {slot} in {duration}",
+  "noActiveExpeditions": "No active expeditions",
+  "noArtifactsByFilter": "No {filter} artifacts in inventory.",
+  "noChambersYet": "No chambers yet",
+  "noRewardsWaiting": "No rewards waiting",
+  "noWorkersByRarity": "No {rarity} workers",
+  "paradoxPointsAbbrev": "PP",
+  "readyTitle": "Ready",
+  "resourceYieldLabel": "RESOURCE YIELD: {ce} CE",
+  "resourceYieldUnavailable": "RESOURCE YIELD: --",
+  "salvage": "SALVAGE",
+  "salvagedArtifactDust": "Salvaged artifact: +{dust} Dust",
+  "searchArtifacts": "SEARCH ARTIFACTS...",
+  "selectWorkers": "Select {required} worker(s)",
+  "selectedWorkers": "Selected {selected}/{required}",
+  "tapWorkerIconsHint": "Tap worker icons above to assign or swap the crew.",
+  "timeShardsAbbrev": "TS",
+  "timeShardsUpper": "TIME SHARDS",
+  "unableClaimExpedition": "Unable to claim expedition result.",
+  "unableStartExpedition": "Unable to start expedition with selected workers.",
+  "unassign": "UNASSIGN",
+  "welcome": "WELCOME",
+  "allArtifactSlotsFilled": "ALL {slots} SLOTS FILLED - Unequip an artifact first.",
+  "craftFailedDustOrInventory": "Craft failed (dust or inventory limit).",
+  "upgradeMaxed": "{title} maxed",
+  "upgradeCostsPp": "{title} costs {cost} PP",
+  "locked": "LOCKED",
+  "prestigesCount": "Prestiges: {count}",
+  "@artifactRollChance": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@availableMissions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@claimedRewardsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@confirmSelectedWorkers": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "@durationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@durationMinutesSeconds": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "@durationSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "@expeditionCompletedTitle": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "ce": {
+        "type": "String"
+      },
+      "shards": {
+        "type": "int"
+      }
+    }
+  },
+  "@expeditionFailureLoss": {
+    "placeholders": {
+      "workers": {
+        "type": "int"
+      },
+      "artifacts": {
+        "type": "int"
+      }
+    }
+  },
+  "@expeditionRiskBadge": {
+    "placeholders": {
+      "risk": {
+        "type": "String"
+      },
+      "ceMultiplier": {
+        "type": "String"
+      },
+      "shards": {
+        "type": "int"
+      },
+      "artifactChance": {
+        "type": "int"
+      }
+    }
+  },
+  "@expeditionStarted": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "risk": {
+        "type": "String"
+      },
+      "workers": {
+        "type": "int"
+      }
+    }
+  },
+  "@expeditionWorkersAssigned": {
+    "placeholders": {
+      "workers": {
+        "type": "int"
+      },
+      "ceMultiplier": {
+        "type": "String"
+      },
+      "shards": {
+        "type": "int"
+      },
+      "artifactChance": {
+        "type": "int"
+      }
+    }
+  },
+  "@expeditionWorkersReady": {
+    "placeholders": {
+      "required": {
+        "type": "int"
+      },
+      "available": {
+        "type": "int"
+      }
+    }
+  },
+  "@expeditionWorkersReadyInsufficient": {
+    "placeholders": {
+      "required": {
+        "type": "int"
+      },
+      "available": {
+        "type": "int"
+      }
+    }
+  },
+  "@labelValue": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@nextCompletion": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "@noArtifactsByFilter": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "@noWorkersByRarity": {
+    "placeholders": {
+      "rarity": {
+        "type": "String"
+      }
+    }
+  },
+  "@resourceYieldLabel": {
+    "placeholders": {
+      "ce": {
+        "type": "String"
+      }
+    }
+  },
+  "@salvagedArtifactDust": {
+    "placeholders": {
+      "dust": {
+        "type": "int"
+      }
+    }
+  },
+  "@selectWorkers": {
+    "placeholders": {
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "@selectedWorkers": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "@allArtifactSlotsFilled": {
+    "placeholders": {
+      "slots": {
+        "type": "int"
+      }
+    }
+  },
+  "@upgradeMaxed": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@upgradeCostsPp": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "cost": {
+        "type": "int"
+      }
+    }
+  },
+  "@prestigesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeExpeditions": "Active Expeditions ({count})",
+  "queuedRewards": "Queued rewards: +{ce} CE | +{shards} TS",
+  "successProbabilityLabel": "SUCCESS PROBABILITY: {percent}%",
+  "expeditionFailedTitle": "{slot} | FAILED",
+  "max": "MAX",
+  "retrofitProtocol": "RETROFIT PROTOCOL",
+  "upgradeLegacyUnitPrompt": "Upgrade legacy unit to current temporal standards?",
+  "current": "CURRENT",
+  "upgraded": "UPGRADED",
+  "techTreeChronalStabilizer": "Chronal Stabilizer",
+  "techTreeChronalStabilizerDescription": "Reduces paradox buildup by 15%",
+  "techTreeQuantumDrill": "Quantum Drill",
+  "techTreeQuantumDrillDescription": "Increases mining efficiency by 25%",
+  "techTreeNeuralNetwork": "Neural Network",
+  "techTreeNeuralNetworkDescription": "Workers automate tasks 10% faster",
+  "techTreeCostCe": "{amount} CE",
+  "@activeExpeditions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@queuedRewards": {
+    "placeholders": {
+      "ce": {
+        "type": "String"
+      },
+      "shards": {
+        "type": "int"
+      }
+    }
+  },
+  "@successProbabilityLabel": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@expeditionFailedTitle": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "@techTreeCostCe": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "techCost": "COST: {value}",
+  "@techCost": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "techCostCe": "COST: {value} CE",
+  "@techCostCe": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  }
 }

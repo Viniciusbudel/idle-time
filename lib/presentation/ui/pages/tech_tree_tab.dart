@@ -11,29 +11,30 @@ class TechTreeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Mock Data for now as per plan
+    final l10n = AppLocalizations.of(context)!;
     final upgrades = [
       _MockUpgrade(
-        title: "Chronal Stabilizer",
+        title: l10n.techTreeChronalStabilizer,
         level: 3,
-        description: "Reduces paradox buildup by 15%",
+        description: l10n.techTreeChronalStabilizerDescription,
         progress: 0.7,
-        cost: "500 CE",
+        cost: l10n.techTreeCostCe('500'),
       ),
       _MockUpgrade(
-        title: "Quantum Drill",
+        title: l10n.techTreeQuantumDrill,
         level: 1,
-        description: "Increases mining efficiency by 25%",
+        description: l10n.techTreeQuantumDrillDescription,
         progress: 0.2,
-        cost: "1.2k CE",
+        cost: l10n.techTreeCostCe('1.2k'),
         icon: AppHugeIcons.api,
         color: TimeFactoryColors.voltageYellow,
       ),
       _MockUpgrade(
-        title: "Neural Network",
+        title: l10n.techTreeNeuralNetwork,
         level: 5,
-        description: "Workers automate tasks 10% faster",
+        description: l10n.techTreeNeuralNetworkDescription,
         progress: 1.0,
-        cost: "MAX",
+        cost: l10n.max,
         icon: AppHugeIcons.psychology,
         color: TimeFactoryColors.hotMagenta,
       ),

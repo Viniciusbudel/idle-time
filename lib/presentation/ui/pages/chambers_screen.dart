@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/presentation/ui/pages/loop_chambers_tab.dart';
+import 'package:time_factory/presentation/ui/pages/expeditions_screen.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
@@ -24,6 +25,12 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
 
     final allWorkers = gameState.workers.values.toList();
     final idleCount = allWorkers.where((w) => !w.isDeployed).length;
+    final activeExpeditions = gameState.expeditions
+        .where((expedition) => !expedition.resolved)
+        .length;
+    final readyExpeditions = gameState.expeditions
+        .where((expedition) => expedition.resolved)
+        .length;
 
     return Container(
       color: Colors.transparent,
@@ -31,7 +38,13 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          _buildHeader(idleCount, theme, gameState.chronoEnergy),
+          _buildHeader(
+            context,
+            idleCount,
+            theme,
+            activeExpeditions,
+            readyExpeditions,
+          ),
 
           const SizedBox(height: AppSpacing.md),
 
@@ -42,7 +55,13 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
     );
   }
 
-  Widget _buildHeader(int idleCount, NeonTheme theme, BigInt chronoEnergy) {
+  Widget _buildHeader(
+    BuildContext context,
+    int idleCount,
+    NeonTheme theme,
+    int activeExpeditions,
+    int readyExpeditions,
+  ) {
     final colors = theme.colors;
     final typography = theme.typography;
 
@@ -82,7 +101,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                   letterSpacing: 2.0,
                   shadows: [
                     Shadow(
-                      color: colors.primary.withOpacity(0.7),
+                      color: colors.primary.withValues(alpha: 0.7),
                       blurRadius: 8,
                     ),
                   ],
@@ -97,7 +116,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                   letterSpacing: 2.0,
                   shadows: [
                     Shadow(
-                      color: colors.primary.withOpacity(0.7),
+                      color: colors.primary.withValues(alpha: 0.7),
                       blurRadius: 8,
                     ),
                   ],
@@ -111,6 +130,102 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ExpeditionsScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: <Color>[
+                        colors.secondary.withValues(alpha: 0.24),
+                        colors.primary.withValues(alpha: 0.12),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(
+                      color: readyExpeditions > 0
+                          ? colors.success
+                          : colors.secondary.withValues(alpha: 0.8),
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colors.secondary.withValues(alpha: 0.4),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppIcon(
+                            AppHugeIcons.rocket_launch,
+                            color: colors.secondary,
+                            size: 15,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'EXPEDITIONS',
+                            style: typography.bodyMedium.copyWith(
+                              fontSize: 10,
+                              color: colors.secondary,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          if (readyExpeditions > 0) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colors.success.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(99),
+                                border: Border.all(color: colors.success),
+                              ),
+                              child: Text(
+                                '$readyExpeditions READY',
+                                style: typography.bodyMedium.copyWith(
+                                  fontSize: 8,
+                                  color: colors.success,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Active runs: $activeExpeditions',
+                        style: typography.bodyMedium.copyWith(
+                          fontSize: 9,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
               // Idle workers badge
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -118,12 +233,14 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.primary.withOpacity(0.1),
-                  border: Border.all(color: colors.primary.withOpacity(0.5)),
+                  color: colors.primary.withValues(alpha: 0.1),
+                  border: Border.all(
+                    color: colors.primary.withValues(alpha: 0.5),
+                  ),
                   borderRadius: BorderRadius.circular(4),
                   boxShadow: [
                     BoxShadow(
-                      color: colors.primary.withOpacity(0.3),
+                      color: colors.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
                     ),
                   ],
@@ -155,7 +272,7 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
                 'SYS.LC1',
                 style: typography.bodyMedium.copyWith(
                   fontSize: 10.0,
-                  color: colors.primary.withOpacity(0.6),
+                  color: colors.primary.withValues(alpha: 0.6),
                   letterSpacing: 2.0,
                 ),
               ),

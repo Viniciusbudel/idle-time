@@ -33,17 +33,17 @@ class GameConstants {
   };
 
   // ===== ERA UNLOCK THRESHOLDS =====
-  /// CE required to unlock each era
-  static const Map<String, int> eraUnlockThresholds = {
-    'victorian': 0, // Unlocked by default
-    'roaring_20s': 15000000, // 15M CE
-    'atomic_age': 5000000000, // 5B CE
-    'cyberpunk_80s': 1000000000000, // 1T CE
-    'neo_tokyo': 100000000000000, // 100T CE
-    'post_singularity': 10000000000000000, // 10Qa CE
-    'ancient_rome': 1000000000000000000, // 1Qi CE
-    'far_future':
-        -1, // Unattainable for now (Requires BigInt beyond 64-bit safe range in simple int map, logic handles BigInt elsewhere)
+  /// CE required to unlock each era.
+  /// Stored as strings so we can parse into BigInt safely.
+  static const Map<String, String> eraUnlockThresholds = {
+    'victorian': '0', // Unlocked by default
+    'roaring_20s': '15000000', // 15M CE
+    'atomic_age': '5000000000', // 5B CE
+    'cyberpunk_80s': '1000000000000', // 1T CE
+    'neo_tokyo': '100000000000000', // 100T CE
+    'post_singularity': '10000000000000000', // 10Qa CE
+    'ancient_rome': '1000000000000000000', // 1Qi CE
+    'far_future': '100000000000000000000', // 100Qi CE
   };
 
   // ===== ERA ORDER =====
@@ -57,6 +57,22 @@ class GameConstants {
     'ancient_rome',
     'far_future',
   ];
+
+  /// Returns the next era ID in progression order, or null if at final era.
+  static String? getNextEraId(String currentEraId) {
+    final currentIndex = eraOrder.indexOf(currentEraId);
+    if (currentIndex == -1 || currentIndex >= eraOrder.length - 1) {
+      return null;
+    }
+    return eraOrder[currentIndex + 1];
+  }
+
+  /// Returns the unlock cost for a given era ID, parsed as BigInt.
+  static BigInt? getEraUnlockCost(String eraId) {
+    final raw = eraUnlockThresholds[eraId];
+    if (raw == null) return null;
+    return BigInt.parse(raw);
+  }
 
   // ===== STATION COSTS =====
   static const int basicStationCost = 500;

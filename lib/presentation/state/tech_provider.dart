@@ -139,21 +139,22 @@ final nextEraIdProvider = Provider<String?>((ref) {
   final currentEraId = ref.watch(
     gameStateProvider.select((s) => s.currentEraId),
   );
-  final eraOrder = GameConstants.eraOrder;
-  final currentIndex = eraOrder.indexOf(currentEraId);
-  if (currentIndex == -1 || currentIndex >= eraOrder.length - 1) {
+  final nextEraId = GameConstants.getNextEraId(currentEraId);
+  if (nextEraId == null) return null;
+
+  // If no cost is configured, treat as final content boundary for now.
+  if (GameConstants.getEraUnlockCost(nextEraId) == null) {
     return null;
   }
-  return eraOrder[currentIndex + 1];
+
+  return nextEraId;
 });
 
 // Provider for the cost of the next era
 final nextEraCostProvider = Provider<BigInt>((ref) {
   final nextEraId = ref.watch(nextEraIdProvider);
   if (nextEraId == null) return BigInt.zero;
-
-  final threshold = GameConstants.eraUnlockThresholds[nextEraId] ?? 0;
-  return BigInt.from(threshold);
+  return GameConstants.getEraUnlockCost(nextEraId) ?? BigInt.zero;
 });
 
 // Provider to check if we can afford the next era

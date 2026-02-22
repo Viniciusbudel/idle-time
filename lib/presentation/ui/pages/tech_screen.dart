@@ -133,7 +133,7 @@ class TechScreen extends ConsumerWidget {
     required int totalTechs,
     required double progress,
   }) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final eraLabel = _formatEraLabel(currentEraId).toUpperCase();
     final progressPct = (progress * 100).toStringAsFixed(0);
 
@@ -175,7 +175,7 @@ class TechScreen extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      l10n?.techAugmentation ?? 'AUGMENTATION',
+                  l10n.techAugmentation,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: typography.titleLarge.copyWith(
@@ -308,7 +308,7 @@ class _NeonTechCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = theme.colors;
     final typography = theme.typography;
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     final techLevels = ref.watch(techLevelsProvider);
     final discountMultiplier = TechData.calculateCostReductionMultiplier(
@@ -324,7 +324,7 @@ class _NeonTechCard extends ConsumerWidget {
         ? 1.0
         : (tech.level / tech.maxLevel).clamp(0.0, 1.0);
     final accent = _techAccent(theme, tech.type);
-    final costText = isMaxed ? 'MAX' : NumberFormatter.formatCE(nextCost);
+    final costText = isMaxed ? l10n.max : NumberFormatter.formatCE(nextCost);
 
     return Container(
       decoration: BoxDecoration(
@@ -457,7 +457,7 @@ class _NeonTechCard extends ConsumerWidget {
                       Expanded(
                         child: _NeonChip(
                           icon: AppHugeIcons.toll,
-                          label: '${l10n?.cost ?? 'COST'}: $costText',
+                          label: l10n.techCost(costText),
                           color: isMaxed
                               ? colors.primary
                               : (canAfford ? colors.success : Colors.white54),
@@ -473,7 +473,7 @@ class _NeonTechCard extends ConsumerWidget {
                           accent,
                           canAfford: canAfford,
                           isMaxed: isMaxed,
-                          label: isMaxed ? 'MAX' : (l10n?.upgrade ?? 'UPGRADE'),
+                          label: isMaxed ? l10n.max : l10n.upgrade,
                           onTap: () => ref
                               .read(techProvider.notifier)
                               .purchaseUpgrade(tech.id),
@@ -599,7 +599,7 @@ class _EraAdvancementPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final theme = const NeonTheme();
     final colors = theme.colors;
     final typography = theme.typography;
@@ -613,18 +613,16 @@ class _EraAdvancementPanel extends ConsumerWidget {
     final isReady = isComplete && canAfford;
     final nextEraLabel = _formatEraLabel(nextEraId).toUpperCase();
     final costLabel = NumberFormatter.formatCE(cost);
-    final advanceLabel =
-        l10n?.advanceTo(nextEraLabel) ?? 'ADVANCE TO $nextEraLabel';
+    final advanceLabel = l10n.advanceTo(nextEraLabel);
 
     final accent = isReady
         ? colors.primary
         : (isComplete ? Colors.white54 : colors.secondary);
     final helperLabel = !isComplete
-        ? (l10n?.researchIncomplete ?? 'RESEARCH INCOMPLETE')
+        ? l10n.researchIncomplete
         : (canAfford
-              ? (l10n?.systemUpgradesAvailable ?? 'SYSTEM UPGRADES AVAILABLE')
-              : (l10n?.needCEToConstruct(costLabel) ??
-                    'Need $costLabel CE to construct!'));
+              ? l10n.systemUpgradesAvailable
+              : l10n.needCEToConstruct(costLabel));
 
     return Container(
       margin: const EdgeInsets.only(top: 4),
@@ -703,7 +701,7 @@ class _EraAdvancementPanel extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: 5),
                                   Text(
-                                    l10n?.estimatedReward ?? 'ESTIMATED REWARD',
+                                    l10n.estimatedReward,
                                     style: typography.bodyMedium.copyWith(
                                       fontSize: 9,
                                       color: accent,
@@ -762,7 +760,7 @@ class _EraAdvancementPanel extends ConsumerWidget {
                         const SizedBox(width: 7),
                         Expanded(
                           child: Text(
-                            '${l10n?.eraUnlocked ?? 'ERA UNLOCKED'} • $nextEraLabel',
+                            '${l10n.eraUnlocked} • $nextEraLabel',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: typography.bodyMedium.copyWith(
@@ -779,7 +777,7 @@ class _EraAdvancementPanel extends ConsumerWidget {
                   const SizedBox(height: 8),
                   _NeonChip(
                     icon: AppHugeIcons.toll,
-                    label: '${l10n?.cost ?? 'COST'}: $costLabel CE',
+                    label: l10n.techCostCe(costLabel),
                     color: canAfford ? colors.success : Colors.white60,
                     theme: theme,
                   ),
@@ -792,9 +790,8 @@ class _EraAdvancementPanel extends ConsumerWidget {
                       label: isReady
                           ? advanceLabel
                           : (isComplete
-                                ? (l10n?.insufficientCE ?? 'INSUFFICIENT CE')
-                                : (l10n?.researchIncomplete ??
-                                      'RESEARCH INCOMPLETE')),
+                                ? l10n.insufficientCE
+                                : l10n.researchIncomplete),
                       onTap: () {
                         ref
                             .read(gameStateProvider.notifier)
@@ -959,24 +956,24 @@ String _formatEraLabel(String eraId) {
 }
 
 String _localizedEffect(BuildContext context, TechType type) {
-  final l10n = AppLocalizations.of(context);
+  final l10n = AppLocalizations.of(context)!;
   switch (type) {
     case TechType.automation:
-      return l10n?.automationEffect ?? 'AUTOMATION';
+      return l10n.automationEffect;
     case TechType.efficiency:
-      return l10n?.efficiencyEffect ?? 'EFFICIENCY';
+      return l10n.efficiencyEffect;
     case TechType.timeWarp:
-      return l10n?.timeWarpEffect ?? 'TIME WARP';
+      return l10n.timeWarpEffect;
     case TechType.costReduction:
-      return l10n?.costReductionEffect ?? 'UPGRADE DISCOUNT';
+      return l10n.costReductionEffect;
     case TechType.offline:
-      return l10n?.offlineEffect ?? 'OFFLINE';
+      return l10n.offlineEffect;
     case TechType.clickPower:
-      return l10n?.clickPowerEffect ?? 'CLICK POWER';
+      return l10n.clickPowerEffect;
     case TechType.eraUnlock:
-      return l10n?.eraUnlockEffect ?? 'ERA UNLOCK';
+      return l10n.eraUnlockEffect;
     case TechType.manhattan:
-      return l10n?.manhattanEffect ?? 'MANHATTAN';
+      return l10n.manhattanEffect;
   }
 }
 

@@ -63,7 +63,7 @@ class SettingsScreen extends ConsumerWidget {
             },
             child: _buildSettingCard(
               icon: AppHugeIcons.emoji_events,
-              title: 'Achievements',
+              title: AppLocalizations.of(context)!.achievements,
               colors: colors,
               iconColor: TimeFactoryColors.voltageYellow,
               trailing: const AppIcon(

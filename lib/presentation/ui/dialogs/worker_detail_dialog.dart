@@ -9,6 +9,7 @@ import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/worker_artifact.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/presentation/ui/atoms/cyber_button.dart';
@@ -293,7 +294,9 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                   children: [
                     Expanded(
                       child: CyberButton(
-                        label: currentWorker.isDeployed ? 'UNASSIGN' : 'MANAGE',
+                        label: currentWorker.isDeployed
+                            ? AppLocalizations.of(context)!.unassign
+                            : AppLocalizations.of(context)!.manage,
                         icon: currentWorker.isDeployed
                             ? AppHugeIcons.logout
                             : AppHugeIcons.settings,

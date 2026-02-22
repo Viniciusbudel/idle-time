@@ -123,7 +123,8 @@ class PrestigeTab extends ConsumerWidget {
                 ),
                 _InlineBadge(
                   icon: AppHugeIcons.stars,
-                  label: '${gameState.availableParadoxPoints} PP',
+                  label:
+                      '${gameState.availableParadoxPoints} ${l10n.paradoxPointsAbbrev}',
                   color: colors.secondary,
                 ),
               ],
@@ -139,7 +140,7 @@ class PrestigeTab extends ConsumerWidget {
             const SizedBox(height: 8),
             _InlineBadge(
               icon: AppHugeIcons.repeat,
-              label: 'Prestiges: ${gameState.totalPrestiges}',
+              label: l10n.prestigesCount(gameState.totalPrestiges),
               color: colors.primary,
             ),
           ],
@@ -187,7 +188,8 @@ class PrestigeTab extends ConsumerWidget {
               ),
               _InlineBadge(
                 icon: AppHugeIcons.auto_awesome,
-                label: '+${gameState.prestigePointsToGain} PP',
+                label:
+                    '+${gameState.prestigePointsToGain} ${l10n.paradoxPointsAbbrev}',
                 color: accent,
               ),
             ],
@@ -342,6 +344,7 @@ class _UpgradeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = theme.colors;
     final typography = theme.typography;
+    final l10n = AppLocalizations.of(context)!;
 
     final maxLevel = type.maxLevel;
     final isMaxed = maxLevel != null && level >= maxLevel;
@@ -401,7 +404,7 @@ class _UpgradeCard extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.xs),
               Text(
-                isMaxed ? 'MAX' : 'LVL $level',
+                isMaxed ? l10n.max : '${l10n.lvl} $level',
                 style: typography.bodySmall.copyWith(
                   color: accent,
                   fontWeight: FontWeight.w700,
@@ -421,7 +424,9 @@ class _UpgradeCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                isMaxed ? 'COST: MAX' : 'COST: $cost PP',
+                isMaxed
+                    ? '${l10n.cost}: ${l10n.max}'
+                    : '${l10n.cost}: $cost ${l10n.paradoxPointsAbbrev}',
                 style: typography.bodySmall.copyWith(
                   color: Colors.white.withValues(alpha: 0.72),
                   fontWeight: FontWeight.w600,
@@ -433,7 +438,9 @@ class _UpgradeCard extends StatelessWidget {
                 child: Semantics(
                   button: true,
                   enabled: canAfford && !isMaxed,
-                  label: isMaxed ? '$title maxed' : '$title costs $cost PP',
+                  label: isMaxed
+                      ? l10n.upgradeMaxed(title)
+                      : l10n.upgradeCostsPp(title, cost),
                   child: FilledButton.tonal(
                     onPressed: canAfford ? onBuy : null,
                     style: FilledButton.styleFrom(
@@ -455,7 +462,9 @@ class _UpgradeCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          isMaxed ? 'MAX' : (canAfford ? 'UPGRADE' : 'LOCKED'),
+                          isMaxed
+                              ? l10n.max
+                              : (canAfford ? l10n.upgrade : l10n.locked),
                           style: typography.bodySmall.copyWith(
                             color: accent,
                             fontWeight: FontWeight.w700,
