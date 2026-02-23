@@ -14,6 +14,8 @@ import 'package:time_factory/presentation/ui/atoms/void_hiring_overlay.dart';
 import 'package:time_factory/presentation/ui/dialogs/worker_result_dialog.dart';
 import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
+import 'package:time_factory/core/services/growth_analytics_service.dart';
+import 'package:time_factory/core/services/viral_share_service.dart';
 
 /// Gacha Screen - Temporal Rift Summoning Interface
 class GachaScreen extends ConsumerStatefulWidget {
@@ -25,10 +27,15 @@ class GachaScreen extends ConsumerStatefulWidget {
 
 class _GachaScreenState extends ConsumerState<GachaScreen>
     with SingleTickerProviderStateMixin {
+  static const _eventShareClicked = 'share_clicked';
+  static const _eventShareSheetOpened = 'share_sheet_opened';
+
   Worker? _lastSummonedWorker;
   bool _isSummoning = false;
   bool _showSummonEffect = false;
   late final PortalGame _portalGame; // Cached game instance
+  final GrowthAnalyticsService _growthAnalytics = GrowthAnalyticsService();
+  final ViralShareService _viralShareService = ViralShareService();
 
   @override
   void initState() {
@@ -384,13 +391,56 @@ class _GachaScreenState extends ConsumerState<GachaScreen>
   }
 
   void _showResultDialog(Worker worker) {
+    final canSharePull = _isShareableRarity(worker.rarity);
     showDialog(
       context: context,
       builder: (context) => WorkerResultDialog(
         worker: worker,
         title: 'HIRE SUCCESSFUL!',
         buttonLabel: 'WELCOME',
+        showShareCta: canSharePull,
+        onSharePressed: canSharePull ? () => _sharePull(worker) : null,
       ),
     );
+  }
+
+  bool _isShareableRarity(WorkerRarity rarity) {
+    return rarity == WorkerRarity.epic ||
+        rarity == WorkerRarity.legendary ||
+        rarity == WorkerRarity.paradox;
+  }
+
+  Future<void> _sharePull(Worker worker) async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    await _growthAnalytics.trackEvent(
+      _eventShareClicked,
+      params: {'rarity': worker.rarity.id},
+    );
+
+    final gameState = ref.read(gameStateProvider);
+    final opened = await _viralShareService.shareWorkerPull(
+      worker: worker,
+      gameState: gameState,
+    );
+
+    if (!mounted) return;
+
+    if (opened) {
+      await _growthAnalytics.trackEvent(
+        _eventShareSheetOpened,
+        params: {'rarity': worker.rarity.id},
+      );
+
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Share sheet opened. Recruit your rivals.'),
+        ),
+      );
+    } else {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not open share sheet right now.')),
+      );
+    }
   }
 }

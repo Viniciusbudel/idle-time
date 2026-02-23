@@ -7,17 +7,22 @@ import '../../../../domain/entities/enums.dart';
 import '../../../../core/utils/worker_icon_helper.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class WorkerResultDialog extends StatelessWidget {
   final Worker worker;
   final String? title;
   final String? buttonLabel;
+  final VoidCallback? onSharePressed;
+  final bool showShareCta;
 
   const WorkerResultDialog({
     super.key,
     required this.worker,
     this.title,
     this.buttonLabel,
+    this.onSharePressed,
+    this.showShareCta = false,
   });
 
   @override
@@ -38,7 +43,7 @@ class WorkerResultDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: rarityColor.withOpacity( 0.4),
+              color: rarityColor.withOpacity(0.4),
               blurRadius: 30,
               spreadRadius: 2,
             ),
@@ -59,11 +64,11 @@ class WorkerResultDialog extends StatelessWidget {
               height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: rarityColor.withOpacity( 0.2),
+                color: rarityColor.withOpacity(0.2),
                 border: Border.all(color: rarityColor, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: rarityColor.withOpacity( 0.5),
+                    color: rarityColor.withOpacity(0.5),
                     blurRadius: 20,
                   ),
                 ],
@@ -96,14 +101,32 @@ class WorkerResultDialog extends StatelessWidget {
               style: typography.bodyMedium.copyWith(color: colors.textPrimary),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: rarityColor,
-                foregroundColor: Colors.black, // Contrast
+            if (showShareCta && onSharePressed != null) ...[
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: rarityColor.withOpacity(0.8)),
+                    foregroundColor: rarityColor,
+                  ),
+                  onPressed: onSharePressed,
+                  icon: const AppIcon(AppHugeIcons.public, size: 16),
+                  label: const Text('SHARE PULL'),
+                ),
               ),
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                buttonLabel ?? AppLocalizations.of(context)!.excellent,
+              const SizedBox(height: 10),
+            ],
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: rarityColor,
+                  foregroundColor: Colors.black, // Contrast
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  buttonLabel ?? AppLocalizations.of(context)!.excellent,
+                ),
               ),
             ),
           ],
