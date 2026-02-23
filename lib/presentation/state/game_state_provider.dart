@@ -28,6 +28,7 @@ import '../../domain/usecases/start_expedition_usecase.dart';
 import '../../domain/usecases/resolve_expeditions_usecase.dart';
 import '../../domain/usecases/claim_expedition_rewards_usecase.dart';
 import '../../core/services/save_service.dart';
+import '../../core/constants/era_mastery_constants.dart';
 import '../../core/constants/tech_data.dart';
 import 'dart:async';
 import 'dart:math';
@@ -122,6 +123,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
     // 3. Calculate Auto-Collect (Automation)
     // Generates passive "manual clicks" based on automation level
     final automationLevel = TechData.calculateAutomationLevel(state.techLevels);
+    final atomicMasteryLevel = state.getEraMasteryLevel(WorkerEra.atomicAge.id);
+    final automationMasteryMultiplier =
+        1.0 +
+        (atomicMasteryLevel *
+            EraMasteryConstants.atomicAutomationBonusPerLevel);
     BigInt? additionalProduction;
 
     if (automationLevel > 0) {
@@ -130,7 +136,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
       // We use effectiveDt here too so automation also speeds up with Time Warp?
       // Design decision: Yes, Time Warp speeds up EVERYTHING.
       additionalProduction = BigInt.from(
-        baseManualClick.toDouble() * automationLevel * effectiveDt,
+        baseManualClick.toDouble() *
+            automationLevel *
+            automationMasteryMultiplier *
+            effectiveDt,
       );
     }
 
@@ -619,6 +628,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
       totalMerges: state.totalMerges + 1,
     );
     _recordMissionProgress(MissionProgressEvent.mergeWorker);
+    if (result.newWorker != null) {
+      _awardEraMasteryXp(result.newWorker!.era.id, EraMasteryConstants.mergeXp);
+    }
     return result;
   }
 
@@ -659,6 +671,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
       totalMerges: state.totalMerges + 1,
     );
     _recordMissionProgress(MissionProgressEvent.mergeWorker);
+    if (result.newWorker != null) {
+      _awardEraMasteryXp(result.newWorker!.era.id, EraMasteryConstants.mergeXp);
+    }
     return result;
   }
 
@@ -826,6 +841,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     final newUnlocked = {...state.unlockedEras, nextEraId};
     final newCompleted = {...state.completedEras, state.currentEraId};
+    final updatedMasteryXp = Map<String, int>.from(state.eraMasteryXp);
+    updatedMasteryXp[state.currentEraId] =
+        (updatedMasteryXp[state.currentEraId] ?? 0) +
+        EraMasteryConstants.eraTechCompletionXp;
 
     // Auto-create a free starter station for the new era
     final newEraStationType = StationType.values.firstWhere(
@@ -847,6 +866,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
       currentEraId: nextEraId,
       unlockedEras: newUnlocked,
       completedEras: newCompleted,
+      eraMasteryXp: updatedMasteryXp,
       stations: newStations,
     );
   }
@@ -978,10 +998,32 @@ class GameStateNotifier extends StateNotifier<GameState> {
     String expeditionId,
   ) {
     _resolveExpeditions();
+    Expedition? claimedExpedition;
+    for (final expedition in state.expeditions) {
+      if (expedition.id == expeditionId) {
+        claimedExpedition = expedition;
+        break;
+      }
+    }
+
+    final masteryXpByEra = <String, int>{};
+    if (claimedExpedition != null &&
+        claimedExpedition.resolved &&
+        claimedExpedition.wasSuccessful == true) {
+      for (final workerId in claimedExpedition.workerIds) {
+        final worker = state.workers[workerId];
+        if (worker == null) continue;
+        masteryXpByEra[worker.era.id] =
+            (masteryXpByEra[worker.era.id] ?? 0) +
+            EraMasteryConstants.expeditionSuccessXpPerWorker;
+      }
+    }
+
     final result = _claimExpeditionRewardsUseCase.execute(state, expeditionId);
     if (result == null) return null;
 
     state = result.newState;
+    _awardEraMasteryXpBatch(masteryXpByEra);
     return result;
   }
 
@@ -992,6 +1034,23 @@ class GameStateNotifier extends StateNotifier<GameState> {
     if (result.newlyResolved.isEmpty) return;
 
     state = result.newState;
+  }
+
+  void _awardEraMasteryXp(String eraId, int amount) {
+    if (amount <= 0) return;
+    _awardEraMasteryXpBatch({eraId: amount});
+  }
+
+  void _awardEraMasteryXpBatch(Map<String, int> masteryXpByEra) {
+    if (masteryXpByEra.isEmpty) return;
+
+    final updatedMasteryXp = Map<String, int>.from(state.eraMasteryXp);
+    for (final entry in masteryXpByEra.entries) {
+      if (entry.value <= 0) continue;
+      updatedMasteryXp[entry.key] =
+          (updatedMasteryXp[entry.key] ?? 0) + entry.value;
+    }
+    state = state.copyWith(eraMasteryXp: updatedMasteryXp);
   }
 
   Set<String> _activeExpeditionWorkerIds() {
@@ -1086,6 +1145,16 @@ final stationsProvider = Provider<Map<String, Station>>((ref) {
 /// Tech Levels map
 final techLevelsProvider = Provider<Map<String, int>>((ref) {
   return ref.watch(gameStateProvider).techLevels;
+});
+
+/// Era mastery XP map keyed by era ID.
+final eraMasteryXpProvider = Provider<Map<String, int>>((ref) {
+  return ref.watch(gameStateProvider).eraMasteryXp;
+});
+
+/// Era mastery levels derived from mastery XP.
+final eraMasteryLevelsProvider = Provider<Map<String, int>>((ref) {
+  return ref.watch(gameStateProvider).eraMasteryLevels;
 });
 
 /// Daily missions currently active for the player.

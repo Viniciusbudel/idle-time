@@ -124,11 +124,15 @@ class LoopChambersTab extends ConsumerWidget {
     Station station,
     int slotIndex,
   ) {
-    final idleWorkers = ref
-        .read(gameStateProvider)
-        .workers
-        .values
-        .where((w) => !w.isDeployed)
+    final gameState = ref.read(gameStateProvider);
+    final activeExpeditionWorkerIds = gameState.expeditions
+        .where((expedition) => !expedition.resolved)
+        .expand((expedition) => expedition.workerIds)
+        .toSet();
+    final idleWorkers = gameState.workers.values
+        .where(
+          (w) => !w.isDeployed && !activeExpeditionWorkerIds.contains(w.id),
+        )
         .toList();
 
     AssignWorkerDialog.show(

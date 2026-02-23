@@ -16,6 +16,10 @@ Scope: Feature opportunities based on the current state of `time_factory`.
 - Implemented polish pass: segmented expedition flow (Missions/Active/Completed), compact expandable mission cards, and reward preview on selected risk.
 - Implemented risk outcome pass: expedition success probability now uses assigned worker rarity + artifact loadout, and failed expeditions permanently remove assigned workers and their equipped artifacts.
 - Remaining in Feature 3: balance pass and optional artifact-drop resolution hook on expedition claim.
+- Feature 4 (Era Mastery): Kickoff in progress.
+- Implemented in kickoff: mastery XP state (`eraMasteryXp`), derived mastery levels, and production/offline/automation hooks.
+- Implemented XP sources in kickoff: worker merges, successful expedition claims (by assigned worker era), and era advancement after tech completion.
+- Remaining in Feature 4: dedicated mastery UI, per-era perk surfacing, and final balance pass.
 
 ## 1) Current State Analysis
 

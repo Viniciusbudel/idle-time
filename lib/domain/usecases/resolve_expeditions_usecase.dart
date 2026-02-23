@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
+import 'package:time_factory/domain/entities/prestige_upgrade.dart';
 import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 
@@ -41,9 +43,11 @@ class ResolveExpeditionsUseCase {
       }
 
       final bool succeeded = nextRoll() <= expedition.successProbability;
-      final ExpeditionReward reward = succeeded
-          ? _calculateReward(currentState, expedition)
-          : ExpeditionReward.zero;
+      final ExpeditionReward reward = _calculateReward(
+        currentState,
+        expedition,
+        succeeded: succeeded,
+      );
 
       var lostWorkers = const <String>[];
       var lostArtifactCount = 0;
@@ -119,7 +123,16 @@ class ResolveExpeditionsUseCase {
     );
   }
 
-  ExpeditionReward _calculateReward(GameState state, Expedition expedition) {
+  ExpeditionReward _calculateReward(
+    GameState state,
+    Expedition expedition, {
+    required bool succeeded,
+  }) {
+    final rewardedShards = succeeded ? expedition.risk.shardReward * 2 : 0;
+    final rewardedArtifactDropChance = succeeded
+        ? (expedition.risk.artifactDropChance + 0.08).clamp(0.0, 0.95)
+        : 0.0;
+
     var totalWorkerPower = BigInt.zero;
     for (final workerId in expedition.workerIds) {
       final worker = state.workers[workerId];
@@ -131,8 +144,8 @@ class ResolveExpeditionsUseCase {
     if (totalWorkerPower <= BigInt.zero) {
       return ExpeditionReward(
         chronoEnergy: BigInt.zero,
-        timeShards: expedition.risk.shardReward,
-        artifactDropChance: expedition.risk.artifactDropChance,
+        timeShards: rewardedShards,
+        artifactDropChance: rewardedArtifactDropChance,
       );
     }
 
@@ -141,16 +154,58 @@ class ResolveExpeditionsUseCase {
         .inSeconds
         .clamp(1, 60 * 60 * 24);
 
-    final weighted =
-        totalWorkerPower.toDouble() *
-        durationSeconds *
-        expedition.risk.ceMultiplier;
+    final baseChronoEnergy = totalWorkerPower * BigInt.from(durationSeconds);
+    final chamberOpportunityMultiplier = _chamberOpportunityMultiplier(state);
+    final compensatedBaseChronoEnergy = _applyMultiplier(
+      baseChronoEnergy,
+      chamberOpportunityMultiplier,
+    );
+
+    final guaranteedChronoEnergy = _applyMultiplier(
+      compensatedBaseChronoEnergy,
+      2.0 + expedition.risk.ceMultiplier * 1.3,
+    );
+    final successBonusChronoEnergy = _applyMultiplier(
+      compensatedBaseChronoEnergy,
+      0.8 + expedition.risk.ceMultiplier * 1.1,
+    );
+    final finalChronoEnergy =
+        guaranteedChronoEnergy +
+        (succeeded ? successBonusChronoEnergy : BigInt.zero);
 
     return ExpeditionReward(
-      chronoEnergy: BigInt.from(weighted.round()),
-      timeShards: expedition.risk.shardReward,
-      artifactDropChance: expedition.risk.artifactDropChance,
+      chronoEnergy: finalChronoEnergy,
+      timeShards: rewardedShards,
+      artifactDropChance: rewardedArtifactDropChance,
     );
+  }
+
+  double _chamberOpportunityMultiplier(GameState state) {
+    final maxStationBonus = state.stations.values.fold<double>(
+      1.0,
+      (best, station) =>
+          station.productionBonus > best ? station.productionBonus : best,
+    );
+    final techMultiplier = TechData.calculateEfficiencyMultiplier(
+      state.techLevels,
+    );
+    final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
+      state.paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
+    );
+    final chronoMasteryMultiplier = 1.0 + (chronoMasteryLevel * 0.1);
+
+    // Expeditions should compensate opportunity cost from chambers and tech,
+    // but keep a hard cap to avoid runaway late-game explosions.
+    final compensation =
+        maxStationBonus * sqrt(techMultiplier) * chronoMasteryMultiplier;
+    return compensation.clamp(1.5, 40.0);
+  }
+
+  BigInt _applyMultiplier(BigInt value, double multiplier) {
+    if (multiplier == 1.0) return value;
+    const precision = 10000;
+    final scaled = (multiplier * precision).round();
+    return value * BigInt.from(scaled) ~/ BigInt.from(precision);
   }
 }
 

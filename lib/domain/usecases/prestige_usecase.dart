@@ -22,6 +22,7 @@ class PrestigeUseCase {
       inventory: currentState.inventory,
       artifactDust: currentState.artifactDust,
       artifactCraftStreak: currentState.artifactCraftStreak,
+      eraMasteryXp: currentState.eraMasteryXp,
     );
   }
 

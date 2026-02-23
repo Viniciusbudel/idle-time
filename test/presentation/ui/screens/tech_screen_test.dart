@@ -8,7 +8,6 @@ import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/tech_provider.dart';
 import 'package:time_factory/presentation/ui/pages/tech_screen.dart';
-import 'package:time_factory/presentation/ui/molecules/tech_card.dart';
 
 // Mock Notifier to avoid side effects and allow state injection
 class MockGameStateNotifier extends GameStateNotifier {
@@ -57,10 +56,9 @@ void main() {
 
     // Verify Header
     expect(find.text('TECH AUGMENTATION'), findsOneWidget);
-    expect(find.text('SYSTEM UPGRADES AVAILABLE'), findsOneWidget);
+    expect(find.text('ERA MASTERY'), findsOneWidget);
 
-    // Verify Tech Card
-    expect(find.byType(TechCard), findsOneWidget);
+    // Verify tech entry
     expect(find.text('QUANTUM MINING'), findsOneWidget);
     expect(find.text('Increases mining by 50%'), findsOneWidget);
 

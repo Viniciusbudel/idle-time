@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:time_factory/core/constants/era_mastery_constants.dart';
 import 'package:time_factory/core/constants/game_constants.dart';
 import 'enums.dart';
 import 'worker.dart';
@@ -31,6 +32,7 @@ class GameState {
   final String currentEraId; // Track the currently active era
   final Map<String, int> techLevels; // Track tech ID -> Level
   final Map<String, int> eraHires; // NEW: Track # of cell hires per era
+  final Map<String, int> eraMasteryXp; // Era ID -> accumulated mastery XP
   final DateTime? lastSaveTime;
   final DateTime? lastTickTime;
   final int totalPrestiges;
@@ -64,6 +66,7 @@ class GameState {
     this.currentEraId = 'victorian',
     this.techLevels = const {}, // Default empty
     this.eraHires = const {}, // Default empty
+    this.eraMasteryXp = const {},
     this.lastSaveTime,
     this.lastTickTime,
     this.totalPrestiges = 0,
@@ -116,6 +119,7 @@ class GameState {
       currentEraId: 'victorian',
       techLevels: {},
       eraHires: {},
+      eraMasteryXp: {},
       lastSaveTime: DateTime.now(),
       lastTickTime: DateTime.now(),
       totalMerges: 0,
@@ -150,6 +154,7 @@ class GameState {
     String? currentEraId,
     Map<String, int>? techLevels, // NEW
     Map<String, int>? eraHires, // NEW
+    Map<String, int>? eraMasteryXp,
     DateTime? lastSaveTime,
     DateTime? lastTickTime,
     int? totalPrestiges,
@@ -184,6 +189,7 @@ class GameState {
       currentEraId: currentEraId ?? this.currentEraId,
       techLevels: techLevels ?? this.techLevels, // NEW
       eraHires: eraHires ?? this.eraHires, // NEW
+      eraMasteryXp: eraMasteryXp ?? this.eraMasteryXp,
       lastSaveTime: lastSaveTime ?? this.lastSaveTime,
       lastTickTime: lastTickTime ?? this.lastTickTime,
       totalPrestiges: totalPrestiges ?? this.totalPrestiges,
@@ -206,6 +212,22 @@ class GameState {
   List<Worker> get activeWorkers =>
       workers.values.where((w) => w.isDeployed).toList();
 
+  /// Derived mastery levels by era from cumulative XP.
+  Map<String, int> get eraMasteryLevels => {
+    for (final era in WorkerEra.values) era.id: getEraMasteryLevel(era.id),
+  };
+
+  int getEraMasteryLevel(String eraId) {
+    final xp = eraMasteryXp[eraId] ?? 0;
+    return EraMasteryConstants.levelFromXp(xp);
+  }
+
+  double getEraMasteryProductionMultiplier(String eraId) {
+    final level = getEraMasteryLevel(eraId);
+    if (level <= 0) return 1.0;
+    return 1.0 + (level * EraMasteryConstants.productionBonusPerLevel);
+  }
+
   /// Calculate total production per second
   BigInt get productionPerSecond {
     BigInt total = BigInt.zero;
@@ -220,13 +242,19 @@ class GameState {
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
 
+      production = _applyMultiplier(
+        production,
+        getEraMasteryProductionMultiplier(worker.era.id),
+      );
+
       final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
         paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
       );
       if (chronoMasteryLevel > 0) {
-        final bonus = 1.0 + (chronoMasteryLevel * 0.1);
-        production =
-            production * BigInt.from((bonus * 100).toInt()) ~/ BigInt.from(100);
+        production = _applyMultiplier(
+          production,
+          1.0 + (chronoMasteryLevel * 0.1),
+        );
       }
 
       if (paradoxEventActive) {
@@ -282,14 +310,20 @@ class GameState {
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
 
+      production = _applyMultiplier(
+        production,
+        getEraMasteryProductionMultiplier(worker.era.id),
+      );
+
       // Chrono Mastery
       final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
         paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
       );
       if (chronoMasteryLevel > 0) {
-        final bonus = 1.0 + (chronoMasteryLevel * 0.1);
-        production =
-            production * BigInt.from((bonus * 100).toInt()) ~/ BigInt.from(100);
+        production = _applyMultiplier(
+          production,
+          1.0 + (chronoMasteryLevel * 0.1),
+        );
       }
 
       // Paradox Event
@@ -313,8 +347,15 @@ class GameState {
     final techMultiplier = TechData.calculateOfflineEfficiencyMultiplier(
       techLevels,
     );
+    final victorianMasteryLevel = getEraMasteryLevel(WorkerEra.victorian.id);
+    final victorianMasteryBonus =
+        victorianMasteryLevel *
+        EraMasteryConstants.victorianOfflineBonusPerLevel;
     // TechData returns 1.0 + bonus, subtract 1.0 to get just the bonus portion
-    return base + (offlineBonusLevel * 0.1) + (techMultiplier - 1.0);
+    return base +
+        (offlineBonusLevel * 0.1) +
+        (techMultiplier - 1.0) +
+        victorianMasteryBonus;
   }
 
   /// Check if can afford purchase
@@ -362,6 +403,13 @@ class GameState {
     return (text.length - significantDigits) + (math.log(lead) / math.ln10);
   }
 
+  static BigInt _applyMultiplier(BigInt value, double multiplier) {
+    if (multiplier == 1.0) return value;
+    const precision = 10000;
+    final scaled = (multiplier * precision).round();
+    return value * BigInt.from(scaled) ~/ BigInt.from(precision);
+  }
+
   /// Get number of stations owned in a specific era
   int getStationCountForEra(String eraId) {
     return stations.values.where((s) => s.type.era.id == eraId).length;
@@ -388,6 +436,7 @@ class GameState {
       'currentEraId': currentEraId,
       'techLevels': techLevels,
       'eraHires': eraHires,
+      'eraMasteryXp': eraMasteryXp,
       'lastSaveTime': lastSaveTime?.toIso8601String(),
       'lastTickTime': lastTickTime?.toIso8601String(),
       'totalPrestiges': totalPrestiges,
@@ -444,6 +493,7 @@ class GameState {
       currentEraId: map['currentEraId'] ?? 'victorian',
       techLevels: Map<String, int>.from(map['techLevels'] ?? {}),
       eraHires: Map<String, int>.from(map['eraHires'] ?? {}),
+      eraMasteryXp: Map<String, int>.from(map['eraMasteryXp'] ?? {}),
       lastSaveTime: map['lastSaveTime'] != null
           ? DateTime.parse(map['lastSaveTime'])
           : null,

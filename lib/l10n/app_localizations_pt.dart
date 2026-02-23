@@ -48,7 +48,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get systemUpgrade => 'UPGRADE DO SISTEMA';
 
   @override
-  String get initUpgrade => 'INICIAR UPGRADE';
+  String get initUpgrade => 'UPGRADE';
 
   @override
   String get initializeExpansion => 'Iniciar protocolo de expansão?';

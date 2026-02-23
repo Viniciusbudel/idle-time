@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
+import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/worker_artifact.dart';
 import 'package:time_factory/domain/usecases/claim_expedition_rewards_usecase.dart';
@@ -220,6 +221,75 @@ void main() {
       expect(second, isNull);
     });
 
+    test('reward compensates chamber multipliers for high-power workers', () {
+      final start = StartExpeditionUseCase();
+      final resolve = ResolveExpeditionsUseCase();
+      final now = DateTime(2026, 2, 22, 12, 0);
+
+      final idleWorker = Worker(
+        id: 'idle_comp',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(20),
+        rarity: WorkerRarity.legendary,
+      );
+
+      final baselineState = GameState.initial().copyWith(
+        workers: {'idle_comp': idleWorker},
+        stations: const {},
+        techLevels: const {},
+        expeditions: const [],
+      );
+
+      final boostedStation = const Station(
+        id: 'station_boost',
+        type: StationType.neonCore,
+        level: 5,
+        gridX: 0,
+        gridY: 0,
+        workerIds: [],
+      );
+      final boostedState = baselineState.copyWith(
+        stations: {'station_boost': boostedStation},
+        techLevels: const {'virtual_reality': 1},
+      );
+
+      final baselineStarted = start.execute(
+        baselineState,
+        slotId: 'salvage_run',
+        risk: ExpeditionRisk.safe,
+        workerIds: const ['idle_comp'],
+        now: now,
+      );
+      final boostedStarted = start.execute(
+        boostedState,
+        slotId: 'salvage_run',
+        risk: ExpeditionRisk.safe,
+        workerIds: const ['idle_comp'],
+        now: now,
+      );
+      expect(baselineStarted, isNotNull);
+      expect(boostedStarted, isNotNull);
+
+      final baselineResolved = resolve.execute(
+        baselineStarted!.newState,
+        now: now.add(const Duration(minutes: 31)),
+        randomRoll: () => 0.0,
+      );
+      final boostedResolved = resolve.execute(
+        boostedStarted!.newState,
+        now: now.add(const Duration(minutes: 31)),
+        randomRoll: () => 0.0,
+      );
+
+      final baselineReward =
+          baselineResolved.newlyResolved.first.resolvedReward!.chronoEnergy;
+      final boostedReward =
+          boostedResolved.newlyResolved.first.resolvedReward!.chronoEnergy;
+
+      expect(boostedReward, greaterThan(baselineReward));
+      expect(boostedReward > baselineReward * BigInt.from(3), isTrue);
+    });
+
     test('failed expedition removes workers and their equipped artifacts', () {
       final start = StartExpeditionUseCase();
       final resolve = ResolveExpeditionsUseCase();
@@ -285,7 +355,7 @@ void main() {
       expect(claimResult, isNotNull);
       expect(
         claimResult!.newState.chronoEnergy,
-        equals(resolved.newState.chronoEnergy),
+        greaterThan(resolved.newState.chronoEnergy),
       );
       expect(
         claimResult.newState.timeShards,

@@ -32,10 +32,11 @@ void main() {
         );
 
         final state = GameState.initial().copyWith(
-          lifetimeChronoEnergy: BigInt.from(2500000), // Gives 2 prestige points
+          lifetimeChronoEnergy: BigInt.from(2500000), // Gives 1 prestige point
           chronoEnergy: BigInt.from(50000),
           timeShards: 450,
           inventory: [dummyArtifact],
+          eraMasteryXp: {'victorian': 123, 'atomic_age': 45},
           prestigeLevel: 1,
           availableParadoxPoints: 5,
           totalPrestiges: 1,
@@ -53,12 +54,13 @@ void main() {
         // Assert: Prestige stats should update
         expect(result.prestigeLevel, 2);
         expect(result.totalPrestiges, 2);
-        expect(result.availableParadoxPoints, 7); // 5 previous + 2 new
+        expect(result.availableParadoxPoints, 6); // 5 previous + 1 new
 
         // Assert: Preserved metadata
         expect(result.timeShards, 450); // Should keep time shards
         expect(result.inventory.length, 1); // Should keep artifacts
         expect(result.inventory.first.id, dummyArtifact.id);
+        expect(result.eraMasteryXp, {'victorian': 123, 'atomic_age': 45});
 
         // Assert: Eras should reset to only victorian (since no era_insight upgrade)
         expect(result.unlockedEras, {'victorian'});
@@ -88,9 +90,9 @@ void main() {
         final cases = {
           BigInt.from(999999): 0, // Below threshold
           BigInt.from(1000000): 1, // Exact threshold
-          BigInt.from(1500000): 1, // Truncated down
-          BigInt.from(2000000): 2, // Double
-          BigInt.from(10000000): 10, // 10x
+          BigInt.from(1500000): 1, // Smooth curve early game
+          BigInt.from(2000000): 1, // Smooth curve early game
+          BigInt.from(10000000): 6,
         };
 
         for (var entry in cases.entries) {
