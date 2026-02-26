@@ -14,6 +14,7 @@ import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/usecases/claim_expedition_rewards_usecase.dart';
+import 'package:time_factory/domain/usecases/resolve_expeditions_usecase.dart';
 import 'package:time_factory/domain/usecases/start_expedition_usecase.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
@@ -34,6 +35,8 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       <String, ExpeditionRisk>{};
   final Map<String, List<String>> _selectedWorkerIdsBySlotId =
       <String, List<String>>{};
+  final ResolveExpeditionsUseCase _resolveExpeditionsUseCase =
+      ResolveExpeditionsUseCase();
   _ExpeditionPanel _activePanel = _ExpeditionPanel.missions;
   String? _expandedSlotId;
   bool _hasAutoExpanded = false;
@@ -148,7 +151,12 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
             ...slots.map(
               (ExpeditionSlot slot) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: _buildSlotCard(context, availableWorkers, slot),
+                child: _buildSlotCard(
+                  context,
+                  gameState,
+                  availableWorkers,
+                  slot,
+                ),
               ),
             ),
           ],
@@ -479,6 +487,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
 
   Widget _buildSlotCard(
     BuildContext context,
+    GameState gameState,
     List<Worker> availableWorkers,
     ExpeditionSlot slot,
   ) {
@@ -499,8 +508,14 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       availableWorkers,
       slot.requiredWorkers,
     );
-    final ExpeditionReward? previewReward = _estimateSlotRewardPreview(
+    final List<Worker> previewWorkers = _previewWorkersForSlot(
+      selectedWorkers: selectedWorkers,
       availableWorkers: availableWorkers,
+      requiredCount: slot.requiredWorkers,
+    );
+    final ExpeditionReward? previewReward = _estimateSlotRewardPreview(
+      gameState: gameState,
+      previewWorkers: previewWorkers,
       requiredWorkers: slot.requiredWorkers,
       duration: slot.duration,
       risk: selectedRisk,
@@ -1422,32 +1437,50 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     return sorted.take(requiredCount).map((Worker w) => w.id).toList();
   }
 
-  ExpeditionReward? _estimateSlotRewardPreview({
+  List<Worker> _previewWorkersForSlot({
+    required List<Worker> selectedWorkers,
     required List<Worker> availableWorkers,
+    required int requiredCount,
+  }) {
+    final List<Worker> preview = List<Worker>.from(selectedWorkers);
+    if (preview.length >= requiredCount) {
+      return preview.take(requiredCount).toList(growable: false);
+    }
+
+    final Set<String> selectedIds = preview
+        .map((Worker worker) => worker.id)
+        .toSet();
+    final List<Worker> sorted = List<Worker>.from(availableWorkers)
+      ..sort((a, b) => b.currentProduction.compareTo(a.currentProduction));
+    for (final Worker worker in sorted) {
+      if (preview.length >= requiredCount) {
+        break;
+      }
+      if (selectedIds.add(worker.id)) {
+        preview.add(worker);
+      }
+    }
+
+    return preview;
+  }
+
+  ExpeditionReward? _estimateSlotRewardPreview({
+    required GameState gameState,
+    required List<Worker> previewWorkers,
     required int requiredWorkers,
     required Duration duration,
     required ExpeditionRisk risk,
   }) {
-    if (availableWorkers.length < requiredWorkers) {
+    if (previewWorkers.length < requiredWorkers) {
       return null;
     }
 
-    final List<Worker> selected = List<Worker>.from(availableWorkers)
-      ..sort((a, b) => b.currentProduction.compareTo(a.currentProduction));
-
-    BigInt totalWorkerPower = BigInt.zero;
-    for (final Worker worker in selected.take(requiredWorkers)) {
-      totalWorkerPower += worker.currentProduction;
-    }
-
-    final int durationSeconds = duration.inSeconds.clamp(1, 60 * 60 * 24);
-    final double weighted =
-        totalWorkerPower.toDouble() * durationSeconds * risk.ceMultiplier;
-
-    return ExpeditionReward(
-      chronoEnergy: BigInt.from(weighted.round()),
-      timeShards: risk.shardReward,
-      artifactDropChance: risk.artifactDropChance,
+    return _resolveExpeditionsUseCase.estimateRewardPreview(
+      gameState,
+      workers: previewWorkers.take(requiredWorkers).toList(growable: false),
+      duration: duration,
+      risk: risk,
+      succeeded: true,
     );
   }
 

@@ -631,6 +631,68 @@ void main() {
       expect(chronoEnergy, greaterThan(BigInt.from(1000000000)));
     });
 
+    test('preview estimator matches resolved success reward formula', () {
+      final start = StartExpeditionUseCase();
+      final resolve = ResolveExpeditionsUseCase();
+      final now = DateTime(2026, 2, 26, 20, 0);
+
+      final paradoxWorker = Worker(
+        id: 'paradox_preview',
+        era: WorkerEra.roaring20s,
+        baseProduction: BigInt.from(25),
+        rarity: WorkerRarity.paradox,
+        chronalAttunement: 1.0,
+      );
+      final legendaryWorker = Worker(
+        id: 'legendary_preview',
+        era: WorkerEra.roaring20s,
+        baseProduction: BigInt.from(15),
+        rarity: WorkerRarity.legendary,
+        chronalAttunement: 1.0,
+      );
+
+      final state = GameState.initial().copyWith(
+        workers: {
+          paradoxWorker.id: paradoxWorker,
+          legendaryWorker.id: legendaryWorker,
+        },
+        stations: const {},
+        techLevels: const {},
+        expeditions: const [],
+        unlockedEras: const {'victorian', 'roaring_20s'},
+        currentEraId: 'roaring_20s',
+      );
+
+      final ExpeditionReward preview = resolve.estimateRewardPreview(
+        state,
+        workers: [paradoxWorker, legendaryWorker],
+        duration: const Duration(hours: 2),
+        risk: ExpeditionRisk.risky,
+        succeeded: true,
+      );
+
+      final started = start.execute(
+        state,
+        slotId: 'rift_probe',
+        risk: ExpeditionRisk.risky,
+        workerIds: const ['paradox_preview', 'legendary_preview'],
+        now: now,
+      );
+      expect(started, isNotNull);
+
+      final resolved = resolve.execute(
+        started!.newState,
+        now: now.add(const Duration(hours: 2, minutes: 1)),
+        randomRoll: () => 0.0,
+      );
+      final ExpeditionReward resolvedReward =
+          resolved.newlyResolved.first.resolvedReward!;
+
+      expect(preview.chronoEnergy, resolvedReward.chronoEnergy);
+      expect(preview.timeShards, resolvedReward.timeShards);
+      expect(preview.artifactDropChance, resolvedReward.artifactDropChance);
+    });
+
     test('failed expedition removes workers and their equipped artifacts', () {
       final start = StartExpeditionUseCase();
       final resolve = ResolveExpeditionsUseCase();

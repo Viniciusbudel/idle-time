@@ -19,6 +19,23 @@ class ResolveExpeditionsResult {
 }
 
 class ResolveExpeditionsUseCase {
+  ExpeditionReward estimateRewardPreview(
+    GameState state, {
+    required List<Worker> workers,
+    required Duration duration,
+    required ExpeditionRisk risk,
+    bool succeeded = true,
+  }) {
+    final int durationSeconds = duration.inSeconds.clamp(1, 60 * 60 * 24);
+    return _calculateRewardFromCrew(
+      state: state,
+      workers: workers,
+      durationSeconds: durationSeconds,
+      risk: risk,
+      succeeded: succeeded,
+    );
+  }
+
   ResolveExpeditionsResult execute(
     GameState currentState, {
     DateTime? now,
@@ -129,19 +146,43 @@ class ResolveExpeditionsUseCase {
     Expedition expedition, {
     required bool succeeded,
   }) {
-    final rewardedShards = succeeded ? expedition.risk.shardReward * 2 : 0;
-    final rewardedArtifactDropChance = succeeded
-        ? (expedition.risk.artifactDropChance + 0.08).clamp(0.0, 0.95)
-        : 0.0;
-
     final List<Worker> assignedWorkers = <Worker>[];
-    var totalWorkerPower = BigInt.zero;
     for (final workerId in expedition.workerIds) {
       final worker = state.workers[workerId];
       if (worker != null) {
         assignedWorkers.add(worker);
-        totalWorkerPower += worker.currentProduction;
       }
+    }
+
+    final durationSeconds = expedition.endTime
+        .difference(expedition.startTime)
+        .inSeconds
+        .clamp(1, 60 * 60 * 24);
+
+    return _calculateRewardFromCrew(
+      state: state,
+      workers: assignedWorkers,
+      durationSeconds: durationSeconds,
+      risk: expedition.risk,
+      succeeded: succeeded,
+    );
+  }
+
+  ExpeditionReward _calculateRewardFromCrew({
+    required GameState state,
+    required List<Worker> workers,
+    required int durationSeconds,
+    required ExpeditionRisk risk,
+    required bool succeeded,
+  }) {
+    final rewardedShards = succeeded ? risk.shardReward * 2 : 0;
+    final rewardedArtifactDropChance = succeeded
+        ? (risk.artifactDropChance + 0.08).clamp(0.0, 0.95)
+        : 0.0;
+
+    var totalWorkerPower = BigInt.zero;
+    for (final Worker worker in workers) {
+      totalWorkerPower += worker.currentProduction;
     }
 
     if (totalWorkerPower <= BigInt.zero) {
@@ -152,11 +193,6 @@ class ResolveExpeditionsUseCase {
       );
     }
 
-    final durationSeconds = expedition.endTime
-        .difference(expedition.startTime)
-        .inSeconds
-        .clamp(1, 60 * 60 * 24);
-
     final baseChronoEnergy = totalWorkerPower * BigInt.from(durationSeconds);
     final chamberOpportunityMultiplier = _chamberOpportunityMultiplier(state);
     final compensatedBaseChronoEnergy = _applyMultiplier(
@@ -166,19 +202,19 @@ class ResolveExpeditionsUseCase {
 
     final guaranteedChronoEnergy = _applyMultiplier(
       compensatedBaseChronoEnergy,
-      2.0 + expedition.risk.ceMultiplier * 1.3,
+      2.0 + risk.ceMultiplier * 1.3,
     );
     final successBonusChronoEnergy = _applyMultiplier(
       compensatedBaseChronoEnergy,
-      0.8 + expedition.risk.ceMultiplier * 1.1,
+      0.8 + risk.ceMultiplier * 1.1,
     );
     final baselineChronoEnergy =
         guaranteedChronoEnergy +
         (succeeded ? successBonusChronoEnergy : BigInt.zero);
     final expeditionBuffMultiplier = _expeditionBuffMultiplier(
-      workers: assignedWorkers,
+      workers: workers,
       durationSeconds: durationSeconds,
-      risk: expedition.risk,
+      risk: risk,
     );
     final finalChronoEnergy = _applyMultiplier(
       baselineChronoEnergy,
