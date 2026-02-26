@@ -22,6 +22,19 @@ void main() {
       );
     });
 
+    test('slot catalog keeps identity metadata populated and stable', () {
+      final useCase = StartExpeditionUseCase();
+      final Set<String> seenIds = <String>{};
+
+      for (final ExpeditionSlot slot in useCase.availableSlots) {
+        expect(slot.id.isNotEmpty, isTrue);
+        expect(slot.headline.isNotEmpty, isTrue);
+        expect(slot.layoutPreset.isNotEmpty, isTrue);
+        expect(slot.unlockEraId, slot.eraId);
+        expect(seenIds.add(slot.id), isTrue);
+      }
+    });
+
     test('new save exposes only victorian expedition slot', () {
       final useCase = StartExpeditionUseCase();
       final state = GameState.initial();

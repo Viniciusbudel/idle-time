@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/core/theme/era_theme.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 import 'package:time_factory/core/utils/expedition_utils.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
@@ -453,6 +454,29 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     );
   }
 
+  Widget _buildMissionIdentityChip({
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        label,
+        style: TimeFactoryTextStyles.bodyMono.copyWith(
+          color: color,
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSlotCard(
     BuildContext context,
     List<Worker> availableWorkers,
@@ -460,6 +484,13 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
   ) {
     final ExpeditionRisk selectedRisk =
         _selectedRiskBySlotId[slot.id] ?? slot.defaultRisk;
+    final EraTheme eraTheme = EraTheme.fromId(slot.eraId);
+    final Color eraAccent = eraTheme.primaryColor;
+    final Color riskAccent = expeditionRiskColor(selectedRisk);
+    final Color combinedAccent =
+        Color.lerp(eraAccent, riskAccent, 0.45) ?? riskAccent;
+    final Color cardTextColor =
+        Color.lerp(eraTheme.textColor, Colors.white, 0.55) ?? Colors.white;
     final bool canStart = availableWorkers.length >= slot.requiredWorkers;
     final bool shouldShowQuickHire = !canStart;
     final bool isExpanded = _expandedSlotId == slot.id;
@@ -536,6 +567,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: <Color>[
+            eraTheme.surfaceColor.withValues(alpha: 0.28),
             TimeFactoryColors.surface,
             TimeFactoryColors.background.withValues(alpha: 0.8),
           ],
@@ -543,14 +575,9 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: expeditionRiskColor(selectedRisk).withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: combinedAccent.withValues(alpha: 0.45)),
         boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: expeditionRiskColor(selectedRisk).withValues(alpha: 0.08),
-            blurRadius: 12,
-          ),
+          BoxShadow(color: eraAccent.withValues(alpha: 0.12), blurRadius: 12),
         ],
       ),
       child: Column(
@@ -558,17 +585,13 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              const AppIcon(
-                AppHugeIcons.rocket_launch,
-                color: TimeFactoryColors.electricCyan,
-                size: 18,
-              ),
+              AppIcon(AppHugeIcons.rocket_launch, color: eraAccent, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   slot.name,
                   style: TimeFactoryTextStyles.bodyMono.copyWith(
-                    color: Colors.white,
+                    color: cardTextColor,
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
@@ -600,13 +623,36 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                         ? AppHugeIcons.keyboard_arrow_down
                         : AppHugeIcons.chevron_right,
                     size: 16,
-                    color: Colors.white70,
+                    color: eraAccent.withValues(alpha: 0.9),
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 9),
+          Text(
+            slot.headline,
+            style: TimeFactoryTextStyles.bodyMono.copyWith(
+              color: cardTextColor.withValues(alpha: 0.78),
+              fontSize: 10,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: <Widget>[
+              _buildMissionIdentityChip(
+                label: slot.eraId.replaceAll('_', ' ').toUpperCase(),
+                color: eraAccent,
+              ),
+              _buildMissionIdentityChip(
+                label: slot.layoutPreset.replaceAll('_', ' ').toUpperCase(),
+                color: eraTheme.secondaryColor,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           Row(
             children: <Widget>[
               Expanded(
@@ -660,15 +706,24 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               if (index < selectedWorkers.length) {
                 return _buildWorkerSocket(
                   worker: selectedWorkers[index],
-                  accentColor: expeditionRiskColor(selectedRisk),
+                  accentColor: combinedAccent,
                   onTap: openWorkerPicker,
                 );
               }
               return _buildAddWorkerSocket(
-                accentColor: expeditionRiskColor(selectedRisk),
+                accentColor: combinedAccent,
                 onTap: openWorkerPicker,
               );
             }),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Idle: ${availableWorkers.length} | Required: ${slot.requiredWorkers}',
+            style: TimeFactoryTextStyles.bodyMono.copyWith(
+              color: cardTextColor.withValues(alpha: 0.74),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -766,16 +821,14 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                           : null,
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(
-                          color: expeditionRiskColor(
-                            selectedRisk,
-                          ).withValues(alpha: 0.55),
+                          color: combinedAccent.withValues(alpha: 0.55),
                         ),
-                        foregroundColor: expeditionRiskColor(selectedRisk),
+                        foregroundColor: combinedAccent,
                       ),
                       icon: AppIcon(
                         AppHugeIcons.groups,
                         size: 14,
-                        color: expeditionRiskColor(selectedRisk),
+                        color: combinedAccent,
                       ),
                       label: const Text('Auto Assemble Crew'),
                     ),
