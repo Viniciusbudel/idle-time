@@ -6,6 +6,7 @@ import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/presentation/state/performance_mode_provider.dart';
 import 'package:time_factory/presentation/ui/pages/achievements_screen.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
@@ -17,6 +18,7 @@ class SettingsScreen extends ConsumerWidget {
     final theme = const NeonTheme();
     final colors = theme.colors;
     final currentLocale = Localizations.localeOf(context).languageCode;
+    final performanceMode = ref.watch(performanceModeProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0E17),
@@ -51,6 +53,7 @@ class SettingsScreen extends ConsumerWidget {
             currentLocale.toUpperCase(),
             colors,
           ),
+          _buildPerformanceModeTile(ref, performanceMode, colors),
 
           // Achievements
           GestureDetector(
@@ -175,6 +178,40 @@ class SettingsScreen extends ConsumerWidget {
         style: TimeFactoryTextStyles.bodyMono.copyWith(
           fontSize: 12,
           color: Colors.white54,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPerformanceModeTile(
+    WidgetRef ref,
+    PerformanceMode mode,
+    dynamic colors,
+  ) {
+    return _buildSettingCard(
+      icon: AppHugeIcons.speed,
+      title: 'Performance Mode',
+      colors: colors,
+      trailing: DropdownButtonHideUnderline(
+        child: DropdownButton<PerformanceMode>(
+          value: mode,
+          dropdownColor: const Color(0xFF0A0E17),
+          style: TimeFactoryTextStyles.bodyMono.copyWith(
+            fontSize: 12,
+            color: Colors.white70,
+          ),
+          onChanged: (value) {
+            if (value == null) return;
+            ref.read(performanceModeProvider.notifier).setMode(value);
+          },
+          items: PerformanceMode.values
+              .map(
+                (value) => DropdownMenuItem<PerformanceMode>(
+                  value: value,
+                  child: Text(value.label),
+                ),
+              )
+              .toList(),
         ),
       ),
     );

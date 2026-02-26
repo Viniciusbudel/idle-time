@@ -29,6 +29,7 @@ import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/presentation/ui/molecules/achievement_listener.dart';
 import 'package:time_factory/presentation/ui/dialogs/daily_login_dialog.dart'; // NEW
 import 'package:time_factory/presentation/state/artifact_drop_event_provider.dart';
+import 'package:time_factory/presentation/state/performance_mode_provider.dart';
 import 'package:time_factory/presentation/ui/atoms/artifact_drop_banner.dart';
 
 class FactoryScreen extends ConsumerStatefulWidget {
@@ -77,21 +78,34 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
   @override
   Widget build(BuildContext context) {
     // Only watch what affects this screen's structure (tab, era)
-    final size = MediaQuery.of(context).size;
+    final mediaQuery = MediaQuery.of(context);
+    final size = mediaQuery.size;
+    final performanceMode = ref.watch(performanceModeProvider);
+    final lowPerformanceMode = _isLowPerformanceMode(
+      performanceMode,
+      size,
+      mediaQuery.devicePixelRatio,
+    );
     final globalTheme = ref.watch(themeProvider);
+    _game.setLowPerformanceMode(lowPerformanceMode);
 
     // Determine active theme based on tab:
     // Tab 1 (Factory) -> Era Theme (global)
     // All others -> Neon Theme (reverted)
     final activeTheme = _selectedTab == 1 ? globalTheme : const NeonTheme();
 
-    // Listen to worker changes to sync with Flame, avoiding rebuilds
-    ref.listen(gameStateProvider.select((s) => s.activeWorkers), (
+    // Listen to worker map changes and derive active workers from the
+    // stable map reference. This avoids false-positive syncs caused by
+    // activeWorkers list allocation on each state read.
+    ref.listen(gameStateProvider.select((s) => s.workers), (
       previous,
       next,
     ) {
       if (_game.isMounted) {
-        _game.syncWorkers(next, animate: true);
+        final activeWorkers = next.values
+            .where((worker) => worker.isDeployed)
+            .toList();
+        _game.syncWorkers(activeWorkers, animate: true);
       }
     });
 
@@ -152,6 +166,7 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
                   // Only animate if selected tab is Factory (1)
                   child: ThemeBackground(
                     forceStatic: _selectedTab != 1,
+                    reducedMotion: lowPerformanceMode,
                     child: const SizedBox.shrink(),
                   ),
                 ),
@@ -176,7 +191,7 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
                       // Tab Content
                       Expanded(
                         key: TutorialKeys.mainContent,
-                        child: _buildCurrentTab(size),
+                        child: _buildCurrentTab(size, lowPerformanceMode),
                       ),
                     ],
                   ),
@@ -197,11 +212,12 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
               ),
 
               // 5. Scanline Overlay
-              const Positioned.fill(
-                child: RepaintBoundary(
-                  child: ScanlineOverlay(opacity: 0.015, lineSpacing: 4),
+              if (!lowPerformanceMode)
+                const Positioned.fill(
+                  child: RepaintBoundary(
+                    child: ScanlineOverlay(opacity: 0.015, lineSpacing: 4),
+                  ),
                 ),
-              ),
 
               // 6. Glitch Overlay (Chaos Event)
               Consumer(
@@ -209,7 +225,10 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
                   final isChaosActive = ref.watch(
                     gameStateProvider.select((s) => s.paradoxEventActive),
                   );
-                  return GlitchOverlay(isActive: isChaosActive);
+                  return GlitchOverlay(
+                    isActive: isChaosActive,
+                    intensity: lowPerformanceMode ? 0.6 : 1.0,
+                  );
                 },
               ),
 
@@ -263,12 +282,12 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
   }
 
   /// Build the current tab content
-  Widget _buildCurrentTab(Size size) {
+  Widget _buildCurrentTab(Size size, bool lowPerformanceMode) {
     switch (_selectedTab) {
       case 0:
         return const ChambersScreen();
       case 1:
-        return _buildFactoryTab(size);
+        return _buildFactoryTab(size, lowPerformanceMode);
       case 2:
         return const GachaScreen();
       case 3:
@@ -281,14 +300,16 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
   }
 
   /// Factory Tab - Reactor Dashboard
-  Widget _buildFactoryTab(Size size) {
+  Widget _buildFactoryTab(Size size, bool lowPerformanceMode) {
     return Stack(
       children: [
         // Time Warp Speed Indicator (top-left, below header)
-        const Positioned(top: 40, left: 16, child: TimeWarpIndicator()),
+        if (!lowPerformanceMode)
+          const Positioned(top: 40, left: 16, child: TimeWarpIndicator()),
 
         // Auto-Click Indicator (below time warp)
-        const Positioned(top: 70, left: 16, child: AutoClickIndicator()),
+        if (!lowPerformanceMode)
+          const Positioned(top: 70, left: 16, child: AutoClickIndicator()),
 
         // Daily Objectives (top-right, below header)
         const Positioned(top: 44, right: 16, child: DailyObjectivePanel()),
@@ -308,5 +329,27 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
         ),
       ],
     );
+  }
+
+  bool _isLowPerformanceMode(
+    PerformanceMode mode,
+    Size size,
+    double devicePixelRatio,
+  ) {
+    switch (mode) {
+      case PerformanceMode.low:
+        return true;
+      case PerformanceMode.high:
+        return false;
+      case PerformanceMode.auto:
+        return _isLowEndViewport(size, devicePixelRatio);
+    }
+  }
+
+  bool _isLowEndViewport(Size size, double devicePixelRatio) {
+    final shortestSide = size.shortestSide;
+    if (shortestSide <= 390) return true;
+    if (shortestSide <= 430 && devicePixelRatio <= 2.2) return true;
+    return false;
   }
 }

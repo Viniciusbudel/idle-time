@@ -23,6 +23,7 @@ class TimeFactoryGame extends FlameGame {
 
   final Map<String, WorkerAvatar> _workerComponents = {};
   final Set<String> _pendingWorkerIds = {};
+  bool _lowPerformanceMode = false;
 
   // Production tick system
   double _accumulator = 0.0;
@@ -53,7 +54,7 @@ class TimeFactoryGame extends FlameGame {
         await ReactorComponent.create(300, eraId: currentEraId),
       ); // Size 300x300
     } catch (e, stack) {
-      debugPrint('CRITICAL: Lottie Reactor failed to load!');
+      debugPrint('CRITICAL: Reactor failed to load!');
       debugPrint('Error: $e');
       debugPrint('Stack: $stack');
       //add(await FallbackReactor.create(300));
@@ -95,20 +96,22 @@ class TimeFactoryGame extends FlameGame {
     final automationLevel = ref.read(automationLevelProvider);
     if (automationLevel > 0) {
       _autoClickAccumulator += warpedDt;
-      // Cap rate to avoid freezing if level is huge, max 60 clicks/sec logic frame
-      // Actual logic: 1 click per (1/level) seconds
+      // Visual-only auto-click feedback. Economy production is handled in
+      // GameStateNotifier to avoid duplicate CE writes and state churn.
       final interval = 1.0 / automationLevel;
 
-      // Limit processing per frame to avoid infinite loops on lag
-      int clicksProcessed = 0;
-      while (_autoClickAccumulator >= interval && clicksProcessed < 10) {
-        _autoClickAccumulator -= interval;
-        _performAutoClick();
-        clicksProcessed++;
+      if (_autoClickAccumulator >= interval) {
+        final clicks = (_autoClickAccumulator / interval).floor();
+        _autoClickAccumulator -= clicks * interval;
+
+        // Clamp burst visuals so high automation does not overwhelm frame time.
+        final visualBursts = clicks.clamp(1, 3);
+        for (var i = 0; i < visualBursts; i++) {
+          _performAutoClickVisual();
+        }
       }
 
-      // If we still have accumulator left (lag), just add bulk?
-      // For now, just discard excess to prevent catch-up lag spiral
+      // Prevent long catch-up spirals after frame drops.
       if (_autoClickAccumulator > 1.0) _autoClickAccumulator = 0;
     }
 
@@ -175,16 +178,8 @@ class TimeFactoryGame extends FlameGame {
     }
   }
 
-  void _performAutoClick() {
-    // OLD: final strength = ref.read(tapStrengthProvider);
-    // OLD: ref.read(gameStateProvider.notifier).addChronoEnergy(strength);
-
-    // NEW: Use manualClick calculation so Piston buffs automation too
-    ref.read(gameStateProvider.notifier).manualClick();
-
-    // Visuals: Throttle to avoid clutter.
-    // Always show if rate is low (< 5/sec), otherwise random chance
-    // automationLevel is available here but let's just use random for simplicity
+  void _performAutoClickVisual() {
+    // Visuals only (no resource writes).
     if (Random().nextDouble() < 0.3) {
       // Random position near center
       final center = size / 2;
@@ -225,6 +220,27 @@ class TimeFactoryGame extends FlameGame {
 
   void syncWorkers(List<Worker> activeWorkers, {bool animate = false}) {
     _syncWorkers(activeWorkers, animate: animate);
+  }
+
+  void setLowPerformanceMode(bool enabled) {
+    if (_lowPerformanceMode == enabled) return;
+    _lowPerformanceMode = enabled;
+
+    if (!isMounted) return;
+
+    for (final component in _workerComponents.values) {
+      component.removeFromParent();
+    }
+    _workerComponents.clear();
+    _pendingWorkerIds.clear();
+
+    final activeWorkers = ref
+        .read(gameStateProvider)
+        .workers
+        .values
+        .where((worker) => worker.isDeployed)
+        .toList();
+    _syncWorkers(activeWorkers, animate: false);
   }
 
   void _syncWorkers(List<Worker> activeWorkers, {bool animate = false}) {
@@ -275,7 +291,11 @@ class TimeFactoryGame extends FlameGame {
   void _addWorkerAvatar(Worker worker, Vector2 position) {
     if (_workerComponents.containsKey(worker.id)) return; // Safety check
 
-    final component = WorkerAvatar(worker: worker)..position = position;
+    final reducedEffects = _lowPerformanceMode || _workerComponents.length >= 8;
+    final component = WorkerAvatar(
+      worker: worker,
+      lowPerformanceMode: reducedEffects,
+    )..position = position;
     add(component);
     _workerComponents[worker.id] = component;
   }
