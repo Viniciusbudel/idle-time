@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/domain/entities/expedition.dart';
+import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/prestige_upgrade.dart';
 import 'package:time_factory/domain/entities/station.dart';
@@ -18,6 +19,23 @@ class ResolveExpeditionsResult {
 }
 
 class ResolveExpeditionsUseCase {
+  ExpeditionReward estimateRewardPreview(
+    GameState state, {
+    required List<Worker> workers,
+    required Duration duration,
+    required ExpeditionRisk risk,
+    bool succeeded = true,
+  }) {
+    final int durationSeconds = duration.inSeconds.clamp(1, 60 * 60 * 24);
+    return _calculateRewardFromCrew(
+      state: state,
+      workers: workers,
+      durationSeconds: durationSeconds,
+      risk: risk,
+      succeeded: succeeded,
+    );
+  }
+
   ResolveExpeditionsResult execute(
     GameState currentState, {
     DateTime? now,
@@ -128,17 +146,43 @@ class ResolveExpeditionsUseCase {
     Expedition expedition, {
     required bool succeeded,
   }) {
-    final rewardedShards = succeeded ? expedition.risk.shardReward * 2 : 0;
-    final rewardedArtifactDropChance = succeeded
-        ? (expedition.risk.artifactDropChance + 0.08).clamp(0.0, 0.95)
-        : 0.0;
-
-    var totalWorkerPower = BigInt.zero;
+    final List<Worker> assignedWorkers = <Worker>[];
     for (final workerId in expedition.workerIds) {
       final worker = state.workers[workerId];
       if (worker != null) {
-        totalWorkerPower += worker.currentProduction;
+        assignedWorkers.add(worker);
       }
+    }
+
+    final durationSeconds = expedition.endTime
+        .difference(expedition.startTime)
+        .inSeconds
+        .clamp(1, 60 * 60 * 24);
+
+    return _calculateRewardFromCrew(
+      state: state,
+      workers: assignedWorkers,
+      durationSeconds: durationSeconds,
+      risk: expedition.risk,
+      succeeded: succeeded,
+    );
+  }
+
+  ExpeditionReward _calculateRewardFromCrew({
+    required GameState state,
+    required List<Worker> workers,
+    required int durationSeconds,
+    required ExpeditionRisk risk,
+    required bool succeeded,
+  }) {
+    final rewardedShards = succeeded ? risk.shardReward * 2 : 0;
+    final rewardedArtifactDropChance = succeeded
+        ? _buffedRelicDropChance(risk: risk, workers: workers)
+        : 0.0;
+
+    var totalWorkerPower = BigInt.zero;
+    for (final Worker worker in workers) {
+      totalWorkerPower += worker.currentProduction;
     }
 
     if (totalWorkerPower <= BigInt.zero) {
@@ -149,11 +193,6 @@ class ResolveExpeditionsUseCase {
       );
     }
 
-    final durationSeconds = expedition.endTime
-        .difference(expedition.startTime)
-        .inSeconds
-        .clamp(1, 60 * 60 * 24);
-
     final baseChronoEnergy = totalWorkerPower * BigInt.from(durationSeconds);
     final chamberOpportunityMultiplier = _chamberOpportunityMultiplier(state);
     final compensatedBaseChronoEnergy = _applyMultiplier(
@@ -163,18 +202,29 @@ class ResolveExpeditionsUseCase {
 
     final guaranteedChronoEnergy = _applyMultiplier(
       compensatedBaseChronoEnergy,
-      2.0 + expedition.risk.ceMultiplier * 1.3,
+      2.0 + risk.ceMultiplier * 1.3,
     );
     final successBonusChronoEnergy = _applyMultiplier(
       compensatedBaseChronoEnergy,
-      0.8 + expedition.risk.ceMultiplier * 1.1,
+      0.8 + risk.ceMultiplier * 1.1,
     );
-    final finalChronoEnergy =
+    final baselineChronoEnergy =
         guaranteedChronoEnergy +
         (succeeded ? successBonusChronoEnergy : BigInt.zero);
+    final expeditionBuffMultiplier = _expeditionBuffMultiplier(
+      workers: workers,
+      durationSeconds: durationSeconds,
+      risk: risk,
+    );
+    final finalChronoEnergy = _applyMultiplier(
+      baselineChronoEnergy,
+      expeditionBuffMultiplier,
+    );
+    // Economy rebalance: keep expedition CE at 30% of the previous buffed output.
+    final tunedChronoEnergy = _applyMultiplier(finalChronoEnergy, 0.30);
 
     return ExpeditionReward(
-      chronoEnergy: finalChronoEnergy,
+      chronoEnergy: tunedChronoEnergy,
       timeShards: rewardedShards,
       artifactDropChance: rewardedArtifactDropChance,
     );
@@ -206,6 +256,75 @@ class ResolveExpeditionsUseCase {
     const precision = 10000;
     final scaled = (multiplier * precision).round();
     return value * BigInt.from(scaled) ~/ BigInt.from(precision);
+  }
+
+  double _expeditionBuffMultiplier({
+    required List<Worker> workers,
+    required int durationSeconds,
+    required ExpeditionRisk risk,
+  }) {
+    if (workers.isEmpty) {
+      return 1.0;
+    }
+
+    final double durationHours = (durationSeconds / 3600.0).clamp(0.5, 24.0);
+    final double durationBonus = pow(durationHours, 0.35).toDouble();
+
+    double rarityTotal = 0.0;
+    var artifactCount = 0;
+    for (final Worker worker in workers) {
+      rarityTotal += _rarityBuffScore(worker.rarity);
+      artifactCount += worker.equippedArtifacts.length;
+    }
+
+    final double averageRarityScore = rarityTotal / workers.length;
+    final double rarityBonus = 1.0 + (averageRarityScore * 1.5);
+    final double artifactBonus = 1.0 + (artifactCount.clamp(0, 15) * 0.04);
+    final double riskBonus = 0.9 + (risk.ceMultiplier * 0.25);
+
+    final double multiplier =
+        4.2 * durationBonus * rarityBonus * artifactBonus * riskBonus;
+    return multiplier.clamp(3.0, 18.0);
+  }
+
+  double _rarityBuffScore(WorkerRarity rarity) {
+    switch (rarity) {
+      case WorkerRarity.common:
+        return 0.0;
+      case WorkerRarity.rare:
+        return 0.25;
+      case WorkerRarity.epic:
+        return 0.5;
+      case WorkerRarity.legendary:
+        return 0.75;
+      case WorkerRarity.paradox:
+        return 1.0;
+    }
+  }
+
+  double _buffedRelicDropChance({
+    required ExpeditionRisk risk,
+    required List<Worker> workers,
+  }) {
+    final double baseChance = (risk.artifactDropChance + 0.08).clamp(0.0, 0.95);
+    if (workers.isEmpty) {
+      return baseChance.clamp(0.0, 0.95);
+    }
+
+    double rarityTotal = 0.0;
+    var artifactCount = 0;
+    for (final Worker worker in workers) {
+      rarityTotal += _rarityBuffScore(worker.rarity);
+      artifactCount += worker.equippedArtifacts.length;
+    }
+
+    final double averageRarityScore = rarityTotal / workers.length;
+    final double rarityBonus = averageRarityScore * 0.10;
+    final double artifactBonus = (artifactCount * 0.015).clamp(0.0, 0.12);
+
+    final double buffedChance =
+        (baseChance * 1.35) + 0.04 + rarityBonus + artifactBonus;
+    return buffedChance.clamp(0.0, 0.95);
   }
 }
 

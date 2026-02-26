@@ -71,42 +71,140 @@ enum ExpeditionRisk {
 
 class ExpeditionSlot {
   final String id;
+  final String eraId;
+  final String unlockEraId;
+  final int unlockEraIndex;
   final String name;
+  final String headline;
+  final String layoutPreset;
   final Duration duration;
   final int requiredWorkers;
   final ExpeditionRisk defaultRisk;
 
   const ExpeditionSlot({
     required this.id,
+    required this.eraId,
+    required this.unlockEraId,
+    required this.unlockEraIndex,
     required this.name,
+    required this.headline,
+    required this.layoutPreset,
     required this.duration,
     required this.requiredWorkers,
     this.defaultRisk = ExpeditionRisk.safe,
   });
 
-  static const List<ExpeditionSlot> defaults = [
+  /// One expedition slot per era in the configured era progression order.
+  static const List<ExpeditionSlot> catalog = [
     ExpeditionSlot(
       id: 'salvage_run',
-      name: 'Salvage Run',
+      eraId: 'victorian',
+      unlockEraId: 'victorian',
+      unlockEraIndex: 0,
+      name: 'Whitechapel Ember',
+      headline: 'Soot, valves, and secrets beneath London.',
+      layoutPreset: 'victorian_copper',
       duration: Duration(minutes: 30),
       requiredWorkers: 1,
       defaultRisk: ExpeditionRisk.safe,
     ),
     ExpeditionSlot(
       id: 'rift_probe',
-      name: 'Rift Probe',
+      eraId: 'roaring_20s',
+      unlockEraId: 'roaring_20s',
+      unlockEraIndex: 1,
+      name: 'Speakeasy Gold Run',
+      headline: 'Temporal smuggling between jazz and art deco.',
+      layoutPreset: 'roaring_20s_deco',
       duration: Duration(hours: 2),
       requiredWorkers: 2,
       defaultRisk: ExpeditionRisk.risky,
     ),
     ExpeditionSlot(
       id: 'timeline_heist',
-      name: 'Timeline Heist',
+      eraId: 'atomic_age',
+      unlockEraId: 'atomic_age',
+      unlockEraIndex: 2,
+      name: 'Isotope-51 Convoy',
+      headline: 'Retro-futurist tests in a radioactive suburb.',
+      layoutPreset: 'atomic_age_chrome',
       duration: Duration(hours: 8),
       requiredWorkers: 3,
       defaultRisk: ExpeditionRisk.volatile,
     ),
+    ExpeditionSlot(
+      id: 'neon_ghost_run',
+      eraId: 'cyberpunk_80s',
+      unlockEraId: 'cyberpunk_80s',
+      unlockEraIndex: 3,
+      name: 'Neon Ghost Run',
+      headline: 'Stolen payloads in the neon nights of 1984.',
+      layoutPreset: 'cyberpunk_80s_neon_grid',
+      duration: Duration(hours: 10),
+      requiredWorkers: 3,
+      defaultRisk: ExpeditionRisk.volatile,
+    ),
+    ExpeditionSlot(
+      id: 'shibuya_2247_drop',
+      eraId: 'neo_tokyo',
+      unlockEraId: 'neo_tokyo',
+      unlockEraIndex: 4,
+      name: 'Shibuya-2247 Drop',
+      headline: 'Extract data before district collapse.',
+      layoutPreset: 'neo_tokyo_glass',
+      duration: Duration(hours: 12),
+      requiredWorkers: 4,
+      defaultRisk: ExpeditionRisk.volatile,
+    ),
+    ExpeditionSlot(
+      id: 'void_cloud_harvest',
+      eraId: 'post_singularity',
+      unlockEraId: 'post_singularity',
+      unlockEraIndex: 5,
+      name: 'Void-Cloud Harvest',
+      headline: 'Autonomous entities contest quantum memory.',
+      layoutPreset: 'post_singularity_ether',
+      duration: Duration(hours: 16),
+      requiredWorkers: 4,
+      defaultRisk: ExpeditionRisk.volatile,
+    ),
+    ExpeditionSlot(
+      id: 'forum_aquila',
+      eraId: 'ancient_rome',
+      unlockEraId: 'ancient_rome',
+      unlockEraIndex: 6,
+      name: 'Forum Aquila',
+      headline: 'Recover chrono-imperial relics beneath the Senate.',
+      layoutPreset: 'ancient_rome_marble',
+      duration: Duration(hours: 14),
+      requiredWorkers: 4,
+      defaultRisk: ExpeditionRisk.risky,
+    ),
+    ExpeditionSlot(
+      id: 'rift_9_cartography',
+      eraId: 'far_future',
+      unlockEraId: 'far_future',
+      unlockEraIndex: 7,
+      name: 'Rift-9 Cartography',
+      headline: 'Map cosmic fractures beyond known space.',
+      layoutPreset: 'far_future_holo',
+      duration: Duration(hours: 24),
+      requiredWorkers: 5,
+      defaultRisk: ExpeditionRisk.volatile,
+    ),
   ];
+
+  // Backward compatibility with existing call sites.
+  static const List<ExpeditionSlot> defaults = catalog;
+
+  static ExpeditionSlot? byId(String slotId) {
+    for (final slot in catalog) {
+      if (slot.id == slotId) {
+        return slot;
+      }
+    }
+    return null;
+  }
 }
 
 class Expedition {

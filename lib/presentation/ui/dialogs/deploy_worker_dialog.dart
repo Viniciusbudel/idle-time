@@ -140,10 +140,19 @@ class DeployWorkerDialog extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   onPressed: () {
-                    ref
+                    final bool success = ref
                         .read(gameStateProvider.notifier)
                         .undeployWorker(worker.id);
-                    Navigator.of(context).pop();
+                    if (success) {
+                      Navigator.of(context).pop();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Worker is on an active expedition.'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
                   },
                   child: Text(
                     AppLocalizations.of(context)!.recallWorker,

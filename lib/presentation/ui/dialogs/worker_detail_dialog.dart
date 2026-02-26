@@ -306,13 +306,24 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
                         onTap: () {
                           if (currentWorker.isDeployed &&
                               currentWorker.deployedStationId != null) {
-                            ref
+                            final bool success = ref
                                 .read(gameStateProvider.notifier)
                                 .removeWorkerFromStation(
                                   currentWorker.id,
                                   currentWorker.deployedStationId!,
                                 );
-                            Navigator.pop(context);
+                            if (success) {
+                              Navigator.pop(context);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Worker is on an active expedition.',
+                                  ),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
                           } else {
                             Navigator.pop(context);
                           }

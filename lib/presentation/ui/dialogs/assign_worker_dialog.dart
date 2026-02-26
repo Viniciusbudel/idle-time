@@ -15,7 +15,7 @@ class AssignWorkerDialog extends StatelessWidget {
   final Station station;
   final int slotIndex;
   final List<Worker> idleWorkers;
-  final void Function(Worker worker) onAssign;
+  final bool Function(Worker worker) onAssign;
 
   const AssignWorkerDialog({
     super.key,
@@ -31,7 +31,7 @@ class AssignWorkerDialog extends StatelessWidget {
     required Station station,
     required int slotIndex,
     required List<Worker> idleWorkers,
-    required void Function(Worker worker) onAssign,
+    required bool Function(Worker worker) onAssign,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -177,9 +177,19 @@ class AssignWorkerDialog extends StatelessWidget {
   Widget _buildWorkerItem(BuildContext context, Worker worker) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.mediumImpact();
-        onAssign(worker);
-        Navigator.pop(context);
+        final bool success = onAssign(worker);
+        if (success) {
+          HapticFeedback.mediumImpact();
+          Navigator.pop(context);
+        } else {
+          HapticFeedback.heavyImpact();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Worker is on an active expedition.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
