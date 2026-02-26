@@ -65,17 +65,28 @@ class ReactorComponent extends PositionComponent
       _maxSpinSpeed,
     );
 
-    add(
-      ScaleEffect.to(
-        Vector2.all(0.93),
-        EffectController(duration: 0.06, reverseDuration: 0.08),
-      ),
+    final tapBounce = ScaleEffect.to(
+      Vector2.all(0.93),
+      EffectController(duration: 0.06, reverseDuration: 0.08),
     );
+    tapBounce.target = this;
+    add(tapBounce);
   }
 
   static Future<ReactorComponent> create(double size, {String? eraId}) async {
-    final path = GameAssets.steampunkReactor.replaceFirst('assets/', '');
+    final path = assetForEra(eraId).replaceFirst('assets/', '');
     final svg = await Svg.load(path);
     return ReactorComponent._(svg: svg, reactorSize: Vector2.all(size));
+  }
+
+  static String assetForEra(String? eraId) {
+    switch (eraId) {
+      case 'roaring_20s':
+        return GameAssets.roaring20sReactor;
+      case 'atomic_age':
+        return GameAssets.atomicReactor;
+      default:
+        return GameAssets.steampunkReactor;
+    }
   }
 }

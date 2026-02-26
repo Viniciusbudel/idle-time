@@ -20,6 +20,8 @@ class GameAssets {
       'assets/images/icons/temporal-reactor.svg';
   static const String steampunkReactor =
       'assets/images/icons/steampunk-reactor.svg';
+  static const String roaring20sReactor = 'assets/images/icons/20s-reactor.svg';
+  static const String atomicReactor = 'assets/images/icons/atomic-reactor.svg';
   static const String lottieReactor =
       'assets/lottie/lottie-reactor_ultra.json.gz';
   static const String lottieSteamPunkReactor =
