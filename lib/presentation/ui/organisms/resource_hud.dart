@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/ui/molecules/paradox_meter.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
@@ -99,13 +100,15 @@ class ResourceHUD extends StatelessWidget {
                     children: [
                       _ResourceChip(
                         icon: AppHugeIcons.auto_awesome,
-                        label: '${gameState.timeShards} TS',
+                        label:
+                            '${gameState.timeShards} ${AppLocalizations.of(context)!.timeShardsAbbrev}',
                         color: TimeFactoryColors.deepPurple,
                       ),
                       if (gameState.availableParadoxPoints > 0)
                         _ResourceChip(
                           icon: AppHugeIcons.stars,
-                          label: '${gameState.availableParadoxPoints} PP',
+                          label:
+                              '${gameState.availableParadoxPoints} ${AppLocalizations.of(context)!.paradoxPointsAbbrev}',
                           color: TimeFactoryColors.hotMagenta,
                         ),
                     ],

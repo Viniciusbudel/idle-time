@@ -6,6 +6,7 @@ import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/usecases/fit_worker_to_era_usecase.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
@@ -17,6 +18,7 @@ class FitWorkerDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(gameStateProvider);
     final currentEraId = state.currentEraId;
     final currentEra = WorkerEra.values.firstWhere((e) => e.id == currentEraId);
@@ -47,7 +49,7 @@ class FitWorkerDialog extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'RETROFIT PROTCOL',
+              l10n.retrofitProtocol,
               style: TimeFactoryTextStyles.header.copyWith(
                 color: TimeFactoryColors.voltageYellow,
                 fontSize: 20,
@@ -55,7 +57,7 @@ class FitWorkerDialog extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Upgrade legacy unit to current temporal standards?',
+              l10n.upgradeLegacyUnitPrompt,
               textAlign: TextAlign.center,
               style: TimeFactoryTextStyles.body.copyWith(color: Colors.white70),
             ),
@@ -66,7 +68,7 @@ class FitWorkerDialog extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildStatColumn(
-                  'CURRENT',
+                  l10n.current,
                   worker.currentProduction,
                   Colors.white54,
                 ),
@@ -75,7 +77,7 @@ class FitWorkerDialog extends ConsumerWidget {
                   color: Colors.white24,
                 ),
                 _buildStatColumn(
-                  'UPGRADED',
+                  l10n.upgraded,
                   newWorker.currentProduction,
                   TimeFactoryColors.electricCyan,
                 ),
@@ -86,7 +88,7 @@ class FitWorkerDialog extends ConsumerWidget {
 
             // Cost & Action
             Text(
-              'COST: ${NumberFormatter.formatCE(cost)} CE',
+              '${l10n.cost}: ${NumberFormatter.formatCE(cost)} CE',
               style: TimeFactoryTextStyles.bodyMono.copyWith(
                 color: canAfford ? Colors.white : Colors.redAccent,
                 fontSize: 14,
@@ -99,8 +101,8 @@ class FitWorkerDialog extends ConsumerWidget {
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'CANCEL',
+                  child: Text(
+                    l10n.cancel,
                     style: TextStyle(color: Colors.white54),
                   ),
                 ),
@@ -122,7 +124,7 @@ class FitWorkerDialog extends ConsumerWidget {
                           Navigator.pop(context);
                         }
                       : null,
-                  child: const Text('CONFIRM UPGRADE'),
+                  child: Text(AppLocalizations.of(context)!.confirmUpgrade),
                 ),
               ],
             ),

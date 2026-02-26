@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:time_factory/core/constants/era_mastery_constants.dart';
 import 'package:time_factory/core/constants/game_constants.dart';
 import 'enums.dart';
 import 'worker.dart';
+import 'daily_mission.dart';
+import 'expedition.dart';
 import 'worker_artifact.dart';
 import 'station.dart';
 import 'package:time_factory/core/constants/tech_data.dart';
@@ -16,6 +19,8 @@ class GameState {
   final Map<String, Worker> workers;
   final Map<String, Station> stations;
   final List<WorkerArtifact> inventory; // NEW: Artifact Inventory
+  final int artifactDust;
+  final int artifactCraftStreak;
   final double paradoxLevel;
   final bool paradoxEventActive;
   final DateTime? paradoxEventEndTime;
@@ -27,6 +32,7 @@ class GameState {
   final String currentEraId; // Track the currently active era
   final Map<String, int> techLevels; // Track tech ID -> Level
   final Map<String, int> eraHires; // NEW: Track # of cell hires per era
+  final Map<String, int> eraMasteryXp; // Era ID -> accumulated mastery XP
   final DateTime? lastSaveTime;
   final DateTime? lastTickTime;
   final int totalPrestiges;
@@ -36,6 +42,9 @@ class GameState {
   final int tutorialStep; // 0=Welcome, 1=Hire, 2=Assign, 3=Collect, 5=Complete
   final DateTime? lastDailyClaimTime;
   final int dailyLoginStreak;
+  final List<DailyMission> dailyMissions;
+  final DateTime? lastDailyMissionRefreshTime;
+  final List<Expedition> expeditions;
 
   const GameState({
     required this.chronoEnergy,
@@ -44,6 +53,8 @@ class GameState {
     this.workers = const {},
     this.stations = const {},
     this.inventory = const [],
+    this.artifactDust = 0,
+    this.artifactCraftStreak = 0,
     this.paradoxLevel = 0.0,
     this.paradoxEventActive = false,
     this.paradoxEventEndTime,
@@ -55,6 +66,7 @@ class GameState {
     this.currentEraId = 'victorian',
     this.techLevels = const {}, // Default empty
     this.eraHires = const {}, // Default empty
+    this.eraMasteryXp = const {},
     this.lastSaveTime,
     this.lastTickTime,
     this.totalPrestiges = 0,
@@ -64,6 +76,9 @@ class GameState {
     this.tutorialStep = 0,
     this.lastDailyClaimTime,
     this.dailyLoginStreak = 0,
+    this.dailyMissions = const [],
+    this.lastDailyMissionRefreshTime,
+    this.expeditions = const [],
   });
 
   /// Initial game state for new players
@@ -97,11 +112,14 @@ class GameState {
       workers: {'worker_$starterId': starterWorker},
       stations: {'station_$starterId': starterStation},
       inventory: [],
+      artifactDust: 0,
+      artifactCraftStreak: 0,
       unlockedEras: {'victorian'},
       completedEras: {},
       currentEraId: 'victorian',
       techLevels: {},
       eraHires: {},
+      eraMasteryXp: {},
       lastSaveTime: DateTime.now(),
       lastTickTime: DateTime.now(),
       totalMerges: 0,
@@ -109,6 +127,9 @@ class GameState {
       tutorialStep: 0,
       lastDailyClaimTime: null,
       dailyLoginStreak: 0,
+      dailyMissions: const [],
+      lastDailyMissionRefreshTime: null,
+      expeditions: const [],
     );
   }
 
@@ -120,6 +141,8 @@ class GameState {
     Map<String, Worker>? workers,
     Map<String, Station>? stations,
     List<WorkerArtifact>? inventory,
+    int? artifactDust,
+    int? artifactCraftStreak,
     double? paradoxLevel,
     bool? paradoxEventActive,
     DateTime? paradoxEventEndTime,
@@ -131,6 +154,7 @@ class GameState {
     String? currentEraId,
     Map<String, int>? techLevels, // NEW
     Map<String, int>? eraHires, // NEW
+    Map<String, int>? eraMasteryXp,
     DateTime? lastSaveTime,
     DateTime? lastTickTime,
     int? totalPrestiges,
@@ -140,6 +164,9 @@ class GameState {
     int? tutorialStep,
     DateTime? lastDailyClaimTime,
     int? dailyLoginStreak,
+    List<DailyMission>? dailyMissions,
+    DateTime? lastDailyMissionRefreshTime,
+    List<Expedition>? expeditions,
   }) {
     return GameState(
       chronoEnergy: chronoEnergy ?? this.chronoEnergy,
@@ -148,6 +175,8 @@ class GameState {
       workers: workers ?? this.workers,
       stations: stations ?? this.stations,
       inventory: inventory ?? this.inventory,
+      artifactDust: artifactDust ?? this.artifactDust,
+      artifactCraftStreak: artifactCraftStreak ?? this.artifactCraftStreak,
       paradoxLevel: paradoxLevel ?? this.paradoxLevel,
       paradoxEventActive: paradoxEventActive ?? this.paradoxEventActive,
       paradoxEventEndTime: paradoxEventEndTime ?? this.paradoxEventEndTime,
@@ -160,6 +189,7 @@ class GameState {
       currentEraId: currentEraId ?? this.currentEraId,
       techLevels: techLevels ?? this.techLevels, // NEW
       eraHires: eraHires ?? this.eraHires, // NEW
+      eraMasteryXp: eraMasteryXp ?? this.eraMasteryXp,
       lastSaveTime: lastSaveTime ?? this.lastSaveTime,
       lastTickTime: lastTickTime ?? this.lastTickTime,
       totalPrestiges: totalPrestiges ?? this.totalPrestiges,
@@ -169,6 +199,10 @@ class GameState {
       tutorialStep: tutorialStep ?? this.tutorialStep,
       lastDailyClaimTime: lastDailyClaimTime ?? this.lastDailyClaimTime,
       dailyLoginStreak: dailyLoginStreak ?? this.dailyLoginStreak,
+      dailyMissions: dailyMissions ?? this.dailyMissions,
+      lastDailyMissionRefreshTime:
+          lastDailyMissionRefreshTime ?? this.lastDailyMissionRefreshTime,
+      expeditions: expeditions ?? this.expeditions,
     );
   }
 
@@ -177,6 +211,22 @@ class GameState {
   /// Get all active (deployed) workers
   List<Worker> get activeWorkers =>
       workers.values.where((w) => w.isDeployed).toList();
+
+  /// Derived mastery levels by era from cumulative XP.
+  Map<String, int> get eraMasteryLevels => {
+    for (final era in WorkerEra.values) era.id: getEraMasteryLevel(era.id),
+  };
+
+  int getEraMasteryLevel(String eraId) {
+    final xp = eraMasteryXp[eraId] ?? 0;
+    return EraMasteryConstants.levelFromXp(xp);
+  }
+
+  double getEraMasteryProductionMultiplier(String eraId) {
+    final level = getEraMasteryLevel(eraId);
+    if (level <= 0) return 1.0;
+    return 1.0 + (level * EraMasteryConstants.productionBonusPerLevel);
+  }
 
   /// Calculate total production per second
   BigInt get productionPerSecond {
@@ -192,13 +242,19 @@ class GameState {
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
 
+      production = _applyMultiplier(
+        production,
+        getEraMasteryProductionMultiplier(worker.era.id),
+      );
+
       final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
         paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
       );
       if (chronoMasteryLevel > 0) {
-        final bonus = 1.0 + (chronoMasteryLevel * 0.1);
-        production =
-            production * BigInt.from((bonus * 100).toInt()) ~/ BigInt.from(100);
+        production = _applyMultiplier(
+          production,
+          1.0 + (chronoMasteryLevel * 0.1),
+        );
       }
 
       if (paradoxEventActive) {
@@ -254,14 +310,20 @@ class GameState {
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
 
+      production = _applyMultiplier(
+        production,
+        getEraMasteryProductionMultiplier(worker.era.id),
+      );
+
       // Chrono Mastery
       final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
         paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
       );
       if (chronoMasteryLevel > 0) {
-        final bonus = 1.0 + (chronoMasteryLevel * 0.1);
-        production =
-            production * BigInt.from((bonus * 100).toInt()) ~/ BigInt.from(100);
+        production = _applyMultiplier(
+          production,
+          1.0 + (chronoMasteryLevel * 0.1),
+        );
       }
 
       // Paradox Event
@@ -285,8 +347,15 @@ class GameState {
     final techMultiplier = TechData.calculateOfflineEfficiencyMultiplier(
       techLevels,
     );
+    final victorianMasteryLevel = getEraMasteryLevel(WorkerEra.victorian.id);
+    final victorianMasteryBonus =
+        victorianMasteryLevel *
+        EraMasteryConstants.victorianOfflineBonusPerLevel;
     // TechData returns 1.0 + bonus, subtract 1.0 to get just the bonus portion
-    return base + (offlineBonusLevel * 0.1) + (techMultiplier - 1.0);
+    return base +
+        (offlineBonusLevel * 0.1) +
+        (techMultiplier - 1.0) +
+        victorianMasteryBonus;
   }
 
   /// Check if can afford purchase
@@ -334,6 +403,13 @@ class GameState {
     return (text.length - significantDigits) + (math.log(lead) / math.ln10);
   }
 
+  static BigInt _applyMultiplier(BigInt value, double multiplier) {
+    if (multiplier == 1.0) return value;
+    const precision = 10000;
+    final scaled = (multiplier * precision).round();
+    return value * BigInt.from(scaled) ~/ BigInt.from(precision);
+  }
+
   /// Get number of stations owned in a specific era
   int getStationCountForEra(String eraId) {
     return stations.values.where((s) => s.type.era.id == eraId).length;
@@ -347,6 +423,8 @@ class GameState {
       'workers': workers.map((k, v) => MapEntry(k, v.toMap())),
       'stations': stations.map((k, v) => MapEntry(k, v.toMap())),
       'inventory': inventory.map((e) => e.toMap()).toList(),
+      'artifactDust': artifactDust,
+      'artifactCraftStreak': artifactCraftStreak,
       'paradoxLevel': paradoxLevel,
       'paradoxEventActive': paradoxEventActive,
       'paradoxEventEndTime': paradoxEventEndTime?.toIso8601String(),
@@ -358,6 +436,7 @@ class GameState {
       'currentEraId': currentEraId,
       'techLevels': techLevels,
       'eraHires': eraHires,
+      'eraMasteryXp': eraMasteryXp,
       'lastSaveTime': lastSaveTime?.toIso8601String(),
       'lastTickTime': lastTickTime?.toIso8601String(),
       'totalPrestiges': totalPrestiges,
@@ -367,6 +446,10 @@ class GameState {
       'tutorialStep': tutorialStep,
       'lastDailyClaimTime': lastDailyClaimTime?.toIso8601String(),
       'dailyLoginStreak': dailyLoginStreak,
+      'dailyMissions': dailyMissions.map((m) => m.toMap()).toList(),
+      'lastDailyMissionRefreshTime': lastDailyMissionRefreshTime
+          ?.toIso8601String(),
+      'expeditions': expeditions.map((e) => e.toMap()).toList(),
     };
   }
 
@@ -393,6 +476,8 @@ class GameState {
               ?.map((e) => WorkerArtifact.fromMap(e as Map<String, dynamic>))
               .toList() ??
           [],
+      artifactDust: map['artifactDust'] ?? 0,
+      artifactCraftStreak: map['artifactCraftStreak'] ?? 0,
       paradoxLevel: (map['paradoxLevel'] as num).toDouble(),
       paradoxEventActive: map['paradoxEventActive'] ?? false,
       paradoxEventEndTime: map['paradoxEventEndTime'] != null
@@ -408,6 +493,7 @@ class GameState {
       currentEraId: map['currentEraId'] ?? 'victorian',
       techLevels: Map<String, int>.from(map['techLevels'] ?? {}),
       eraHires: Map<String, int>.from(map['eraHires'] ?? {}),
+      eraMasteryXp: Map<String, int>.from(map['eraMasteryXp'] ?? {}),
       lastSaveTime: map['lastSaveTime'] != null
           ? DateTime.parse(map['lastSaveTime'])
           : null,
@@ -423,6 +509,19 @@ class GameState {
           ? DateTime.parse(map['lastDailyClaimTime'])
           : null,
       dailyLoginStreak: map['dailyLoginStreak'] ?? 0,
+      dailyMissions:
+          (map['dailyMissions'] as List<dynamic>?)
+              ?.map((e) => DailyMission.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      lastDailyMissionRefreshTime: map['lastDailyMissionRefreshTime'] != null
+          ? DateTime.parse(map['lastDailyMissionRefreshTime'])
+          : null,
+      expeditions:
+          (map['expeditions'] as List<dynamic>?)
+              ?.map((e) => Expedition.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 }

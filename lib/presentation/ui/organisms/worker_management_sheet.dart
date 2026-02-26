@@ -104,9 +104,13 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
         .mergeSpecificWorkers(_selectedWorkerIds.toList());
 
     if (!result.success) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(result.error ?? 'Merge failed')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.error ?? AppLocalizations.of(context)!.mergeFailed,
+          ),
+        ),
+      );
       return;
     }
 
@@ -222,8 +226,10 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                     ? Center(
                         child: Text(
                           _selectedRarity != null
-                              ? 'No ${_selectedRarity!.displayName} workers'
-                              : 'No idle workers',
+                              ? AppLocalizations.of(context)!.noWorkersByRarity(
+                                  _selectedRarity!.localizedName(context),
+                                )
+                              : AppLocalizations.of(context)!.noIdleWorkers,
                           style: typography.bodyMedium.copyWith(
                             color: colors.textSecondary,
                           ),
@@ -302,7 +308,7 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
         children: [
           // ALL tab
           _buildFilterChip(
-            label: 'ALL',
+            label: AppLocalizations.of(context)!.all,
             isActive: _selectedRarity == null,
             color: colors.primary,
             typography: typography,
@@ -322,7 +328,8 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: _buildFilterChip(
-                label: '${rarity.displayName.toUpperCase()} ($count)',
+                label:
+                    '${rarity.localizedName(context).toUpperCase()} ($count)',
                 isActive: _selectedRarity == rarity,
                 color: rarityColor,
                 typography: typography,

@@ -6,29 +6,47 @@ import 'package:time_factory/presentation/ui/atoms/animated_number.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
+class OfflineExpeditionSummary {
+  final int completedCount;
+  final BigInt previewChronoEnergy;
+  final int previewTimeShards;
+
+  const OfflineExpeditionSummary({
+    required this.completedCount,
+    required this.previewChronoEnergy,
+    required this.previewTimeShards,
+  });
+}
+
 /// Dialog shown when returning after being offline
 /// Features Neo-Retro Brutalism UI principles
 class OfflineEarningsDialog extends StatefulWidget {
   final OfflineEarnings earnings;
   final VoidCallback onCollect;
+  final OfflineExpeditionSummary? expeditionSummary;
 
   const OfflineEarningsDialog({
     super.key,
     required this.earnings,
     required this.onCollect,
+    this.expeditionSummary,
   });
 
   static Future<void> show(
     BuildContext context,
     OfflineEarnings earnings,
-    VoidCallback onCollect,
-  ) {
+    VoidCallback onCollect, {
+    OfflineExpeditionSummary? expeditionSummary,
+  }) {
     return showDialog(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black87,
-      builder: (_) =>
-          OfflineEarningsDialog(earnings: earnings, onCollect: onCollect),
+      builder: (_) => OfflineEarningsDialog(
+        earnings: earnings,
+        onCollect: onCollect,
+        expeditionSummary: expeditionSummary,
+      ),
     );
   }
 
@@ -75,6 +93,10 @@ class _OfflineEarningsDialogState extends State<OfflineEarningsDialog>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final int efficiencyPercent = (widget.earnings.efficiency * 100).toInt();
+    final hasOfflineYield =
+        widget.earnings.ceEarned > BigInt.zero ||
+        widget.earnings.offlineDuration > Duration.zero;
+    final summary = widget.expeditionSummary;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -99,7 +121,7 @@ class _OfflineEarningsDialogState extends State<OfflineEarningsDialog>
             boxShadow: [
               // Hard drop shadow, no blur
               BoxShadow(
-                color: TimeFactoryColors.acidGreen.withOpacity(0.3),
+                color: TimeFactoryColors.acidGreen.withValues(alpha: 0.3),
                 offset: const Offset(8, 8),
                 blurRadius: 0,
               ),
@@ -142,111 +164,169 @@ class _OfflineEarningsDialogState extends State<OfflineEarningsDialog>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // --- Time Away Block ---
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white24, width: 1),
-                      ),
-                      child: Row(
-                        children: [
-                          const AppIcon(
-                            AppHugeIcons.timer_off_outlined,
-                            color: Colors.white54,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              l10n
-                                  .awayFor(widget.earnings.formattedDuration)
-                                  .toUpperCase(),
-                              style: TimeFactoryTextStyles.bodyMono.copyWith(
-                                color: Colors.white70,
-                                fontSize: 12,
-                                letterSpacing: 1,
+                    if (hasOfflineYield)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white24, width: 1),
+                        ),
+                        child: Row(
+                          children: [
+                            const AppIcon(
+                              AppHugeIcons.timer_off_outlined,
+                              color: Colors.white54,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                l10n
+                                    .awayFor(widget.earnings.formattedDuration)
+                                    .toUpperCase(),
+                                style: TimeFactoryTextStyles.bodyMono.copyWith(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                  letterSpacing: 1,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 24),
 
                     // --- CE Earned Block (Brutalist Data Display) ---
-                    Text(
-                      'TOTAL YIELD:',
-                      style: TimeFactoryTextStyles.bodyMono.copyWith(
-                        color: TimeFactoryColors.electricCyan,
-                        fontSize: 10,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 24,
-                        horizontal: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        border: const Border(
-                          left: BorderSide(
-                            color: TimeFactoryColors.electricCyan,
-                            width: 4,
-                          ),
+                    if (hasOfflineYield) ...[
+                      Text(
+                        'TOTAL YIELD:',
+                        style: TimeFactoryTextStyles.bodyMono.copyWith(
+                          color: TimeFactoryColors.electricCyan,
+                          fontSize: 10,
+                          letterSpacing: 2,
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 6),
-                            child: AppIcon(
-                              AppHugeIcons.bolt,
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 24,
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          border: const Border(
+                            left: BorderSide(
                               color: TimeFactoryColors.electricCyan,
-                              size: 32,
+                              width: 4,
                             ),
                           ),
-                          Expanded(
-                            child: AnimatedNumber(
-                              value: widget.earnings.ceEarned,
-                              style: TimeFactoryTextStyles.numbersHuge.copyWith(
-                                fontSize: 42, // Massive type
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 6),
+                              child: AppIcon(
+                                AppHugeIcons.bolt,
                                 color: TimeFactoryColors.electricCyan,
-                                height: 1.0,
+                                size: 32,
                               ),
+                            ),
+                            Expanded(
+                              child: AnimatedNumber(
+                                value: widget.earnings.ceEarned,
+                                style: TimeFactoryTextStyles.numbersHuge
+                                    .copyWith(
+                                      fontSize: 42, // Massive type
+                                      color: TimeFactoryColors.electricCyan,
+                                      height: 1.0,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    if (summary != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.03),
+                          border: Border.all(
+                            color: TimeFactoryColors.hotMagenta.withValues(
+                              alpha: 0.5,
+                            ),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'EXPEDITION REPORT',
+                              style: TimeFactoryTextStyles.bodyMono.copyWith(
+                                color: TimeFactoryColors.hotMagenta,
+                                fontSize: 10,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '${summary.completedCount} mission(s) completed while away',
+                              style: TimeFactoryTextStyles.bodyMono.copyWith(
+                                color: Colors.white70,
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Claimable now: +${summary.previewChronoEnergy} CE • +${summary.previewTimeShards} TS',
+                              style: TimeFactoryTextStyles.bodyMono.copyWith(
+                                color: TimeFactoryColors.voltageYellow,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Open EXPEDITIONS to collect rewards.',
+                              style: TimeFactoryTextStyles.bodyMono.copyWith(
+                                color: Colors.white54,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // --- Efficiency Indicator ---
+                    if (hasOfflineYield) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            'EFF: ',
+                            style: TimeFactoryTextStyles.bodyMono.copyWith(
+                              color: Colors.white38,
+                              fontSize: 10,
+                            ),
+                          ),
+                          Text(
+                            '$efficiencyPercent%',
+                            style: TimeFactoryTextStyles.bodyMono.copyWith(
+                              color: TimeFactoryColors.acidGreen,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // --- Efficiency Indicator ---
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          'EFF: ',
-                          style: TimeFactoryTextStyles.bodyMono.copyWith(
-                            color: Colors.white38,
-                            fontSize: 10,
-                          ),
-                        ),
-                        Text(
-                          '$efficiencyPercent%',
-                          style: TimeFactoryTextStyles.bodyMono.copyWith(
-                            color: TimeFactoryColors.acidGreen,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 32),
+                      const SizedBox(height: 32),
+                    ],
 
                     // --- Collect Button (Neo-Retro Action) ---
                     GestureDetector(

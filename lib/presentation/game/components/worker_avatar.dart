@@ -14,9 +14,10 @@ import 'package:time_factory/presentation/game/components/art_deco_worker_painte
 
 class WorkerAvatar extends PositionComponent with HasGameReference {
   final Worker worker;
+  final bool lowPerformanceMode;
   final Random _rng = Random();
 
-  WorkerAvatar({required this.worker});
+  WorkerAvatar({required this.worker, this.lowPerformanceMode = false});
 
   @override
   Future<void> onLoad() async {
@@ -26,47 +27,52 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
 
     final rarityColor = _getRarityColor(worker.rarity);
 
-    // 1. Pulsing Aura (Background)
-    add(
-      CircleComponent(
-        radius: 12,
-        anchor: Anchor.center,
-        position: size / 2,
-        paint: Paint()
-          ..color = rarityColor.withOpacity( 0.15)
-          ..style = PaintingStyle.fill
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
-      )..add(
-        ScaleEffect.to(
-          Vector2.all(1.5),
-          EffectController(
-            duration: 2.0,
-            reverseDuration: 2.0,
-            infinite: true,
-            curve: Curves.easeInOut,
+    if (!lowPerformanceMode) {
+      // 1. Pulsing Aura (Background)
+      add(
+        CircleComponent(
+          radius: 12,
+          anchor: Anchor.center,
+          position: size / 2,
+          paint: Paint()
+            ..color = rarityColor.withOpacity(0.15)
+            ..style = PaintingStyle.fill
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+        )..add(
+          ScaleEffect.to(
+            Vector2.all(1.5),
+            EffectController(
+              duration: 2.0,
+              reverseDuration: 2.0,
+              infinite: true,
+              curve: Curves.easeInOut,
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    // 2. Rotating Data Ring (Outer)
-    // Dashed ring effect using stroke
-    add(
-      CircleComponent(
-        radius: 18,
-        anchor: Anchor.center,
-        position: size / 2,
-        paint: Paint()
-          ..color = rarityColor.withOpacity( 0.5)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5,
-      )..add(
-        RotateEffect.by(
-          2 * pi,
-          EffectController(duration: 8.0, infinite: true, curve: Curves.linear),
+      // 2. Rotating Data Ring (Outer)
+      add(
+        CircleComponent(
+          radius: 18,
+          anchor: Anchor.center,
+          position: size / 2,
+          paint: Paint()
+            ..color = rarityColor.withOpacity(0.5)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5,
+        )..add(
+          RotateEffect.by(
+            2 * pi,
+            EffectController(
+              duration: 8.0,
+              infinite: true,
+              curve: Curves.linear,
+            ),
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     // 3. Inner Core (The "Worker" Icon)
     final iconPath = WorkerIconHelper.getIconPath(worker.era, worker.rarity);
@@ -143,66 +149,50 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
       ),
     );
 
-    // 5. Floating Movement (The whole component moves)
-    // We already moved the main component, but let's add relative "hovering" inside local space
-    // or just let game sync position.
-    // Actually syncWorkers sets position. Let's add a "hover" effect on top of that.
-    // Since syncWorkers sets `position = x`, we can't easily use MoveEffect on 'this' without conflict
-    // unless we use specific relative effect wrapper.
-    // Instead, we let the visuals bob inside the component.
-    // But since I used 'size/2' for all children, I can move children or use a wrapper.
-    // Let's create a 'VisualRoot' component.
+    if (!lowPerformanceMode) {
+      // 5. Floating movement
+      final driftOffset = Vector2(
+        (_rng.nextDouble() - 0.5) * 60,
+        (_rng.nextDouble() - 0.5) * 40,
+      );
 
-    // Actually, syncWorkers sets initial position. If we want it to drift, we can add a MoveEffect.by
-    // Random drift
-    final driftOffset = Vector2(
-      (_rng.nextDouble() - 0.5) * 60,
-      (_rng.nextDouble() - 0.5) * 40,
-    );
-
-    add(
-      MoveEffect.by(
-        driftOffset,
-        EffectController(
-          duration: 4 + _rng.nextDouble() * 3,
-          reverseDuration: 4 + _rng.nextDouble() * 3,
-          infinite: true,
-          curve: Curves.easeInOut,
+      add(
+        MoveEffect.by(
+          driftOffset,
+          EffectController(
+            duration: 4 + _rng.nextDouble() * 3,
+            reverseDuration: 4 + _rng.nextDouble() * 3,
+            infinite: true,
+            curve: Curves.easeInOut,
+          ),
         ),
-      ),
-    );
+      );
 
-    // 6. Data Trail Particles
-    // Emitter that leaves small dots behind
-    add(
-      ParticleSystemComponent(
-        particle: Particle.generate(
-          count: 5, // constant flow not burst
-          lifespan: 1.0,
-          generator: (i) {
-            // We want a trail, so we need to spawn at current global position but stay there?
-            // ParticleSystemComponent moves with parent usually?
-            // Providing a generic particle generator that spawns RELATIVE to component:
-            // To make a trail, particles must NOT move with component.
-            // This is tricky in simple composition.
-            // For now, simpler "sparkles" around the worker.
-            return AcceleratedParticle(
-              position:
-                  (size / 2) +
-                  Vector2(
-                    (_rng.nextDouble() - 0.5) * 20,
-                    (_rng.nextDouble() - 0.5) * 20,
-                  ),
-              speed: Vector2(0, -10), // slowly rise
-              child: CircleParticle(
-                radius: 1.0,
-                paint: Paint()..color = rarityColor.withOpacity( 0.4),
-              ),
-            );
-          },
+      // 6. Data trail particles
+      add(
+        ParticleSystemComponent(
+          particle: Particle.generate(
+            count: 5,
+            lifespan: 1.0,
+            generator: (i) {
+              return AcceleratedParticle(
+                position:
+                    (size / 2) +
+                    Vector2(
+                      (_rng.nextDouble() - 0.5) * 20,
+                      (_rng.nextDouble() - 0.5) * 20,
+                    ),
+                speed: Vector2(0, -10),
+                child: CircleParticle(
+                  radius: 1.0,
+                  paint: Paint()..color = rarityColor.withOpacity(0.4),
+                ),
+              );
+            },
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Color _getRarityColor(WorkerRarity rarity) {

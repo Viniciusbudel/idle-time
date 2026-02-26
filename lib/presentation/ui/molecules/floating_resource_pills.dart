@@ -3,6 +3,7 @@ import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
 /// Floating HUD with resource pills - uses main cyberpunk colors
@@ -18,7 +19,7 @@ class FloatingResourcePills extends StatelessWidget {
         // CE/sec Pill
         Expanded(
           child: _ResourcePill(
-            label: 'CE/SEC',
+            label: AppLocalizations.of(context)!.ceSec,
             value: NumberFormatter.formatCE(gameState.productionPerSecond),
             icon: AppHugeIcons.bolt,
             color: TimeFactoryColors.electricCyan,
@@ -28,7 +29,7 @@ class FloatingResourcePills extends StatelessWidget {
         // Shards Pill
         Expanded(
           child: _ResourcePill(
-            label: 'SHARDS',
+            label: AppLocalizations.of(context)!.shards,
             value: gameState.timeShards.toString(),
             icon: AppHugeIcons.diamond_outlined,
             color: TimeFactoryColors.deepPurple,

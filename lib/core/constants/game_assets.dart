@@ -18,7 +18,10 @@ class GameAssets {
   static const String currencyIcon3 = '$_imagesPath/icons/currency_icon_3.png';
   static const String temporalReactor =
       'assets/images/icons/temporal-reactor.svg';
-  static const String lottieReactor = 'assets/lottie/lottie-reactor.json';
+  static const String steampunkReactor =
+      'assets/images/icons/steampunk-reactor.svg';
+  static const String lottieReactor =
+      'assets/lottie/lottie-reactor_ultra.json.gz';
   static const String lottieSteamPunkReactor =
       'assets/lottie/steampunk-reactor.lottie';
   static const String lottieSteamPunkReactorJson =

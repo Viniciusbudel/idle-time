@@ -48,7 +48,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get systemUpgrade => 'UPGRADE DO SISTEMA';
 
   @override
-  String get initUpgrade => 'INICIAR UPGRADE';
+  String get initUpgrade => 'UPGRADE';
 
   @override
   String get initializeExpansion => 'Iniciar protocolo de expansão?';
@@ -540,4 +540,338 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get tutorialGoalBody =>
       'Bom trabalho. Seu objetivo é alcançar 1 MILHÃO DE CE para causar um EVENTO DE PRESTÍGIO. Boa sorte.';
+
+  @override
+  String get achievements => 'CONQUISTAS';
+
+  @override
+  String get ack => 'OK';
+
+  @override
+  String get activeTitle => 'Ativas';
+
+  @override
+  String get all => 'TODOS';
+
+  @override
+  String artifactRollChance(int percent) {
+    return 'Chance de artefato: $percent%';
+  }
+
+  @override
+  String get auto => 'Auto';
+
+  @override
+  String availableMissions(int count) {
+    return 'Missoes Disponiveis ($count)';
+  }
+
+  @override
+  String get awesome => 'INCRIVEL';
+
+  @override
+  String get chronoEnergyUpper => 'ENERGIA CRONO';
+
+  @override
+  String get claim => 'COLETAR';
+
+  @override
+  String get claimAll => 'COLETAR TUDO';
+
+  @override
+  String claimedRewardsCount(int count) {
+    return '$count recompensa(s) coletada(s)';
+  }
+
+  @override
+  String get completed => 'CONCLUIDAS';
+
+  @override
+  String confirmSelectedWorkers(int selected, int required) {
+    return 'Confirmar ($selected/$required)';
+  }
+
+  @override
+  String get confirmUpgrade => 'CONFIRMAR UPGRADE';
+
+  @override
+  String get craft => 'CRIAR';
+
+  @override
+  String durationHoursMinutes(int hours, int minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String durationMinutesSeconds(int minutes, int seconds) {
+    return '${minutes}m ${seconds}s';
+  }
+
+  @override
+  String durationSeconds(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
+  String expeditionCompletedTitle(String slot, String ce, int shards) {
+    return '$slot | +$ce CE | +$shards TS';
+  }
+
+  @override
+  String expeditionFailureLoss(int workers, int artifacts) {
+    return 'Perdeu $workers trabalhador(es) e $artifacts artefato(s)';
+  }
+
+  @override
+  String get expeditionReward => 'RECOMPENSA DA EXPEDICAO';
+
+  @override
+  String expeditionRiskBadge(
+    String risk,
+    String ceMultiplier,
+    int shards,
+    int artifactChance,
+  ) {
+    return '$risk  x$ceMultiplier  +${shards}TS  $artifactChance%';
+  }
+
+  @override
+  String expeditionStarted(String slot, String risk, int workers) {
+    return '$slot iniciada ($risk) com $workers trabalhador(es)';
+  }
+
+  @override
+  String get expeditionStatus => 'STATUS DA EXPEDICAO';
+
+  @override
+  String expeditionWorkersAssigned(
+    int workers,
+    String ceMultiplier,
+    int shards,
+    int artifactChance,
+  ) {
+    return '$workers trabalhador(es) alocado(s) | perfil: x$ceMultiplier CE, +$shards TS, $artifactChance% artefato';
+  }
+
+  @override
+  String expeditionWorkersReady(int required, int available) {
+    return 'Precisa de $required ocioso(s) | $available pronto(s)';
+  }
+
+  @override
+  String expeditionWorkersReadyInsufficient(int required, int available) {
+    return 'Precisa de $required ocioso(s) | apenas $available pronto(s)';
+  }
+
+  @override
+  String get failureReportAcknowledged => 'Relatorio de falha confirmado';
+
+  @override
+  String get hireSuccessful => 'CONTRATACAO BEM-SUCEDIDA!';
+
+  @override
+  String get holdPressInspectTapEquip =>
+      'Segure para inspecionar ? Toque para equipar';
+
+  @override
+  String get idleTitle => 'Ocioso';
+
+  @override
+  String get initiateExpedition => 'INICIAR EXPEDICAO';
+
+  @override
+  String labelValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get manage => 'GERENCIAR';
+
+  @override
+  String get missionControl => 'Controle de Missoes';
+
+  @override
+  String get missions => 'MISSOES';
+
+  @override
+  String nextCompletion(String slot, String duration) {
+    return 'Proxima conclusao: $slot em $duration';
+  }
+
+  @override
+  String get noActiveExpeditions => 'Nenhuma expedicao ativa';
+
+  @override
+  String noArtifactsByFilter(String filter) {
+    return 'Nenhum artefato $filter no inventario.';
+  }
+
+  @override
+  String get noChambersYet => 'Nenhuma camara ainda';
+
+  @override
+  String get noRewardsWaiting => 'Nenhuma recompensa aguardando';
+
+  @override
+  String noWorkersByRarity(String rarity) {
+    return 'Sem trabalhadores $rarity';
+  }
+
+  @override
+  String get paradoxPointsAbbrev => 'PP';
+
+  @override
+  String get readyTitle => 'Pronta';
+
+  @override
+  String resourceYieldLabel(String ce) {
+    return 'RENDIMENTO: $ce CE';
+  }
+
+  @override
+  String get resourceYieldUnavailable => 'RENDIMENTO: --';
+
+  @override
+  String get salvage => 'RECICLAR';
+
+  @override
+  String salvagedArtifactDust(int dust) {
+    return 'Artefato reciclado: +$dust Po';
+  }
+
+  @override
+  String get searchArtifacts => 'BUSCAR ARTEFATOS...';
+
+  @override
+  String selectWorkers(int required) {
+    return 'Selecione $required trabalhador(es)';
+  }
+
+  @override
+  String selectedWorkers(int selected, int required) {
+    return 'Selecionados $selected/$required';
+  }
+
+  @override
+  String get tapWorkerIconsHint =>
+      'Toque nos icones acima para atribuir ou trocar a equipe.';
+
+  @override
+  String get timeShardsAbbrev => 'TS';
+
+  @override
+  String get timeShardsUpper => 'FRAGMENTOS DO TEMPO';
+
+  @override
+  String get unableClaimExpedition =>
+      'Nao foi possivel coletar o resultado da expedicao.';
+
+  @override
+  String get unableStartExpedition =>
+      'Nao foi possivel iniciar a expedicao com os trabalhadores selecionados.';
+
+  @override
+  String get unassign => 'REMOVER';
+
+  @override
+  String get welcome => 'BEM-VINDO';
+
+  @override
+  String allArtifactSlotsFilled(int slots) {
+    return 'TODOS OS $slots SLOTS PREENCHIDOS - Desequipe um artefato primeiro.';
+  }
+
+  @override
+  String get craftFailedDustOrInventory =>
+      'Falha na criacao (po ou limite de inventario).';
+
+  @override
+  String upgradeMaxed(String title) {
+    return '$title no maximo';
+  }
+
+  @override
+  String upgradeCostsPp(String title, int cost) {
+    return '$title custa $cost PP';
+  }
+
+  @override
+  String get locked => 'BLOQUEADO';
+
+  @override
+  String prestigesCount(int count) {
+    return 'Prestigios: $count';
+  }
+
+  @override
+  String activeExpeditions(int count) {
+    return 'Expedicoes Ativas ($count)';
+  }
+
+  @override
+  String queuedRewards(String ce, int shards) {
+    return 'Recompensas na fila: +$ce CE | +$shards TS';
+  }
+
+  @override
+  String successProbabilityLabel(int percent) {
+    return 'CHANCE DE SUCESSO: $percent%';
+  }
+
+  @override
+  String expeditionFailedTitle(String slot) {
+    return '$slot | FALHA';
+  }
+
+  @override
+  String get max => 'MAX';
+
+  @override
+  String get retrofitProtocol => 'PROTOCOLO DE RETROFIT';
+
+  @override
+  String get upgradeLegacyUnitPrompt =>
+      'Atualizar unidade legada para os padroes temporais atuais?';
+
+  @override
+  String get current => 'ATUAL';
+
+  @override
+  String get upgraded => 'APRIMORADA';
+
+  @override
+  String get techTreeChronalStabilizer => 'Estabilizador Cronal';
+
+  @override
+  String get techTreeChronalStabilizerDescription =>
+      'Reduz o acumulo de paradoxo em 15%';
+
+  @override
+  String get techTreeQuantumDrill => 'Broca Quantica';
+
+  @override
+  String get techTreeQuantumDrillDescription =>
+      'Aumenta a eficiencia de mineracao em 25%';
+
+  @override
+  String get techTreeNeuralNetwork => 'Rede Neural';
+
+  @override
+  String get techTreeNeuralNetworkDescription =>
+      'Trabalhadores automatizam tarefas 10% mais rapido';
+
+  @override
+  String techTreeCostCe(String amount) {
+    return '$amount CE';
+  }
+
+  @override
+  String techCost(String value) {
+    return 'CUSTO: $value';
+  }
+
+  @override
+  String techCostCe(String value) {
+    return 'CUSTO: $value CE';
+  }
 }

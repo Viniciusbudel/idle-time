@@ -362,7 +362,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '/ SEC',
+                    AppLocalizations.of(context)!.perSecond,
                     style: typography.bodyMedium.copyWith(
                       fontSize: 12,
                       color: colors.success.withOpacity(0.5),
@@ -386,7 +386,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
                 border: Border.all(color: colors.primary.withOpacity(0.5)),
               ),
               child: Text(
-                'SYS :: ONLINE',
+                AppLocalizations.of(context)!.sysOnline,
                 style: TextStyle(
                   fontFamily: 'Orbitron',
                   color: colors.primary,
@@ -414,7 +414,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
         children: [
           // Efficiency
           _buildWideStat(
-            'EFFICIENCY',
+            AppLocalizations.of(context)!.efficiency,
             '${(widget.station.productionBonus * 100).toInt()}%',
             colors.primary,
             AppHugeIcons.speed,
@@ -428,7 +428,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
           ),
 
           _buildWideStat(
-            'STABILITY',
+            AppLocalizations.of(context)!.stability,
             '99.9%', // Placeholder
             colors.secondary,
             AppHugeIcons.shield,
@@ -592,9 +592,9 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
                 builder: (context) => UpgradeConfirmationDialog(
                   station: widget.station,
                   onConfirm: widget.onUpgrade!,
-                  title: "SYSTEM UPGRADE",
+                  title: AppLocalizations.of(context)!.systemUpgrade,
                   message:
-                      "Initialize expansion protocol?\n\nCost: ${NumberFormatter.formatCE(cost)} CE",
+                      '${AppLocalizations.of(context)!.initializeExpansion}\n\n${AppLocalizations.of(context)!.cost}: ${NumberFormatter.formatCE(cost)} CE',
                   costOverride: cost,
                 ),
               );
@@ -607,7 +607,7 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
                 AppIcon(AppHugeIcons.upgrade, color: colors.primary),
                 const SizedBox(width: 12),
                 Text(
-                  'INIT UPGRADE',
+                  AppLocalizations.of(context)!.initUpgrade,
                   style: typography.buttonText.copyWith(
                     color: colors.primary,
                     letterSpacing: 1.5,

@@ -538,4 +538,336 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutorialGoalBody =>
       'Great work. Your goal is to reach 1 MILLION CE to trigger a PRESTIGE EVENT and collapse the timeline. Good luck.';
+
+  @override
+  String get achievements => 'ACHIEVEMENTS';
+
+  @override
+  String get ack => 'ACK';
+
+  @override
+  String get activeTitle => 'Active';
+
+  @override
+  String get all => 'ALL';
+
+  @override
+  String artifactRollChance(int percent) {
+    return 'Artifact roll chance: $percent%';
+  }
+
+  @override
+  String get auto => 'Auto';
+
+  @override
+  String availableMissions(int count) {
+    return 'Available Missions ($count)';
+  }
+
+  @override
+  String get awesome => 'AWESOME';
+
+  @override
+  String get chronoEnergyUpper => 'CHRONO ENERGY';
+
+  @override
+  String get claim => 'CLAIM';
+
+  @override
+  String get claimAll => 'CLAIM ALL';
+
+  @override
+  String claimedRewardsCount(int count) {
+    return 'Claimed $count reward(s)';
+  }
+
+  @override
+  String get completed => 'COMPLETED';
+
+  @override
+  String confirmSelectedWorkers(int selected, int required) {
+    return 'Confirm ($selected/$required)';
+  }
+
+  @override
+  String get confirmUpgrade => 'CONFIRM UPGRADE';
+
+  @override
+  String get craft => 'CRAFT';
+
+  @override
+  String durationHoursMinutes(int hours, int minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String durationMinutesSeconds(int minutes, int seconds) {
+    return '${minutes}m ${seconds}s';
+  }
+
+  @override
+  String durationSeconds(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
+  String expeditionCompletedTitle(String slot, String ce, int shards) {
+    return '$slot | +$ce CE | +$shards TS';
+  }
+
+  @override
+  String expeditionFailureLoss(int workers, int artifacts) {
+    return 'Lost $workers worker(s) and $artifacts artifact(s)';
+  }
+
+  @override
+  String get expeditionReward => 'EXPEDITION REWARD';
+
+  @override
+  String expeditionRiskBadge(
+    String risk,
+    String ceMultiplier,
+    int shards,
+    int artifactChance,
+  ) {
+    return '$risk  x$ceMultiplier  +${shards}TS  $artifactChance%';
+  }
+
+  @override
+  String expeditionStarted(String slot, String risk, int workers) {
+    return '$slot started ($risk) with $workers worker(s)';
+  }
+
+  @override
+  String get expeditionStatus => 'EXPEDITION STATUS';
+
+  @override
+  String expeditionWorkersAssigned(
+    int workers,
+    String ceMultiplier,
+    int shards,
+    int artifactChance,
+  ) {
+    return '$workers worker(s) assigned | reward profile: x$ceMultiplier CE, +$shards TS, $artifactChance% artifact';
+  }
+
+  @override
+  String expeditionWorkersReady(int required, int available) {
+    return 'Need $required idle worker(s) | $available ready';
+  }
+
+  @override
+  String expeditionWorkersReadyInsufficient(int required, int available) {
+    return 'Need $required idle worker(s) | only $available ready';
+  }
+
+  @override
+  String get failureReportAcknowledged => 'Failure report acknowledged';
+
+  @override
+  String get hireSuccessful => 'HIRE SUCCESSFUL!';
+
+  @override
+  String get holdPressInspectTapEquip => 'Hold-press to inspect ? Tap to equip';
+
+  @override
+  String get idleTitle => 'Idle';
+
+  @override
+  String get initiateExpedition => 'INITIATE EXPEDITION';
+
+  @override
+  String labelValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get manage => 'MANAGE';
+
+  @override
+  String get missionControl => 'Mission Control';
+
+  @override
+  String get missions => 'MISSIONS';
+
+  @override
+  String nextCompletion(String slot, String duration) {
+    return 'Next completion: $slot in $duration';
+  }
+
+  @override
+  String get noActiveExpeditions => 'No active expeditions';
+
+  @override
+  String noArtifactsByFilter(String filter) {
+    return 'No $filter artifacts in inventory.';
+  }
+
+  @override
+  String get noChambersYet => 'No chambers yet';
+
+  @override
+  String get noRewardsWaiting => 'No rewards waiting';
+
+  @override
+  String noWorkersByRarity(String rarity) {
+    return 'No $rarity workers';
+  }
+
+  @override
+  String get paradoxPointsAbbrev => 'PP';
+
+  @override
+  String get readyTitle => 'Ready';
+
+  @override
+  String resourceYieldLabel(String ce) {
+    return 'RESOURCE YIELD: $ce CE';
+  }
+
+  @override
+  String get resourceYieldUnavailable => 'RESOURCE YIELD: --';
+
+  @override
+  String get salvage => 'SALVAGE';
+
+  @override
+  String salvagedArtifactDust(int dust) {
+    return 'Salvaged artifact: +$dust Dust';
+  }
+
+  @override
+  String get searchArtifacts => 'SEARCH ARTIFACTS...';
+
+  @override
+  String selectWorkers(int required) {
+    return 'Select $required worker(s)';
+  }
+
+  @override
+  String selectedWorkers(int selected, int required) {
+    return 'Selected $selected/$required';
+  }
+
+  @override
+  String get tapWorkerIconsHint =>
+      'Tap worker icons above to assign or swap the crew.';
+
+  @override
+  String get timeShardsAbbrev => 'TS';
+
+  @override
+  String get timeShardsUpper => 'TIME SHARDS';
+
+  @override
+  String get unableClaimExpedition => 'Unable to claim expedition result.';
+
+  @override
+  String get unableStartExpedition =>
+      'Unable to start expedition with selected workers.';
+
+  @override
+  String get unassign => 'UNASSIGN';
+
+  @override
+  String get welcome => 'WELCOME';
+
+  @override
+  String allArtifactSlotsFilled(int slots) {
+    return 'ALL $slots SLOTS FILLED - Unequip an artifact first.';
+  }
+
+  @override
+  String get craftFailedDustOrInventory =>
+      'Craft failed (dust or inventory limit).';
+
+  @override
+  String upgradeMaxed(String title) {
+    return '$title maxed';
+  }
+
+  @override
+  String upgradeCostsPp(String title, int cost) {
+    return '$title costs $cost PP';
+  }
+
+  @override
+  String get locked => 'LOCKED';
+
+  @override
+  String prestigesCount(int count) {
+    return 'Prestiges: $count';
+  }
+
+  @override
+  String activeExpeditions(int count) {
+    return 'Active Expeditions ($count)';
+  }
+
+  @override
+  String queuedRewards(String ce, int shards) {
+    return 'Queued rewards: +$ce CE | +$shards TS';
+  }
+
+  @override
+  String successProbabilityLabel(int percent) {
+    return 'SUCCESS PROBABILITY: $percent%';
+  }
+
+  @override
+  String expeditionFailedTitle(String slot) {
+    return '$slot | FAILED';
+  }
+
+  @override
+  String get max => 'MAX';
+
+  @override
+  String get retrofitProtocol => 'RETROFIT PROTOCOL';
+
+  @override
+  String get upgradeLegacyUnitPrompt =>
+      'Upgrade legacy unit to current temporal standards?';
+
+  @override
+  String get current => 'CURRENT';
+
+  @override
+  String get upgraded => 'UPGRADED';
+
+  @override
+  String get techTreeChronalStabilizer => 'Chronal Stabilizer';
+
+  @override
+  String get techTreeChronalStabilizerDescription =>
+      'Reduces paradox buildup by 15%';
+
+  @override
+  String get techTreeQuantumDrill => 'Quantum Drill';
+
+  @override
+  String get techTreeQuantumDrillDescription =>
+      'Increases mining efficiency by 25%';
+
+  @override
+  String get techTreeNeuralNetwork => 'Neural Network';
+
+  @override
+  String get techTreeNeuralNetworkDescription =>
+      'Workers automate tasks 10% faster';
+
+  @override
+  String techTreeCostCe(String amount) {
+    return '$amount CE';
+  }
+
+  @override
+  String techCost(String value) {
+    return 'COST: $value';
+  }
+
+  @override
+  String techCostCe(String value) {
+    return 'COST: $value CE';
+  }
 }

@@ -8,8 +8,13 @@ import 'package:flutter/material.dart';
 class SteampunkBackground extends StatefulWidget {
   /// Optional child to render on top of the background
   final Widget? child;
+  final bool reducedMotion;
 
-  const SteampunkBackground({super.key, this.child});
+  const SteampunkBackground({
+    super.key,
+    this.child,
+    this.reducedMotion = false,
+  });
 
   @override
   State<SteampunkBackground> createState() => _SteampunkBackgroundState();
@@ -39,6 +44,7 @@ class _SteampunkBackgroundState extends State<SteampunkBackground>
   }
 
   void _handleTapDown(TapDownDetails details) {
+    if (widget.reducedMotion) return;
     setState(() {
       // Slightly boost animation speed on tap
       _animationSpeed = 1.5;
@@ -49,6 +55,7 @@ class _SteampunkBackgroundState extends State<SteampunkBackground>
   }
 
   void _handleTapUp(TapUpDetails details) {
+    if (widget.reducedMotion) return;
     setState(() {
       _animationSpeed = 1.0;
       _touchOffsetY = 0.0;
@@ -56,6 +63,7 @@ class _SteampunkBackgroundState extends State<SteampunkBackground>
   }
 
   void _handleTapCancel() {
+    if (widget.reducedMotion) return;
     setState(() {
       _animationSpeed = 1.0;
       _touchOffsetY = 0.0;
@@ -82,7 +90,9 @@ class _SteampunkBackgroundState extends State<SteampunkBackground>
               final sineValue = math.sin(
                 _controller.value * math.pi * 2 * _animationSpeed,
               );
-              final offsetY = sineValue * 8 + _touchOffsetY;
+              final offsetY =
+                  sineValue * (widget.reducedMotion ? 3.0 : 8.0) +
+                  _touchOffsetY;
 
               return Transform.translate(
                 offset: Offset(0, offsetY),
@@ -98,22 +108,30 @@ class _SteampunkBackgroundState extends State<SteampunkBackground>
           ),
 
           // Layer 3: Front (Subtle scale pulse)
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              // Subtle scale breathing: 1.0 to 1.02
-              final scaleValue =
-                  1.0 + (math.sin(_controller.value * math.pi * 2) * 0.01);
+          if (!widget.reducedMotion)
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                // Subtle scale breathing: 1.0 to 1.02
+                final scaleValue =
+                    1.0 + (math.sin(_controller.value * math.pi * 2) * 0.01);
 
-              return Transform.scale(scale: scaleValue, child: child);
-            },
-            child: Image.asset(
+                return Transform.scale(scale: scaleValue, child: child);
+              },
+              child: Image.asset(
+                'assets/images/backgrounds/victorian/bg-victorian-front.png',
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.low,
+                isAntiAlias: false,
+              ),
+            )
+          else
+            Image.asset(
               'assets/images/backgrounds/victorian/bg-victorian-front.png',
               fit: BoxFit.cover,
               filterQuality: FilterQuality.low,
               isAntiAlias: false,
             ),
-          ),
 
           // Fog/Veil Overlay (Animated opacity)
           AnimatedBuilder(
@@ -121,7 +139,9 @@ class _SteampunkBackgroundState extends State<SteampunkBackground>
             builder: (context, child) {
               // Opacity pulses between 0.1 and 0.25
               final opacity =
-                  0.1 + (math.sin(_controller.value * math.pi * 2) * 0.075);
+                  widget.reducedMotion
+                  ? 0.1 + (math.sin(_controller.value * math.pi * 2) * 0.03)
+                  : 0.1 + (math.sin(_controller.value * math.pi * 2) * 0.075);
 
               return Container(color: Colors.black.withOpacity( opacity));
             },

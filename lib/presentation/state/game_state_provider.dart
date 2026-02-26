@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/game_state.dart';
 import '../../domain/entities/worker.dart';
+import '../../domain/entities/daily_mission.dart';
+import '../../domain/entities/expedition.dart';
 import '../../domain/entities/worker_artifact.dart';
 import '../../domain/entities/station.dart';
 import '../../domain/entities/enums.dart';
 import '../../domain/usecases/hire_worker_usecase.dart';
 import '../../domain/usecases/prestige_usecase.dart';
-import '../../domain/usecases/check_era_unlocks_usecase.dart';
 import '../../domain/usecases/embrace_chaos_usecase.dart';
 import '../../domain/usecases/summon_worker_usecase.dart';
 import '../../domain/usecases/merge_stations_usecase.dart';
@@ -18,7 +19,16 @@ import '../../domain/usecases/fit_worker_to_era_usecase.dart';
 import '../../domain/entities/prestige_upgrade.dart';
 // import '../../domain/entities/daily_reward.dart'; // REMOVED
 import '../../domain/usecases/claim_daily_reward_usecase.dart'; // NEW
+import '../../domain/usecases/generate_daily_missions_usecase.dart';
+import '../../domain/usecases/update_mission_progress_usecase.dart';
+import '../../domain/usecases/claim_daily_mission_usecase.dart';
+import '../../domain/usecases/salvage_artifact_usecase.dart';
+import '../../domain/usecases/craft_artifact_usecase.dart';
+import '../../domain/usecases/start_expedition_usecase.dart';
+import '../../domain/usecases/resolve_expeditions_usecase.dart';
+import '../../domain/usecases/claim_expedition_rewards_usecase.dart';
 import '../../core/services/save_service.dart';
+import '../../core/constants/era_mastery_constants.dart';
 import '../../core/constants/tech_data.dart';
 import 'dart:async';
 import 'dart:math';
@@ -34,8 +44,6 @@ final gameStateProvider = StateNotifierProvider<GameStateNotifier, GameState>((
 class GameStateNotifier extends StateNotifier<GameState> {
   final HireWorkerUseCase _hireWorkerUseCase = HireWorkerUseCase();
   final PrestigeUseCase _prestigeUseCase = PrestigeUseCase();
-  final CheckEraUnlocksUseCase _checkEraUnlocksUseCase =
-      CheckEraUnlocksUseCase();
   final EmbraceChaosUseCase _embraceChaosUseCase = EmbraceChaosUseCase();
   final SummonWorkerUseCase _summonWorkerUseCase = SummonWorkerUseCase();
   final MergeStationsUseCase _mergeStationsUseCase = MergeStationsUseCase();
@@ -46,6 +54,21 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   late final ClaimDailyRewardUseCase _claimDailyRewardUseCase =
       ClaimDailyRewardUseCase(_hireWorkerUseCase);
+  final GenerateDailyMissionsUseCase _generateDailyMissionsUseCase =
+      GenerateDailyMissionsUseCase();
+  final UpdateMissionProgressUseCase _updateMissionProgressUseCase =
+      UpdateMissionProgressUseCase();
+  final ClaimDailyMissionUseCase _claimDailyMissionUseCase =
+      ClaimDailyMissionUseCase();
+  final SalvageArtifactUseCase _salvageArtifactUseCase =
+      SalvageArtifactUseCase();
+  final CraftArtifactUseCase _craftArtifactUseCase = CraftArtifactUseCase();
+  final StartExpeditionUseCase _startExpeditionUseCase =
+      StartExpeditionUseCase();
+  final ResolveExpeditionsUseCase _resolveExpeditionsUseCase =
+      ResolveExpeditionsUseCase();
+  final ClaimExpeditionRewardsUseCase _claimExpeditionRewardsUseCase =
+      ClaimExpeditionRewardsUseCase();
 
   final ProductionLoopUseCase _productionLoopUseCase = ProductionLoopUseCase();
 
@@ -54,12 +77,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   // Accumulator for fractional CE production
   double _fractionalAccumulator = 0.0;
+  DateTime _runtimeLastTickTime = DateTime.now();
 
   GameStateNotifier() : super(GameState.initial()) {
     _init();
   }
   Future<void> _init() async {
     await loadFromStorage();
+    _ensureDailyMissions();
+    _resolveExpeditions();
     _startAutoSave();
     _startTickTimer();
   }
@@ -98,6 +124,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
     // 3. Calculate Auto-Collect (Automation)
     // Generates passive "manual clicks" based on automation level
     final automationLevel = TechData.calculateAutomationLevel(state.techLevels);
+    final atomicMasteryLevel = state.getEraMasteryLevel(WorkerEra.atomicAge.id);
+    final automationMasteryMultiplier =
+        1.0 +
+        (atomicMasteryLevel *
+            EraMasteryConstants.atomicAutomationBonusPerLevel);
     BigInt? additionalProduction;
 
     if (automationLevel > 0) {
@@ -106,7 +137,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
       // We use effectiveDt here too so automation also speeds up with Time Warp?
       // Design decision: Yes, Time Warp speeds up EVERYTHING.
       additionalProduction = BigInt.from(
-        baseManualClick.toDouble() * automationLevel * effectiveDt,
+        baseManualClick.toDouble() *
+            automationLevel *
+            automationMasteryMultiplier *
+            effectiveDt,
       );
     }
 
@@ -126,12 +160,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
   }
 
   void _onTick() {
+    _runtimeLastTickTime = DateTime.now();
+    _ensureDailyMissions();
+    _resolveExpeditions();
+
     if (state.paradoxEventActive &&
         state.paradoxEventEndTime != null &&
         DateTime.now().isAfter(state.paradoxEventEndTime!)) {
       endParadoxEvent();
     }
-    updateLastTickTime();
   }
 
   /// Apply results from the game loop production tick
@@ -148,8 +185,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   /// Save current state to storage
   Future<void> saveToStorage() async {
-    await _saveService.save(state);
-    updateLastSaveTime();
+    final saveTime = DateTime.now();
+    final snapshot = state.copyWith(
+      lastTickTime: _runtimeLastTickTime,
+      lastSaveTime: saveTime,
+    );
+    await _saveService.save(snapshot);
+    state = snapshot;
   }
 
   /// Load state from storage
@@ -157,17 +199,20 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final savedState = await _saveService.load();
     if (savedState != null) {
       state = savedState;
+      _runtimeLastTickTime = savedState.lastTickTime ?? DateTime.now();
     }
   }
 
   /// Reset to initial state (for testing or new game)
   void reset() {
     state = GameState.initial();
+    _runtimeLastTickTime = state.lastTickTime ?? DateTime.now();
   }
 
   /// Load state from saved data
   void loadState(GameState savedState) {
     state = savedState;
+    _runtimeLastTickTime = savedState.lastTickTime ?? DateTime.now();
   }
 
   // ===== RESOURCES =====
@@ -296,6 +341,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
       advanceTutorial();
     }
 
+    _recordMissionProgress(MissionProgressEvent.hireWorker);
     return worker;
   }
 
@@ -319,9 +365,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   /// Update tech level
   void updateTechLevel(String techId, int level) {
+    final previousLevel = state.techLevels[techId] ?? 0;
     final newTechLevels = Map<String, int>.from(state.techLevels);
     newTechLevels[techId] = level;
     state = state.copyWith(techLevels: newTechLevels);
+
+    if (level > previousLevel) {
+      _recordMissionProgress(MissionProgressEvent.buyTechUpgrade);
+    }
   }
 
   /// Add a new worker
@@ -341,6 +392,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     if (worker == null || station == null) return false;
     if (worker.isDeployed) return false;
+    if (_isWorkerOnActiveExpedition(workerId)) return false;
     if (!station.canAddWorker) return false;
 
     // Update worker
@@ -475,6 +527,53 @@ class GameStateNotifier extends StateNotifier<GameState> {
     return true;
   }
 
+  /// Salvage an artifact from inventory into Artifact Dust.
+  /// Returns dust gained (0 when salvage fails).
+  int salvageArtifact(String artifactId) {
+    final index = state.inventory.indexWhere((a) => a.id == artifactId);
+    if (index < 0) return 0;
+
+    final artifact = state.inventory[index];
+    final gainedDust = _salvageArtifactUseCase.execute(artifact);
+
+    final newInventory = List<WorkerArtifact>.from(state.inventory)
+      ..removeAt(index);
+
+    state = state.copyWith(
+      inventory: newInventory,
+      artifactDust: state.artifactDust + gainedDust,
+    );
+
+    return gainedDust;
+  }
+
+  int getArtifactDustValue(WorkerArtifact artifact) {
+    return _salvageArtifactUseCase.execute(artifact);
+  }
+
+  CraftArtifactResult? craftArtifact({
+    required WorkerRarity minimumRarity,
+    WorkerEra? targetEra,
+  }) {
+    final result = _craftArtifactUseCase.execute(
+      state,
+      minimumRarity: minimumRarity,
+      targetEra: targetEra,
+    );
+    if (result == null) return null;
+
+    state = result.newState;
+    return result;
+  }
+
+  int getArtifactCraftCost(WorkerRarity minimumRarity) {
+    return _craftArtifactUseCase.getCraftCost(minimumRarity);
+  }
+
+  int getArtifactCraftPityThreshold() {
+    return _craftArtifactUseCase.pityThreshold;
+  }
+
   /// Refit a worker to the current era's technology
   /// This updates the worker's era to currentEraId, increasing their production
   bool fitWorkerToEra(String workerId) {
@@ -493,7 +592,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
   /// Merge 3 workers of the same era and rarity into 1 of the next rarity
   MergeWorkersResult mergeWorkers(WorkerEra era, WorkerRarity rarity) {
     // 1. Get available workers
-    final available = state.workers.values.toList();
+    final activeExpeditionWorkers = _activeExpeditionWorkerIds();
+    final available = state.workers.values
+        .where((worker) => !activeExpeditionWorkers.contains(worker.id))
+        .toList();
 
     // 2. Execute Use Case
     final result = _mergeWorkersUseCase.execute(
@@ -534,12 +636,19 @@ class GameStateNotifier extends StateNotifier<GameState> {
       inventory: newInventory,
       totalMerges: state.totalMerges + 1,
     );
+    _recordMissionProgress(MissionProgressEvent.mergeWorker);
+    if (result.newWorker != null) {
+      _awardEraMasteryXp(result.newWorker!.era.id, EraMasteryConstants.mergeXp);
+    }
     return result;
   }
 
   /// Merge specific workers by their IDs (manual selection)
   MergeWorkersResult mergeSpecificWorkers(List<String> workerIds) {
-    final available = state.workers.values.toList();
+    final activeExpeditionWorkers = _activeExpeditionWorkerIds();
+    final available = state.workers.values
+        .where((worker) => !activeExpeditionWorkers.contains(worker.id))
+        .toList();
     final result = _mergeWorkersUseCase.executeWithIds(
       allWorkers: available,
       workerIds: workerIds,
@@ -570,6 +679,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
       inventory: newInventory,
       totalMerges: state.totalMerges + 1,
     );
+    _recordMissionProgress(MissionProgressEvent.mergeWorker);
+    if (result.newWorker != null) {
+      _awardEraMasteryXp(result.newWorker!.era.id, EraMasteryConstants.mergeXp);
+    }
     return result;
   }
 
@@ -714,11 +827,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
     state = state.copyWith(unlockedEras: {...state.unlockedEras, era.id});
   }
 
-  /// Check and unlock eras based on CE
-  void checkEraUnlocks() {
-    state = _checkEraUnlocksUseCase.execute(state);
-  }
-
   // ===== TIMESTAMPS =====
 
   /// Update last save time
@@ -742,6 +850,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     final newUnlocked = {...state.unlockedEras, nextEraId};
     final newCompleted = {...state.completedEras, state.currentEraId};
+    final updatedMasteryXp = Map<String, int>.from(state.eraMasteryXp);
+    updatedMasteryXp[state.currentEraId] =
+        (updatedMasteryXp[state.currentEraId] ?? 0) +
+        EraMasteryConstants.eraTechCompletionXp;
 
     // Auto-create a free starter station for the new era
     final newEraStationType = StationType.values.firstWhere(
@@ -763,6 +875,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
       currentEraId: nextEraId,
       unlockedEras: newUnlocked,
       completedEras: newCompleted,
+      eraMasteryXp: updatedMasteryXp,
       stations: newStations,
     );
   }
@@ -778,10 +891,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
   /// Debug method to add currency
   void debugAddCurrency(BigInt amount) {
     addChronoEnergy(amount);
-  }
-
-  void updateLastTickTime() {
-    state = state.copyWith(lastTickTime: DateTime.now());
   }
 
   /// Buy a specific prestige upgrade
@@ -863,36 +972,211 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
     return result;
   }
+
+  // ===== EXPEDITIONS =====
+
+  List<ExpeditionSlot> get expeditionSlots =>
+      _startExpeditionUseCase.availableSlots;
+
+  bool startExpedition({
+    required String slotId,
+    required ExpeditionRisk risk,
+    required List<String> workerIds,
+  }) {
+    final result = _startExpeditionUseCase.execute(
+      state,
+      slotId: slotId,
+      risk: risk,
+      workerIds: workerIds,
+    );
+    if (result == null) return false;
+
+    state = result.newState;
+    return true;
+  }
+
+  bool claimExpeditionReward(String expeditionId) {
+    return claimExpeditionRewardWithResult(expeditionId) != null;
+  }
+
+  ClaimExpeditionRewardsResult? claimExpeditionRewardWithResult(
+    String expeditionId,
+  ) {
+    _resolveExpeditions();
+    Expedition? claimedExpedition;
+    for (final expedition in state.expeditions) {
+      if (expedition.id == expeditionId) {
+        claimedExpedition = expedition;
+        break;
+      }
+    }
+
+    final masteryXpByEra = <String, int>{};
+    if (claimedExpedition != null &&
+        claimedExpedition.resolved &&
+        claimedExpedition.wasSuccessful == true) {
+      for (final workerId in claimedExpedition.workerIds) {
+        final worker = state.workers[workerId];
+        if (worker == null) continue;
+        masteryXpByEra[worker.era.id] =
+            (masteryXpByEra[worker.era.id] ?? 0) +
+            EraMasteryConstants.expeditionSuccessXpPerWorker;
+      }
+    }
+
+    final result = _claimExpeditionRewardsUseCase.execute(state, expeditionId);
+    if (result == null) return null;
+
+    state = result.newState;
+    _awardEraMasteryXpBatch(masteryXpByEra);
+    return result;
+  }
+
+  void _resolveExpeditions() {
+    if (state.expeditions.isEmpty) return;
+
+    final result = _resolveExpeditionsUseCase.execute(state);
+    if (result.newlyResolved.isEmpty) return;
+
+    state = result.newState;
+  }
+
+  void _awardEraMasteryXp(String eraId, int amount) {
+    if (amount <= 0) return;
+    _awardEraMasteryXpBatch({eraId: amount});
+  }
+
+  void _awardEraMasteryXpBatch(Map<String, int> masteryXpByEra) {
+    if (masteryXpByEra.isEmpty) return;
+
+    final updatedMasteryXp = Map<String, int>.from(state.eraMasteryXp);
+    for (final entry in masteryXpByEra.entries) {
+      if (entry.value <= 0) continue;
+      updatedMasteryXp[entry.key] =
+          (updatedMasteryXp[entry.key] ?? 0) + entry.value;
+    }
+    state = state.copyWith(eraMasteryXp: updatedMasteryXp);
+  }
+
+  Set<String> _activeExpeditionWorkerIds() {
+    final ids = <String>{};
+    for (final expedition in state.expeditions) {
+      if (expedition.resolved) continue;
+      ids.addAll(expedition.workerIds);
+    }
+    return ids;
+  }
+
+  bool _isWorkerOnActiveExpedition(String workerId) {
+    return _activeExpeditionWorkerIds().contains(workerId);
+  }
+
+  /// Claim a completed daily mission objective.
+  bool claimDailyMission(String missionId) {
+    _ensureDailyMissions();
+
+    final result = _claimDailyMissionUseCase.execute(state, missionId);
+    if (result == null) return false;
+
+    state = result.newState;
+    return true;
+  }
+
+  void _recordMissionProgress(MissionProgressEvent event, {int amount = 1}) {
+    _ensureDailyMissions();
+
+    final updatedMissions = _updateMissionProgressUseCase.execute(
+      state.dailyMissions,
+      event,
+      amount: amount,
+    );
+    state = state.copyWith(dailyMissions: updatedMissions);
+  }
+
+  void _ensureDailyMissions() {
+    final now = DateTime.now();
+    final lastRefresh = state.lastDailyMissionRefreshTime;
+    final shouldRefresh =
+        state.dailyMissions.isEmpty ||
+        lastRefresh == null ||
+        !_isSameCalendarDay(lastRefresh, now);
+
+    if (!shouldRefresh) return;
+
+    final missions = _generateDailyMissionsUseCase.execute(now);
+    state = state.copyWith(
+      dailyMissions: missions,
+      lastDailyMissionRefreshTime: now,
+    );
+  }
+
+  bool _isSameCalendarDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
 }
 
 // ===== DERIVED PROVIDERS =====
 
 /// Current Chrono-Energy
 final chronoEnergyProvider = Provider<BigInt>((ref) {
-  return ref.watch(gameStateProvider).chronoEnergy;
+  return ref.watch(gameStateProvider.select((s) => s.chronoEnergy));
 });
 
 /// Paradox level
 final paradoxLevelProvider = Provider<double>((ref) {
-  return ref.watch(gameStateProvider).paradoxLevel;
+  return ref.watch(gameStateProvider.select((s) => s.paradoxLevel));
 });
 
 /// Time Shards
 final timeShardsProvider = Provider<int>((ref) {
-  return ref.watch(gameStateProvider).timeShards;
+  return ref.watch(gameStateProvider.select((s) => s.timeShards));
+});
+
+/// Current Artifact Dust balance.
+final artifactDustProvider = Provider<int>((ref) {
+  return ref.watch(gameStateProvider.select((s) => s.artifactDust));
 });
 
 /// All workers
 final workersProvider = Provider<Map<String, Worker>>((ref) {
-  return ref.watch(gameStateProvider).workers;
+  return ref.watch(gameStateProvider.select((s) => s.workers));
 });
 
 /// All stations
 final stationsProvider = Provider<Map<String, Station>>((ref) {
-  return ref.watch(gameStateProvider).stations;
+  return ref.watch(gameStateProvider.select((s) => s.stations));
 });
 
 /// Tech Levels map
 final techLevelsProvider = Provider<Map<String, int>>((ref) {
-  return ref.watch(gameStateProvider).techLevels;
+  return ref.watch(gameStateProvider.select((s) => s.techLevels));
+});
+
+/// Era mastery XP map keyed by era ID.
+final eraMasteryXpProvider = Provider<Map<String, int>>((ref) {
+  return ref.watch(gameStateProvider.select((s) => s.eraMasteryXp));
+});
+
+/// Era mastery levels derived from mastery XP.
+final eraMasteryLevelsProvider = Provider<Map<String, int>>((ref) {
+  final masteryXp = ref.watch(gameStateProvider.select((s) => s.eraMasteryXp));
+  return {
+    for (final era in WorkerEra.values)
+      era.id: EraMasteryConstants.levelFromXp(masteryXp[era.id] ?? 0),
+  };
+});
+
+/// Daily missions currently active for the player.
+final dailyMissionsProvider = Provider<List<DailyMission>>((ref) {
+  return ref.watch(gameStateProvider.select((s) => s.dailyMissions));
+});
+
+/// Expeditions that are ongoing or waiting reward claim.
+final expeditionsProvider = Provider<List<Expedition>>((ref) {
+  return ref.watch(gameStateProvider.select((s) => s.expeditions));
+});
+
+/// Available expedition slot definitions.
+final expeditionSlotsProvider = Provider<List<ExpeditionSlot>>((ref) {
+  return ref.read(gameStateProvider.notifier).expeditionSlots;
 });

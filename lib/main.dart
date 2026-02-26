@@ -9,8 +9,10 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/theme_provider.dart';
 import 'package:time_factory/presentation/ui/dialogs/offline_dialog.dart';
 import 'package:time_factory/domain/entities/offline_earnings.dart';
+import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/presentation/ui/pages/factory_screen.dart';
 import 'package:time_factory/domain/usecases/calculate_offline_earnings_usecase.dart';
+import 'package:time_factory/domain/usecases/resolve_expeditions_usecase.dart';
 import 'package:time_factory/core/services/notification_service.dart';
 
 void main() async {
@@ -114,6 +116,7 @@ class _AppLoader extends ConsumerStatefulWidget {
 class _AppLoaderState extends ConsumerState<_AppLoader> {
   bool _isLoading = true;
   OfflineEarnings? _pendingOfflineEarnings;
+  OfflineExpeditionSummary? _pendingExpeditionSummary;
 
   @override
   void initState() {
@@ -132,17 +135,28 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
     final savedState = await saveService.load();
 
     if (savedState != null) {
+      final resolvedStateResult = ResolveExpeditionsUseCase().execute(
+        savedState,
+      );
+      final resolvedState = resolvedStateResult.newState;
+      final resolvedSummary = _buildExpeditionSummary(
+        resolvedStateResult.newlyResolved,
+      );
+
       // Calculate offline earnings BEFORE loading state
       // Use Domain UseCase for accurate calculation including Tech bonuses
       final offlineUseCase = CalculateOfflineEarningsUseCase();
       final offlineEarnings = offlineUseCase.execute(savedState);
 
       // Load saved state
-      ref.read(gameStateProvider.notifier).loadState(savedState);
+      ref.read(gameStateProvider.notifier).loadState(resolvedState);
 
       // Store offline earnings to show dialog after load
       if (offlineEarnings != null && offlineEarnings.ceEarned > BigInt.zero) {
         _pendingOfflineEarnings = offlineEarnings;
+      }
+      if (resolvedSummary != null) {
+        _pendingExpeditionSummary = resolvedSummary;
       }
     }
 
@@ -176,19 +190,52 @@ class _AppLoaderState extends ConsumerState<_AppLoader> {
       );
     }
 
-    // Show offline earnings dialog if needed
-    if (_pendingOfflineEarnings != null) {
-      final earnings = _pendingOfflineEarnings!;
-      _pendingOfflineEarnings = null; // Clear immediately to prevent re-entry
+    // Show offline/expedition return summary dialog if needed
+    if (_pendingOfflineEarnings != null || _pendingExpeditionSummary != null) {
+      final earnings =
+          _pendingOfflineEarnings ??
+          OfflineEarnings(
+            ceEarned: BigInt.zero,
+            offlineDuration: Duration.zero,
+            efficiency: ref.read(gameStateProvider).offlineEfficiency,
+          );
+      final expeditionSummary = _pendingExpeditionSummary;
+      _pendingOfflineEarnings = null;
+      _pendingExpeditionSummary = null;
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         OfflineEarningsDialog.show(context, earnings, () {
-          ref
-              .read(gameStateProvider.notifier)
-              .addChronoEnergy(earnings.ceEarned);
-        });
+          if (earnings.ceEarned > BigInt.zero) {
+            ref
+                .read(gameStateProvider.notifier)
+                .addChronoEnergy(earnings.ceEarned);
+          }
+        }, expeditionSummary: expeditionSummary);
       });
     }
 
     return const FactoryScreen();
+  }
+
+  OfflineExpeditionSummary? _buildExpeditionSummary(
+    List<Expedition> newlyResolved,
+  ) {
+    if (newlyResolved.isEmpty) return null;
+
+    var totalCe = BigInt.zero;
+    var totalShards = 0;
+
+    for (final expedition in newlyResolved) {
+      final reward = expedition.resolvedReward;
+      if (reward == null) continue;
+      totalCe += reward.chronoEnergy;
+      totalShards += reward.timeShards;
+    }
+
+    return OfflineExpeditionSummary(
+      completedCount: newlyResolved.length,
+      previewChronoEnergy: totalCe,
+      previewTimeShards: totalShards,
+    );
   }
 }
