@@ -40,6 +40,7 @@ dependencies:
   timezone: ^0.9.4
   video_player: ^2.8.1
   hugeicons: ^1.1.5
+  share_plus: ^11.1.0
 
 dev_dependencies:
   flutter_test:
