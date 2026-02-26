@@ -177,7 +177,7 @@ class ResolveExpeditionsUseCase {
   }) {
     final rewardedShards = succeeded ? risk.shardReward * 2 : 0;
     final rewardedArtifactDropChance = succeeded
-        ? (risk.artifactDropChance + 0.08).clamp(0.0, 0.95)
+        ? _buffedRelicDropChance(risk: risk, workers: workers)
         : 0.0;
 
     var totalWorkerPower = BigInt.zero;
@@ -220,9 +220,11 @@ class ResolveExpeditionsUseCase {
       baselineChronoEnergy,
       expeditionBuffMultiplier,
     );
+    // Economy rebalance: keep expedition CE at 30% of the previous buffed output.
+    final tunedChronoEnergy = _applyMultiplier(finalChronoEnergy, 0.30);
 
     return ExpeditionReward(
-      chronoEnergy: finalChronoEnergy,
+      chronoEnergy: tunedChronoEnergy,
       timeShards: rewardedShards,
       artifactDropChance: rewardedArtifactDropChance,
     );
@@ -298,6 +300,31 @@ class ResolveExpeditionsUseCase {
       case WorkerRarity.paradox:
         return 1.0;
     }
+  }
+
+  double _buffedRelicDropChance({
+    required ExpeditionRisk risk,
+    required List<Worker> workers,
+  }) {
+    final double baseChance = (risk.artifactDropChance + 0.08).clamp(0.0, 0.95);
+    if (workers.isEmpty) {
+      return baseChance.clamp(0.0, 0.95);
+    }
+
+    double rarityTotal = 0.0;
+    var artifactCount = 0;
+    for (final Worker worker in workers) {
+      rarityTotal += _rarityBuffScore(worker.rarity);
+      artifactCount += worker.equippedArtifacts.length;
+    }
+
+    final double averageRarityScore = rarityTotal / workers.length;
+    final double rarityBonus = averageRarityScore * 0.10;
+    final double artifactBonus = (artifactCount * 0.015).clamp(0.0, 0.12);
+
+    final double buffedChance =
+        (baseChance * 1.35) + 0.04 + rarityBonus + artifactBonus;
+    return buffedChance.clamp(0.0, 0.95);
   }
 }
 

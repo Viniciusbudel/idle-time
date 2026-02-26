@@ -579,57 +579,62 @@ void main() {
       expect(boostedReward > baselineReward * BigInt.from(3), isTrue);
     });
 
-    test('2h paradox + legendary crew yields billion-scale CE on success', () {
-      final start = StartExpeditionUseCase();
-      final resolve = ResolveExpeditionsUseCase();
-      final now = DateTime(2026, 2, 26, 18, 0);
+    test(
+      '2h paradox + legendary crew yields strong CE and buffed relic odds',
+      () {
+        final start = StartExpeditionUseCase();
+        final resolve = ResolveExpeditionsUseCase();
+        final now = DateTime(2026, 2, 26, 18, 0);
 
-      final paradoxWorker = Worker(
-        id: 'paradox_2h',
-        era: WorkerEra.roaring20s,
-        baseProduction: BigInt.from(25),
-        rarity: WorkerRarity.paradox,
-        chronalAttunement: 1.0,
-      );
-      final legendaryWorker = Worker(
-        id: 'legendary_2h',
-        era: WorkerEra.roaring20s,
-        baseProduction: BigInt.from(15),
-        rarity: WorkerRarity.legendary,
-        chronalAttunement: 1.0,
-      );
+        final paradoxWorker = Worker(
+          id: 'paradox_2h',
+          era: WorkerEra.roaring20s,
+          baseProduction: BigInt.from(25),
+          rarity: WorkerRarity.paradox,
+          chronalAttunement: 1.0,
+        );
+        final legendaryWorker = Worker(
+          id: 'legendary_2h',
+          era: WorkerEra.roaring20s,
+          baseProduction: BigInt.from(15),
+          rarity: WorkerRarity.legendary,
+          chronalAttunement: 1.0,
+        );
 
-      final state = GameState.initial().copyWith(
-        workers: {
-          paradoxWorker.id: paradoxWorker,
-          legendaryWorker.id: legendaryWorker,
-        },
-        stations: const {},
-        techLevels: const {},
-        expeditions: const [],
-        unlockedEras: const {'victorian', 'roaring_20s'},
-        currentEraId: 'roaring_20s',
-      );
+        final state = GameState.initial().copyWith(
+          workers: {
+            paradoxWorker.id: paradoxWorker,
+            legendaryWorker.id: legendaryWorker,
+          },
+          stations: const {},
+          techLevels: const {},
+          expeditions: const [],
+          unlockedEras: const {'victorian', 'roaring_20s'},
+          currentEraId: 'roaring_20s',
+        );
 
-      final started = start.execute(
-        state,
-        slotId: 'rift_probe',
-        risk: ExpeditionRisk.risky,
-        workerIds: const ['paradox_2h', 'legendary_2h'],
-        now: now,
-      );
-      expect(started, isNotNull);
+        final started = start.execute(
+          state,
+          slotId: 'rift_probe',
+          risk: ExpeditionRisk.risky,
+          workerIds: const ['paradox_2h', 'legendary_2h'],
+          now: now,
+        );
+        expect(started, isNotNull);
 
-      final resolved = resolve.execute(
-        started!.newState,
-        now: now.add(const Duration(hours: 2, minutes: 1)),
-        randomRoll: () => 0.0,
-      );
-      final chronoEnergy =
-          resolved.newlyResolved.first.resolvedReward!.chronoEnergy;
+        final resolved = resolve.execute(
+          started!.newState,
+          now: now.add(const Duration(hours: 2, minutes: 1)),
+          randomRoll: () => 0.0,
+        );
+        final ExpeditionReward reward =
+            resolved.newlyResolved.first.resolvedReward!;
+        final chronoEnergy = reward.chronoEnergy;
 
-      expect(chronoEnergy, greaterThan(BigInt.from(1000000000)));
-    });
+        expect(chronoEnergy, greaterThan(BigInt.from(350000000)));
+        expect(reward.artifactDropChance, greaterThan(0.30));
+      },
+    );
 
     test('preview estimator matches resolved success reward formula', () {
       final start = StartExpeditionUseCase();
