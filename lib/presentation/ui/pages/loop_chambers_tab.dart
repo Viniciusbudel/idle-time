@@ -97,7 +97,8 @@ class LoopChambersTab extends ConsumerWidget {
       highlightFirstEmptySlot: isFirstCard,
       onUpgrade: () => _upgradeStation(ref, context, station),
       onAssignSlot: (slot) => _assignWorkerToSlot(ref, context, station, slot),
-      onRemoveWorker: (id) => _removeWorkerFromStation(ref, station, id),
+      onRemoveWorker: (id) =>
+          _removeWorkerFromStation(ref, context, station, id),
     );
   }
 
@@ -125,14 +126,8 @@ class LoopChambersTab extends ConsumerWidget {
     int slotIndex,
   ) {
     final gameState = ref.read(gameStateProvider);
-    final activeExpeditionWorkerIds = gameState.expeditions
-        .where((expedition) => !expedition.resolved)
-        .expand((expedition) => expedition.workerIds)
-        .toSet();
     final idleWorkers = gameState.workers.values
-        .where(
-          (w) => !w.isDeployed && !activeExpeditionWorkerIds.contains(w.id),
-        )
+        .where((w) => !w.isDeployed)
         .toList();
 
     AssignWorkerDialog.show(
@@ -141,7 +136,7 @@ class LoopChambersTab extends ConsumerWidget {
       slotIndex: slotIndex,
       idleWorkers: idleWorkers,
       onAssign: (worker) {
-        ref
+        return ref
             .read(gameStateProvider.notifier)
             .assignWorkerToStation(worker.id, station.id);
       },
@@ -150,9 +145,25 @@ class LoopChambersTab extends ConsumerWidget {
 
   void _removeWorkerFromStation(
     WidgetRef ref,
+    BuildContext context,
     Station station,
     String workerId,
   ) {
+    final gameState = ref.read(gameStateProvider);
+    final bool onActiveExpedition = gameState.expeditions.any(
+      (expedition) =>
+          !expedition.resolved && expedition.workerIds.contains(workerId),
+    );
+    if (onActiveExpedition) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Worker is on an active expedition.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     ref
         .read(gameStateProvider.notifier)
         .removeWorkerFromStation(workerId, station.id);

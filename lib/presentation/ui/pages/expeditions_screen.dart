@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/core/theme/era_theme.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 import 'package:time_factory/core/utils/expedition_utils.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
@@ -13,6 +14,7 @@ import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/usecases/claim_expedition_rewards_usecase.dart';
+import 'package:time_factory/domain/usecases/resolve_expeditions_usecase.dart';
 import 'package:time_factory/domain/usecases/start_expedition_usecase.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
@@ -33,6 +35,8 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       <String, ExpeditionRisk>{};
   final Map<String, List<String>> _selectedWorkerIdsBySlotId =
       <String, List<String>>{};
+  final ResolveExpeditionsUseCase _resolveExpeditionsUseCase =
+      ResolveExpeditionsUseCase();
   _ExpeditionPanel _activePanel = _ExpeditionPanel.missions;
   String? _expandedSlotId;
   bool _hasAutoExpanded = false;
@@ -147,7 +151,12 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
             ...slots.map(
               (ExpeditionSlot slot) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: _buildSlotCard(context, availableWorkers, slot),
+                child: _buildSlotCard(
+                  context,
+                  gameState,
+                  availableWorkers,
+                  slot,
+                ),
               ),
             ),
           ],
@@ -453,22 +462,67 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     );
   }
 
+  Widget _buildMissionIdentityChip({
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        label,
+        style: TimeFactoryTextStyles.bodyMono.copyWith(
+          color: color,
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSlotCard(
     BuildContext context,
+    GameState gameState,
     List<Worker> availableWorkers,
     ExpeditionSlot slot,
   ) {
+    final bool slotHasActiveRun = gameState.expeditions.any(
+      (Expedition expedition) =>
+          !expedition.resolved && expedition.slotId == slot.id,
+    );
     final ExpeditionRisk selectedRisk =
         _selectedRiskBySlotId[slot.id] ?? slot.defaultRisk;
-    final bool canStart = availableWorkers.length >= slot.requiredWorkers;
+    final EraTheme eraTheme = EraTheme.fromId(slot.eraId);
+    final Color eraAccent = eraTheme.primaryColor;
+    final Color riskAccent = expeditionRiskColor(selectedRisk);
+    final Color combinedAccent =
+        Color.lerp(eraAccent, riskAccent, 0.45) ?? riskAccent;
+    final Color cardTextColor =
+        Color.lerp(eraTheme.textColor, Colors.white, 0.55) ?? Colors.white;
+    final bool hasRequiredCrew =
+        availableWorkers.length >= slot.requiredWorkers;
+    final bool canConfigureSlot = !slotHasActiveRun;
+    final bool canStart = hasRequiredCrew && canConfigureSlot;
+    final bool shouldShowQuickHire = !hasRequiredCrew && canConfigureSlot;
     final bool isExpanded = _expandedSlotId == slot.id;
     final List<Worker> selectedWorkers = _selectedWorkersForSlot(
       slot.id,
       availableWorkers,
       slot.requiredWorkers,
     );
-    final ExpeditionReward? previewReward = _estimateSlotRewardPreview(
+    final List<Worker> previewWorkers = _previewWorkersForSlot(
+      selectedWorkers: selectedWorkers,
       availableWorkers: availableWorkers,
+      requiredCount: slot.requiredWorkers,
+    );
+    final ExpeditionReward? previewReward = _estimateSlotRewardPreview(
+      gameState: gameState,
+      previewWorkers: previewWorkers,
       requiredWorkers: slot.requiredWorkers,
       duration: slot.duration,
       risk: selectedRisk,
@@ -480,6 +534,39 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
           requiredWorkers: slot.requiredWorkers,
         );
     final int successPercent = (successChance * 100).round();
+
+    void autoAssembleCrew() {
+      final List<String>? autoSelected = ref
+          .read(gameStateProvider.notifier)
+          .autoAssembleCrewForExpedition(slot.id);
+      if (autoSelected == null) {
+        return;
+      }
+      setState(() {
+        _selectedWorkerIdsBySlotId[slot.id] = autoSelected;
+      });
+    }
+
+    void quickHireCrew() {
+      final QuickHireExpeditionCrewResult? hireResult = ref
+          .read(gameStateProvider.notifier)
+          .quickHireForExpeditionCrew(slot.id);
+      if (hireResult == null) {
+        return;
+      }
+      setState(() {
+        _selectedWorkerIdsBySlotId[slot.id] = hireResult.crewWorkerIds;
+      });
+
+      final String message = hireResult.hiredWorkers > 0
+          ? '${AppLocalizations.of(context)!.hireSuccessful} (+${hireResult.hiredWorkers})'
+          : AppLocalizations.of(context)!.insufficientCE;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+
     Future<void> openWorkerPicker() async {
       final List<String>? pickedWorkerIds = await _pickWorkersForSlot(
         context,
@@ -502,6 +589,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: <Color>[
+            eraTheme.surfaceColor.withValues(alpha: 0.28),
             TimeFactoryColors.surface,
             TimeFactoryColors.background.withValues(alpha: 0.8),
           ],
@@ -509,14 +597,9 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: expeditionRiskColor(selectedRisk).withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: combinedAccent.withValues(alpha: 0.45)),
         boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: expeditionRiskColor(selectedRisk).withValues(alpha: 0.08),
-            blurRadius: 12,
-          ),
+          BoxShadow(color: eraAccent.withValues(alpha: 0.12), blurRadius: 12),
         ],
       ),
       child: Column(
@@ -524,17 +607,13 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              const AppIcon(
-                AppHugeIcons.rocket_launch,
-                color: TimeFactoryColors.electricCyan,
-                size: 18,
-              ),
+              AppIcon(AppHugeIcons.rocket_launch, color: eraAccent, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   slot.name,
                   style: TimeFactoryTextStyles.bodyMono.copyWith(
-                    color: Colors.white,
+                    color: cardTextColor,
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
@@ -566,13 +645,41 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                         ? AppHugeIcons.keyboard_arrow_down
                         : AppHugeIcons.chevron_right,
                     size: 16,
-                    color: Colors.white70,
+                    color: eraAccent.withValues(alpha: 0.9),
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 9),
+          Text(
+            slot.headline,
+            style: TimeFactoryTextStyles.bodyMono.copyWith(
+              color: cardTextColor.withValues(alpha: 0.78),
+              fontSize: 10,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: <Widget>[
+              _buildMissionIdentityChip(
+                label: slot.eraId.replaceAll('_', ' ').toUpperCase(),
+                color: eraAccent,
+              ),
+              _buildMissionIdentityChip(
+                label: slot.layoutPreset.replaceAll('_', ' ').toUpperCase(),
+                color: eraTheme.secondaryColor,
+              ),
+              if (slotHasActiveRun)
+                _buildMissionIdentityChip(
+                  label: 'ACTIVE RUN',
+                  color: TimeFactoryColors.voltageYellow,
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
           Row(
             children: <Widget>[
               Expanded(
@@ -626,19 +733,30 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               if (index < selectedWorkers.length) {
                 return _buildWorkerSocket(
                   worker: selectedWorkers[index],
-                  accentColor: expeditionRiskColor(selectedRisk),
-                  onTap: openWorkerPicker,
+                  accentColor: combinedAccent,
+                  onTap: canConfigureSlot ? openWorkerPicker : null,
                 );
               }
               return _buildAddWorkerSocket(
-                accentColor: expeditionRiskColor(selectedRisk),
-                onTap: openWorkerPicker,
+                accentColor: combinedAccent,
+                onTap: canConfigureSlot ? openWorkerPicker : null,
               );
             }),
           ),
           const SizedBox(height: 8),
           Text(
-            canStart
+            'Idle: ${availableWorkers.length} | Required: ${slot.requiredWorkers}',
+            style: TimeFactoryTextStyles.bodyMono.copyWith(
+              color: cardTextColor.withValues(alpha: 0.74),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            slotHasActiveRun
+                ? 'This expedition type already has an active run.'
+                : hasRequiredCrew
                 ? AppLocalizations.of(context)!.expeditionWorkersReady(
                     slot.requiredWorkers,
                     availableWorkers.length,
@@ -650,8 +768,15 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                     availableWorkers.length,
                   ),
             style: TimeFactoryTextStyles.bodyMono.copyWith(
-              color: canStart ? Colors.white60 : Colors.redAccent,
+              color: slotHasActiveRun
+                  ? TimeFactoryColors.voltageYellow
+                  : hasRequiredCrew
+                  ? Colors.white60
+                  : Colors.redAccent,
               fontSize: 10,
+              fontWeight: slotHasActiveRun
+                  ? FontWeight.bold
+                  : FontWeight.normal,
             ),
           ),
           AnimatedCrossFade(
@@ -669,12 +794,20 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                   runSpacing: 6,
                   children: ExpeditionRisk.values.map((ExpeditionRisk risk) {
                     final bool selected = selectedRisk == risk;
+                    final _RiskProfile profile = _riskProfilePreview(
+                      gameState: gameState,
+                      workers: previewWorkers,
+                      duration: slot.duration,
+                      risk: risk,
+                    );
                     return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedRiskBySlotId[slot.id] = risk;
-                        });
-                      },
+                      onTap: canConfigureSlot
+                          ? () {
+                              setState(() {
+                                _selectedRiskBySlotId[slot.id] = risk;
+                              });
+                            }
+                          : null,
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
                         padding: const EdgeInsets.symmetric(
@@ -696,10 +829,10 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                         ),
                         child: Text(
                           AppLocalizations.of(context)!.expeditionRiskBadge(
-                            risk.name.toUpperCase(),
-                            risk.ceMultiplier.toStringAsFixed(1),
-                            risk.shardReward,
-                            (risk.artifactDropChance * 100).round(),
+                            _riskLabel(risk),
+                            profile.ceMultiplierLabel,
+                            profile.timeShards,
+                            profile.relicChancePercent,
                           ),
                           style: TimeFactoryTextStyles.bodyMono.copyWith(
                             fontSize: 9,
@@ -720,6 +853,46 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                     color: Colors.white54,
                     fontSize: 10,
                   ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: <Widget>[
+                    OutlinedButton.icon(
+                      onPressed: canConfigureSlot && availableWorkers.isNotEmpty
+                          ? autoAssembleCrew
+                          : null,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: combinedAccent.withValues(alpha: 0.55),
+                        ),
+                        foregroundColor: combinedAccent,
+                      ),
+                      icon: AppIcon(
+                        AppHugeIcons.groups,
+                        size: 14,
+                        color: combinedAccent,
+                      ),
+                      label: const Text('Auto Assemble Crew'),
+                    ),
+                    if (shouldShowQuickHire)
+                      ElevatedButton.icon(
+                        onPressed: quickHireCrew,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: expeditionRiskColor(
+                            selectedRisk,
+                          ).withValues(alpha: 0.88),
+                          foregroundColor: Colors.black,
+                        ),
+                        icon: const AppIcon(
+                          AppHugeIcons.person_add,
+                          size: 14,
+                          color: Colors.black,
+                        ),
+                        label: const Text('Hire Now'),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 InkWell(
@@ -885,6 +1058,12 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
         .map((String workerId) => gameState.workers[workerId])
         .whereType<Worker>()
         .toList();
+    final _RiskProfile activeProfile = _riskProfilePreview(
+      gameState: gameState,
+      workers: assignedWorkers,
+      duration: total,
+      risk: expedition.risk,
+    );
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
@@ -921,7 +1100,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '${_slotName(expedition.slotId)} | ${expedition.risk.name.toUpperCase()}',
+                  '${_slotName(expedition.slotId)} | ${_riskLabel(expedition.risk)}',
                   style: TimeFactoryTextStyles.bodyMono.copyWith(
                     color: Colors.white,
                     fontSize: 11,
@@ -968,9 +1147,9 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
           Text(
             AppLocalizations.of(context)!.expeditionWorkersAssigned(
               expedition.workerIds.length,
-              expedition.risk.ceMultiplier.toStringAsFixed(1),
-              expedition.risk.shardReward,
-              (expedition.risk.artifactDropChance * 100).round(),
+              activeProfile.ceMultiplierLabel,
+              activeProfile.timeShards,
+              activeProfile.relicChancePercent,
             ),
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               color: Colors.white60,
@@ -1124,7 +1303,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               child: Text(
                 AppLocalizations.of(context)!.expeditionStarted(
                   slot.name,
-                  risk.name.toUpperCase(),
+                  _riskLabel(risk),
                   workerIds.length,
                 ),
               ),
@@ -1195,7 +1374,6 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     }
 
     return gameState.workers.values
-        .where((Worker worker) => !worker.isDeployed)
         .where(
           (Worker worker) => !activeExpeditionWorkerIds.contains(worker.id),
         )
@@ -1261,27 +1439,31 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
 
   Widget _buildAddWorkerSocket({
     required Color accentColor,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
   }) {
+    final Widget socket = Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: accentColor.withValues(alpha: 0.55)),
+      ),
+      child: Center(
+        child: AppIcon(
+          AppHugeIcons.add,
+          size: 18,
+          color: accentColor.withValues(alpha: 0.85),
+        ),
+      ),
+    );
+    if (onTap == null) {
+      return socket;
+    }
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(7),
-      child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: accentColor.withValues(alpha: 0.55)),
-        ),
-        child: Center(
-          child: AppIcon(
-            AppHugeIcons.add,
-            size: 18,
-            color: accentColor.withValues(alpha: 0.85),
-          ),
-        ),
-      ),
+      child: socket,
     );
   }
 
@@ -1294,33 +1476,101 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     return sorted.take(requiredCount).map((Worker w) => w.id).toList();
   }
 
-  ExpeditionReward? _estimateSlotRewardPreview({
+  List<Worker> _previewWorkersForSlot({
+    required List<Worker> selectedWorkers,
     required List<Worker> availableWorkers,
+    required int requiredCount,
+  }) {
+    final List<Worker> preview = List<Worker>.from(selectedWorkers);
+    if (preview.length >= requiredCount) {
+      return preview.take(requiredCount).toList(growable: false);
+    }
+
+    final Set<String> selectedIds = preview
+        .map((Worker worker) => worker.id)
+        .toSet();
+    final List<Worker> sorted = List<Worker>.from(availableWorkers)
+      ..sort((a, b) => b.currentProduction.compareTo(a.currentProduction));
+    for (final Worker worker in sorted) {
+      if (preview.length >= requiredCount) {
+        break;
+      }
+      if (selectedIds.add(worker.id)) {
+        preview.add(worker);
+      }
+    }
+
+    return preview;
+  }
+
+  ExpeditionReward? _estimateSlotRewardPreview({
+    required GameState gameState,
+    required List<Worker> previewWorkers,
     required int requiredWorkers,
     required Duration duration,
     required ExpeditionRisk risk,
   }) {
-    if (availableWorkers.length < requiredWorkers) {
+    if (previewWorkers.length < requiredWorkers) {
       return null;
     }
 
-    final List<Worker> selected = List<Worker>.from(availableWorkers)
-      ..sort((a, b) => b.currentProduction.compareTo(a.currentProduction));
+    return _resolveExpeditionsUseCase.estimateRewardPreview(
+      gameState,
+      workers: previewWorkers.take(requiredWorkers).toList(growable: false),
+      duration: duration,
+      risk: risk,
+      succeeded: true,
+    );
+  }
 
+  _RiskProfile _riskProfilePreview({
+    required GameState gameState,
+    required List<Worker> workers,
+    required Duration duration,
+    required ExpeditionRisk risk,
+  }) {
+    final ExpeditionReward reward = _resolveExpeditionsUseCase
+        .estimateRewardPreview(
+          gameState,
+          workers: workers,
+          duration: duration,
+          risk: risk,
+          succeeded: true,
+        );
+
+    final int safeDurationSeconds = duration.inSeconds.clamp(1, 60 * 60 * 24);
     BigInt totalWorkerPower = BigInt.zero;
-    for (final Worker worker in selected.take(requiredWorkers)) {
+    for (final Worker worker in workers) {
       totalWorkerPower += worker.currentProduction;
     }
+    final BigInt baseUnits =
+        totalWorkerPower * BigInt.from(safeDurationSeconds);
 
-    final int durationSeconds = duration.inSeconds.clamp(1, 60 * 60 * 24);
-    final double weighted =
-        totalWorkerPower.toDouble() * durationSeconds * risk.ceMultiplier;
+    String ceMultiplierLabel = '0.0';
+    if (baseUnits > BigInt.zero) {
+      final BigInt scaled10 =
+          reward.chronoEnergy * BigInt.from(10) ~/ baseUnits;
+      final BigInt whole = scaled10 ~/ BigInt.from(10);
+      final BigInt tenth = scaled10.remainder(BigInt.from(10));
+      ceMultiplierLabel = '$whole.$tenth';
+    }
 
-    return ExpeditionReward(
-      chronoEnergy: BigInt.from(weighted.round()),
-      timeShards: risk.shardReward,
-      artifactDropChance: risk.artifactDropChance,
+    return _RiskProfile(
+      ceMultiplierLabel: ceMultiplierLabel,
+      timeShards: reward.timeShards,
+      relicChancePercent: (reward.artifactDropChance * 100).round(),
     );
+  }
+
+  String _riskLabel(ExpeditionRisk risk) {
+    switch (risk) {
+      case ExpeditionRisk.safe:
+        return 'SAFE';
+      case ExpeditionRisk.risky:
+        return 'RISK';
+      case ExpeditionRisk.volatile:
+        return 'VOLATILE';
+    }
   }
 
   Future<List<String>?> _pickWorkersForSlot(
@@ -1524,7 +1774,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${worker.era.localizedName(context)} | ${worker.rarity.displayName} | ${NumberFormatter.formatPerSecond(worker.currentProduction)}',
+                                          '${worker.era.localizedName(context)} | ${worker.rarity.displayName} | ${NumberFormatter.formatPerSecond(worker.currentProduction)}${worker.isDeployed ? ' | CHAMBER' : ''}',
                                           style: TimeFactoryTextStyles.bodyMono
                                               .copyWith(
                                                 color: Colors.white54,
@@ -1628,6 +1878,18 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     }
     return AppLocalizations.of(context)!.durationSeconds(seconds);
   }
+}
+
+class _RiskProfile {
+  final String ceMultiplierLabel;
+  final int timeShards;
+  final int relicChancePercent;
+
+  const _RiskProfile({
+    required this.ceMultiplierLabel,
+    required this.timeShards,
+    required this.relicChancePercent,
+  });
 }
 
 /// Isolates 1-second timer rebuilds so only the child tree is updated,
