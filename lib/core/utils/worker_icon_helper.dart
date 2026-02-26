@@ -63,6 +63,8 @@ class WorkerIconHelper {
         return '20s';
       case WorkerEra.atomicAge:
         return 'atomic';
+      case WorkerEra.cyberpunk80s:
+        return 'cyberpunk';
       default:
         return era.id;
     }

@@ -49,27 +49,30 @@ void main() {
 
     // Allow animations to settle
     await tester.pump(const Duration(seconds: 1));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(MegaChamberCard)),
+    )!;
 
     // Verify Output Display (Hero Stat)
-    expect(find.text('CURRENT OUTPUT'), findsOneWidget);
+    expect(find.text(l10n.currentOutput), findsOneWidget);
     expect(find.textContaining('12.3'), findsOneWidget);
-    // expect(find.text('/ SEC'), findsOneWidget); // Format changed or shadowed
+    expect(find.text(l10n.perSecond), findsOneWidget);
 
     // Verify System Status
-    expect(find.text('SYS :: ONLINE'), findsOneWidget);
+    expect(find.text(l10n.sysOnline), findsOneWidget);
 
     // Verify Stats HUD
-    expect(find.text('EFFICIENCY'), findsOneWidget);
+    expect(find.text(l10n.efficiency), findsOneWidget);
     expect(find.textContaining('100%'), findsOneWidget);
 
-    expect(find.text('STABILITY'), findsOneWidget);
+    expect(find.text(l10n.stability), findsOneWidget);
 
     // Verify Worker Header with Capacity
-    expect(find.text('WORKER PROTOCOLS'), findsOneWidget);
+    expect(find.text(l10n.workerProtocols), findsOneWidget);
     // Capacity text includes localized 'ONLINE' suffix
     expect(find.textContaining('0 /'), findsOneWidget);
 
     // Verify Upgrade Button — widget now shows 'INIT UPGRADE'
-    expect(find.text('INIT UPGRADE'), findsOneWidget);
+    expect(find.text(l10n.initUpgrade), findsOneWidget);
   });
 }
