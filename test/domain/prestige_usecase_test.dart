@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
+import 'package:time_factory/domain/entities/prestige_upgrade.dart';
 import 'package:time_factory/domain/entities/worker_artifact.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/usecases/prestige_usecase.dart';
@@ -67,22 +68,32 @@ void main() {
       },
     );
 
-    test(
-      'should calculate starting eras correctly based on era_insight upgrade',
-      () {
-        final state = GameState.initial().copyWith(
-          lifetimeChronoEnergy: BigInt.from(1000000),
-          paradoxPointsSpent: {'era_insight': 2}, // +2 starting eras
-        );
+    test('should normalize removed prestige upgrades when loading a save', () {
+      final saveMap = GameState.initial().toMap();
+      saveMap['paradoxPointsSpent'] = {
+        PrestigeUpgradeType.chronoMastery.id: 2,
+        PrestigeUpgradeType.eraInsight.id: 3,
+        PrestigeUpgradeType.riftStability.id: 4,
+      };
 
-        final result = useCase.execute(state);
+      final loaded = GameState.fromMap(saveMap);
 
-        expect(result.unlockedEras.contains('victorian'), isTrue);
-        expect(result.unlockedEras.contains('roaring_20s'), isTrue);
-        expect(result.unlockedEras.contains('atomic_age'), isTrue);
-        expect(result.unlockedEras.contains('cyberpunk_80s'), isFalse);
-      },
-    );
+      expect(
+        loaded.paradoxPointsSpent,
+        {PrestigeUpgradeType.chronoMastery.id: 2},
+      );
+    });
+
+    test('should ignore legacy era_insight levels after load normalization', () {
+      final saveMap = GameState.initial().toMap();
+      saveMap['lifetimeChronoEnergy'] = BigInt.from(1000000).toString();
+      saveMap['paradoxPointsSpent'] = {PrestigeUpgradeType.eraInsight.id: 4};
+
+      final loaded = GameState.fromMap(saveMap);
+      final result = useCase.execute(loaded);
+
+      expect(result.unlockedEras, {'victorian'});
+    });
 
     test(
       'should calculate correct prestigePointsToGain based on lifetimeChronoEnergy',

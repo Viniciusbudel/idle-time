@@ -825,6 +825,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   /// Spend paradox points on upgrade
   bool spendParadoxPoints(String upgradeId, int amount) {
+    if (PrestigeUpgradeType.removedShopUpgradeIds.contains(upgradeId)) {
+      return false;
+    }
+    if (PrestigeUpgradeType.fromId(upgradeId) == null) {
+      return false;
+    }
     if (state.availableParadoxPoints < amount) return false;
 
     final newSpent = Map<String, int>.from(state.paradoxPointsSpent);
@@ -913,6 +919,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   /// Buy a specific prestige upgrade
   bool buyPrestigeUpgrade(PrestigeUpgradeType type) {
+    if (type.isRemovedFromShop) {
+      return false;
+    }
     final currentLevel = state.paradoxPointsSpent[type.id] ?? 0;
 
     // Check max level cap

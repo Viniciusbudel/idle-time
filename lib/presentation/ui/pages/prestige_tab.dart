@@ -64,7 +64,7 @@ class PrestigeTab extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.lg),
                   _buildShopHeader(colors: colors, typography: typography),
                   const SizedBox(height: AppSpacing.sm),
-                  ...PrestigeUpgradeType.values.map((type) {
+                  ...PrestigeUpgradeType.shopCatalog.map((type) {
                     final level = gameState.paradoxPointsSpent[type.id] ?? 0;
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),

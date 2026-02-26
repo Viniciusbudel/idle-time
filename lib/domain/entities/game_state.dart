@@ -457,6 +457,15 @@ class GameState {
     final parsedWorkers = (map['workers'] as Map<String, dynamic>).map(
       (k, v) => MapEntry(k, Worker.fromMap(v as Map<String, dynamic>)),
     );
+    final rawParadoxSpent = Map<String, int>.from(map['paradoxPointsSpent'] ?? {});
+    final normalizedParadoxSpent = <String, int>{};
+    for (final entry in rawParadoxSpent.entries) {
+      final type = PrestigeUpgradeType.fromId(entry.key);
+      if (type == null || type.isRemovedFromShop) {
+        continue;
+      }
+      normalizedParadoxSpent[entry.key] = type.clampLevel(entry.value);
+    }
 
     return GameState(
       chronoEnergy: BigInt.parse(map['chronoEnergy']),
@@ -484,9 +493,7 @@ class GameState {
           ? DateTime.parse(map['paradoxEventEndTime'])
           : null,
       prestigeLevel: map['prestigeLevel'] ?? 0,
-      paradoxPointsSpent: Map<String, int>.from(
-        map['paradoxPointsSpent'] ?? {},
-      ),
+      paradoxPointsSpent: normalizedParadoxSpent,
       availableParadoxPoints: map['availableParadoxPoints'] ?? 0,
       unlockedEras: Set<String>.from(map['unlockedEras'] ?? {'victorian'}),
       completedEras: Set<String>.from(map['completedEras'] ?? {}),

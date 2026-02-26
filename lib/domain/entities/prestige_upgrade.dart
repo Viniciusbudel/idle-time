@@ -44,6 +44,24 @@ enum PrestigeUpgradeType {
     this.icon,
   );
 
+  static const Set<String> removedShopUpgradeIds = {
+    'era_insight',
+    'rift_stability',
+  };
+
+  static List<PrestigeUpgradeType> get shopCatalog => values
+      .where((type) => !removedShopUpgradeIds.contains(type.id))
+      .toList(growable: false);
+
+  static PrestigeUpgradeType? fromId(String id) {
+    for (final type in values) {
+      if (type.id == id) return type;
+    }
+    return null;
+  }
+
+  bool get isRemovedFromShop => removedShopUpgradeIds.contains(id);
+
   /// Calculate cost for the NEXT level (currentLevel + 1)
   int getCost(int currentLevel) {
     final nextLevel = currentLevel + 1;
