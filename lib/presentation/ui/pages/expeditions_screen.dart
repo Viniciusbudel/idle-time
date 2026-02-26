@@ -491,6 +491,10 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     List<Worker> availableWorkers,
     ExpeditionSlot slot,
   ) {
+    final bool slotHasActiveRun = gameState.expeditions.any(
+      (Expedition expedition) =>
+          !expedition.resolved && expedition.slotId == slot.id,
+    );
     final ExpeditionRisk selectedRisk =
         _selectedRiskBySlotId[slot.id] ?? slot.defaultRisk;
     final EraTheme eraTheme = EraTheme.fromId(slot.eraId);
@@ -500,8 +504,11 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
         Color.lerp(eraAccent, riskAccent, 0.45) ?? riskAccent;
     final Color cardTextColor =
         Color.lerp(eraTheme.textColor, Colors.white, 0.55) ?? Colors.white;
-    final bool canStart = availableWorkers.length >= slot.requiredWorkers;
-    final bool shouldShowQuickHire = !canStart;
+    final bool hasRequiredCrew =
+        availableWorkers.length >= slot.requiredWorkers;
+    final bool canConfigureSlot = !slotHasActiveRun;
+    final bool canStart = hasRequiredCrew && canConfigureSlot;
+    final bool shouldShowQuickHire = !hasRequiredCrew && canConfigureSlot;
     final bool isExpanded = _expandedSlotId == slot.id;
     final List<Worker> selectedWorkers = _selectedWorkersForSlot(
       slot.id,
@@ -665,6 +672,11 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                 label: slot.layoutPreset.replaceAll('_', ' ').toUpperCase(),
                 color: eraTheme.secondaryColor,
               ),
+              if (slotHasActiveRun)
+                _buildMissionIdentityChip(
+                  label: 'ACTIVE RUN',
+                  color: TimeFactoryColors.voltageYellow,
+                ),
             ],
           ),
           const SizedBox(height: 8),
@@ -722,12 +734,12 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                 return _buildWorkerSocket(
                   worker: selectedWorkers[index],
                   accentColor: combinedAccent,
-                  onTap: openWorkerPicker,
+                  onTap: canConfigureSlot ? openWorkerPicker : null,
                 );
               }
               return _buildAddWorkerSocket(
                 accentColor: combinedAccent,
-                onTap: openWorkerPicker,
+                onTap: canConfigureSlot ? openWorkerPicker : null,
               );
             }),
           ),
@@ -742,7 +754,9 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            canStart
+            slotHasActiveRun
+                ? 'This expedition type already has an active run.'
+                : hasRequiredCrew
                 ? AppLocalizations.of(context)!.expeditionWorkersReady(
                     slot.requiredWorkers,
                     availableWorkers.length,
@@ -754,8 +768,15 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                     availableWorkers.length,
                   ),
             style: TimeFactoryTextStyles.bodyMono.copyWith(
-              color: canStart ? Colors.white60 : Colors.redAccent,
+              color: slotHasActiveRun
+                  ? TimeFactoryColors.voltageYellow
+                  : hasRequiredCrew
+                  ? Colors.white60
+                  : Colors.redAccent,
               fontSize: 10,
+              fontWeight: slotHasActiveRun
+                  ? FontWeight.bold
+                  : FontWeight.normal,
             ),
           ),
           AnimatedCrossFade(
@@ -780,11 +801,13 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                       risk: risk,
                     );
                     return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedRiskBySlotId[slot.id] = risk;
-                        });
-                      },
+                      onTap: canConfigureSlot
+                          ? () {
+                              setState(() {
+                                _selectedRiskBySlotId[slot.id] = risk;
+                              });
+                            }
+                          : null,
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
                         padding: const EdgeInsets.symmetric(
@@ -837,7 +860,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                   runSpacing: 8,
                   children: <Widget>[
                     OutlinedButton.icon(
-                      onPressed: availableWorkers.isNotEmpty
+                      onPressed: canConfigureSlot && availableWorkers.isNotEmpty
                           ? autoAssembleCrew
                           : null,
                       style: OutlinedButton.styleFrom(
@@ -1416,27 +1439,31 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
 
   Widget _buildAddWorkerSocket({
     required Color accentColor,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
   }) {
+    final Widget socket = Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: accentColor.withValues(alpha: 0.55)),
+      ),
+      child: Center(
+        child: AppIcon(
+          AppHugeIcons.add,
+          size: 18,
+          color: accentColor.withValues(alpha: 0.85),
+        ),
+      ),
+    );
+    if (onTap == null) {
+      return socket;
+    }
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(7),
-      child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: accentColor.withValues(alpha: 0.55)),
-        ),
-        child: Center(
-          child: AppIcon(
-            AppHugeIcons.add,
-            size: 18,
-            color: accentColor.withValues(alpha: 0.85),
-          ),
-        ),
-      ),
+      child: socket,
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
+import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
@@ -132,4 +133,35 @@ void main() {
 
     expect(find.textContaining('CHAMBER'), findsWidgets);
   });
+
+  testWidgets(
+    'slot shows disabled active-run indicator when same type is active',
+    (WidgetTester tester) async {
+      final DateTime now = DateTime.now();
+      final Expedition activeSalvageRun = Expedition(
+        id: 'exp_active_salvage',
+        slotId: 'salvage_run',
+        risk: ExpeditionRisk.safe,
+        workerIds: const ['worker_starter'],
+        startTime: now.subtract(const Duration(minutes: 4)),
+        endTime: now.add(const Duration(minutes: 26)),
+        successProbability: 0.8,
+        resolved: false,
+      );
+
+      final GameState state = GameState.initial().copyWith(
+        unlockedEras: const {'victorian'},
+        currentEraId: 'victorian',
+        expeditions: [activeSalvageRun],
+      );
+
+      await pumpExpeditionsScreen(tester, state: state);
+
+      expect(find.text('ACTIVE RUN'), findsOneWidget);
+      expect(
+        find.text('This expedition type already has an active run.'),
+        findsOneWidget,
+      );
+    },
+  );
 }
