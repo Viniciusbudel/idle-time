@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/domain/entities/expedition.dart';
+import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/prestige_upgrade.dart';
 import 'package:time_factory/domain/entities/station.dart';
@@ -133,10 +134,12 @@ class ResolveExpeditionsUseCase {
         ? (expedition.risk.artifactDropChance + 0.08).clamp(0.0, 0.95)
         : 0.0;
 
+    final List<Worker> assignedWorkers = <Worker>[];
     var totalWorkerPower = BigInt.zero;
     for (final workerId in expedition.workerIds) {
       final worker = state.workers[workerId];
       if (worker != null) {
+        assignedWorkers.add(worker);
         totalWorkerPower += worker.currentProduction;
       }
     }
@@ -169,9 +172,18 @@ class ResolveExpeditionsUseCase {
       compensatedBaseChronoEnergy,
       0.8 + expedition.risk.ceMultiplier * 1.1,
     );
-    final finalChronoEnergy =
+    final baselineChronoEnergy =
         guaranteedChronoEnergy +
         (succeeded ? successBonusChronoEnergy : BigInt.zero);
+    final expeditionBuffMultiplier = _expeditionBuffMultiplier(
+      workers: assignedWorkers,
+      durationSeconds: durationSeconds,
+      risk: expedition.risk,
+    );
+    final finalChronoEnergy = _applyMultiplier(
+      baselineChronoEnergy,
+      expeditionBuffMultiplier,
+    );
 
     return ExpeditionReward(
       chronoEnergy: finalChronoEnergy,
@@ -206,6 +218,50 @@ class ResolveExpeditionsUseCase {
     const precision = 10000;
     final scaled = (multiplier * precision).round();
     return value * BigInt.from(scaled) ~/ BigInt.from(precision);
+  }
+
+  double _expeditionBuffMultiplier({
+    required List<Worker> workers,
+    required int durationSeconds,
+    required ExpeditionRisk risk,
+  }) {
+    if (workers.isEmpty) {
+      return 1.0;
+    }
+
+    final double durationHours = (durationSeconds / 3600.0).clamp(0.5, 24.0);
+    final double durationBonus = pow(durationHours, 0.35).toDouble();
+
+    double rarityTotal = 0.0;
+    var artifactCount = 0;
+    for (final Worker worker in workers) {
+      rarityTotal += _rarityBuffScore(worker.rarity);
+      artifactCount += worker.equippedArtifacts.length;
+    }
+
+    final double averageRarityScore = rarityTotal / workers.length;
+    final double rarityBonus = 1.0 + (averageRarityScore * 1.5);
+    final double artifactBonus = 1.0 + (artifactCount.clamp(0, 15) * 0.04);
+    final double riskBonus = 0.9 + (risk.ceMultiplier * 0.25);
+
+    final double multiplier =
+        4.2 * durationBonus * rarityBonus * artifactBonus * riskBonus;
+    return multiplier.clamp(3.0, 18.0);
+  }
+
+  double _rarityBuffScore(WorkerRarity rarity) {
+    switch (rarity) {
+      case WorkerRarity.common:
+        return 0.0;
+      case WorkerRarity.rare:
+        return 0.25;
+      case WorkerRarity.epic:
+        return 0.5;
+      case WorkerRarity.legendary:
+        return 0.75;
+      case WorkerRarity.paradox:
+        return 1.0;
+    }
   }
 }
 

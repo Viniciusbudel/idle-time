@@ -432,6 +432,50 @@ void main() {
       expect(secondClaim, isNull);
     });
 
+    test(
+      'save/load preserves stable expedition slotId and catalog metadata',
+      () {
+        final start = StartExpeditionUseCase();
+        final now = DateTime(2026, 2, 26, 16, 0);
+
+        final idleWorker = Worker(
+          id: 'idle_save_load',
+          era: WorkerEra.victorian,
+          baseProduction: BigInt.from(14),
+        );
+
+        final baseState = GameState.initial().copyWith(
+          workers: {'idle_save_load': idleWorker},
+          stations: const {},
+          expeditions: const [],
+          unlockedEras: const {'victorian'},
+        );
+
+        final started = start.execute(
+          baseState,
+          slotId: 'salvage_run',
+          risk: ExpeditionRisk.safe,
+          workerIds: const ['idle_save_load'],
+          now: now,
+        );
+        expect(started, isNotNull);
+
+        final restored = GameState.fromMap(started!.newState.toMap());
+        expect(restored.expeditions.length, 1);
+
+        final String restoredSlotId = restored.expeditions.first.slotId;
+        expect(restoredSlotId, 'salvage_run');
+
+        final ExpeditionSlot? restoredSlot = ExpeditionSlot.byId(
+          restoredSlotId,
+        );
+        expect(restoredSlot, isNotNull);
+        expect(restoredSlot!.eraId, 'victorian');
+        expect(restoredSlot.headline.isNotEmpty, isTrue);
+        expect(restoredSlot.layoutPreset.isNotEmpty, isTrue);
+      },
+    );
+
     test('worker already on unresolved expedition cannot start another', () {
       final useCase = StartExpeditionUseCase();
       final now = DateTime(2026, 2, 22, 12, 0);
@@ -533,6 +577,58 @@ void main() {
 
       expect(boostedReward, greaterThan(baselineReward));
       expect(boostedReward > baselineReward * BigInt.from(3), isTrue);
+    });
+
+    test('2h paradox + legendary crew yields billion-scale CE on success', () {
+      final start = StartExpeditionUseCase();
+      final resolve = ResolveExpeditionsUseCase();
+      final now = DateTime(2026, 2, 26, 18, 0);
+
+      final paradoxWorker = Worker(
+        id: 'paradox_2h',
+        era: WorkerEra.roaring20s,
+        baseProduction: BigInt.from(25),
+        rarity: WorkerRarity.paradox,
+        chronalAttunement: 1.0,
+      );
+      final legendaryWorker = Worker(
+        id: 'legendary_2h',
+        era: WorkerEra.roaring20s,
+        baseProduction: BigInt.from(15),
+        rarity: WorkerRarity.legendary,
+        chronalAttunement: 1.0,
+      );
+
+      final state = GameState.initial().copyWith(
+        workers: {
+          paradoxWorker.id: paradoxWorker,
+          legendaryWorker.id: legendaryWorker,
+        },
+        stations: const {},
+        techLevels: const {},
+        expeditions: const [],
+        unlockedEras: const {'victorian', 'roaring_20s'},
+        currentEraId: 'roaring_20s',
+      );
+
+      final started = start.execute(
+        state,
+        slotId: 'rift_probe',
+        risk: ExpeditionRisk.risky,
+        workerIds: const ['paradox_2h', 'legendary_2h'],
+        now: now,
+      );
+      expect(started, isNotNull);
+
+      final resolved = resolve.execute(
+        started!.newState,
+        now: now.add(const Duration(hours: 2, minutes: 1)),
+        randomRoll: () => 0.0,
+      );
+      final chronoEnergy =
+          resolved.newlyResolved.first.resolvedReward!.chronoEnergy;
+
+      expect(chronoEnergy, greaterThan(BigInt.from(1000000000)));
     });
 
     test('failed expedition removes workers and their equipped artifacts', () {
