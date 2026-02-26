@@ -183,7 +183,6 @@ class StartExpeditionUseCase {
     for (final workerId in workerIds) {
       final worker = workersById[workerId];
       if (worker == null) return null;
-      if (worker.isDeployed) return null;
       if (unresolvedWorkers.contains(workerId)) return null;
     }
 

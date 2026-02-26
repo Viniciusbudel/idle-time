@@ -1091,16 +1091,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
       if (activeExpeditionWorkers.contains(workerId)) return false;
     }
 
-    // Allow selecting chamber workers from expedition UI:
-    // undeploy them first, then dispatch start use case.
-    for (final String workerId in workerIds) {
-      final Worker? worker = state.workers[workerId];
-      if (worker == null) continue;
-      if (worker.isDeployed) {
-        undeployWorker(workerId);
-      }
-    }
-
     final result = _startExpeditionUseCase.execute(
       state,
       slotId: slotId,

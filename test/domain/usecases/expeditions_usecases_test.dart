@@ -250,7 +250,7 @@ void main() {
       },
     );
 
-    test('StartExpeditionUseCase rejects deployed workers', () {
+    test('StartExpeditionUseCase allows deployed workers', () {
       final useCase = StartExpeditionUseCase();
       final state = GameState.initial();
 
@@ -262,8 +262,40 @@ void main() {
         now: DateTime(2026, 2, 22, 12, 0),
       );
 
-      expect(result, isNull);
+      expect(result, isNotNull);
+      expect(result!.newState.workers['worker_starter']?.isDeployed, isTrue);
+      expect(
+        result.newState.stations['station_starter']?.workerIds,
+        contains('worker_starter'),
+      );
     });
+
+    test(
+      'workers on active expedition stop chamber production while keeping assignment',
+      () {
+        final useCase = StartExpeditionUseCase();
+        final DateTime now = DateTime(2026, 2, 22, 12, 0);
+        final GameState state = GameState.initial();
+
+        expect(state.productionPerSecond, greaterThan(BigInt.zero));
+
+        final StartExpeditionResult? started = useCase.execute(
+          state,
+          slotId: 'salvage_run',
+          risk: ExpeditionRisk.safe,
+          workerIds: const ['worker_starter'],
+          now: now,
+        );
+        expect(started, isNotNull);
+
+        expect(started!.newState.workers['worker_starter']?.isDeployed, isTrue);
+        expect(
+          started.newState.stations['station_starter']?.workerIds,
+          contains('worker_starter'),
+        );
+        expect(started.newState.productionPerSecond, BigInt.zero);
+      },
+    );
 
     test('start returns null when slot era is still locked', () {
       final useCase = StartExpeditionUseCase();
