@@ -16,15 +16,15 @@ class FallbackReactor extends SvgComponent
     position = gameRef.size / 2;
 
     // Add a spin effect since it's the fallback for the "animated" reactor
-    add(
-      RotateEffect.by(
-        6.28, // 360 degrees
-        EffectController(
-          duration: 1.0, // FAST spin to identify FALLBACK
-          infinite: true,
-        ),
+    final spinEffect = RotateEffect.by(
+      6.28, // 360 degrees
+      EffectController(
+        duration: 1.0, // FAST spin to identify FALLBACK
+        infinite: true,
       ),
     );
+    spinEffect.target = this;
+    add(spinEffect);
   }
 
   @override

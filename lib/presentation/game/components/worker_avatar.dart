@@ -51,26 +51,22 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
       add(aura);
 
       // 2. Rotating Data Ring (Outer)
-      add(
-        CircleComponent(
-          radius: 18,
-          anchor: Anchor.center,
-          position: size / 2,
-          paint: Paint()
-            ..color = rarityColor.withOpacity(0.5)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.5,
-        )..add(
-          RotateEffect.by(
-            2 * pi,
-            EffectController(
-              duration: 8.0,
-              infinite: true,
-              curve: Curves.linear,
-            ),
-          ),
-        ),
+      final ring = CircleComponent(
+        radius: 18,
+        anchor: Anchor.center,
+        position: size / 2,
+        paint: Paint()
+          ..color = rarityColor.withOpacity(0.5)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
       );
+      final ringRotate = RotateEffect.by(
+        2 * pi,
+        EffectController(duration: 8.0, infinite: true, curve: Curves.linear),
+      );
+      ringRotate.target = ring;
+      ring.add(ringRotate);
+      add(ring);
     }
 
     // 3. Inner Core (The "Worker" Icon)
