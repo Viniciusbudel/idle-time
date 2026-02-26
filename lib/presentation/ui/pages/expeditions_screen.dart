@@ -6,6 +6,7 @@ import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
+import 'package:time_factory/core/utils/expedition_utils.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/expedition.dart';
@@ -15,6 +16,7 @@ import 'package:time_factory/domain/usecases/claim_expedition_rewards_usecase.da
 import 'package:time_factory/domain/usecases/start_expedition_usecase.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/presentation/ui/dialogs/expedition_reward_dialog.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
 
 class ExpeditionsScreen extends ConsumerStatefulWidget {
@@ -27,37 +29,19 @@ class ExpeditionsScreen extends ConsumerStatefulWidget {
 enum _ExpeditionPanel { missions, active, completed }
 
 class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
-  Timer? _timer;
   final Map<String, ExpeditionRisk> _selectedRiskBySlotId =
       <String, ExpeditionRisk>{};
   final Map<String, List<String>> _selectedWorkerIdsBySlotId =
       <String, List<String>>{};
   _ExpeditionPanel _activePanel = _ExpeditionPanel.missions;
   String? _expandedSlotId;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
+  bool _hasAutoExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     final GameState gameState = ref.watch(gameStateProvider);
     final List<ExpeditionSlot> slots = ref.watch(expeditionSlotsProvider);
     final List<Expedition> expeditions = ref.watch(expeditionsProvider);
-    final DateTime now = DateTime.now();
-
     final List<Expedition> activeExpeditions =
         expeditions.where((expedition) => !expedition.resolved).toList()
           ..sort((a, b) => a.endTime.compareTo(b.endTime));
@@ -69,9 +53,9 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     final List<Worker> availableWorkers = _availableWorkers(gameState);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF050A10),
+      backgroundColor: TimeFactoryColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: TimeFactoryColors.background,
         title: Text(
           AppLocalizations.of(context)!.missionControl,
           style: TimeFactoryTextStyles.header.copyWith(
@@ -89,7 +73,6 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
             availableWorkers,
             activeExpeditions,
             completedExpeditions,
-            now,
           ),
           const SizedBox(height: AppSpacing.md),
           _buildPanelSwitcher(
@@ -99,7 +82,21 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
+            duration: const Duration(milliseconds: 280),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.06),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              );
+            },
             child: _buildPanelBody(
               key: ValueKey<_ExpeditionPanel>(_activePanel),
               context: context,
@@ -108,10 +105,9 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               availableWorkers: availableWorkers,
               activeExpeditions: activeExpeditions,
               completedExpeditions: completedExpeditions,
-              now: now,
             ),
           ),
-          const SizedBox(height: 90),
+          const SizedBox(height: AppSpacing.bottomSafe + AppSpacing.sm),
         ],
       ),
     );
@@ -125,10 +121,21 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     required List<Worker> availableWorkers,
     required List<Expedition> activeExpeditions,
     required List<Expedition> completedExpeditions,
-    required DateTime now,
   }) {
     switch (_activePanel) {
       case _ExpeditionPanel.missions:
+        // Auto-expand first card if user has idle workers
+        if (!_hasAutoExpanded &&
+            slots.isNotEmpty &&
+            availableWorkers.isNotEmpty &&
+            _expandedSlotId == null) {
+          _hasAutoExpanded = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() => _expandedSlotId = slots.first.id);
+            }
+          });
+        }
         return Column(
           key: key,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,7 +169,10 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               ...activeExpeditions.map(
                 (Expedition expedition) => Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: _buildActiveCard(gameState, expedition, now),
+                  child: _TickingBuilder(
+                    builder: (DateTime now) =>
+                        _buildActiveCard(gameState, expedition, now),
+                  ),
                 ),
               ),
           ],
@@ -293,7 +303,6 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     List<Worker> availableWorkers,
     List<Expedition> activeExpeditions,
     List<Expedition> completedExpeditions,
-    DateTime now,
   ) {
     BigInt queuedCe = BigInt.zero;
     int queuedShards = 0;
@@ -312,7 +321,10 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: <Color>[Color(0xFF081A25), Color(0xFF11110B)],
+          colors: <Color>[
+            TimeFactoryColors.surface,
+            TimeFactoryColors.background,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -395,7 +407,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                 _slotName(nextCompletion.slotId),
                 _formatDuration(
                   context,
-                  nextCompletion.endTime.difference(now),
+                  nextCompletion.endTime.difference(DateTime.now()),
                 ),
               ),
               style: TimeFactoryTextStyles.bodyMono.copyWith(
@@ -486,13 +498,26 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.black26,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: TimeFactoryColors.electricCyan.withValues(alpha: 0.35),
+        gradient: LinearGradient(
+          colors: <Color>[
+            TimeFactoryColors.surface,
+            TimeFactoryColors.background.withValues(alpha: 0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: expeditionRiskColor(selectedRisk).withValues(alpha: 0.35),
+        ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: expeditionRiskColor(selectedRisk).withValues(alpha: 0.08),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -531,7 +556,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white10,
                     borderRadius: BorderRadius.circular(20),
@@ -540,7 +565,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                     isExpanded
                         ? AppHugeIcons.keyboard_arrow_down
                         : AppHugeIcons.chevron_right,
-                    size: 14,
+                    size: 16,
                     color: Colors.white70,
                   ),
                 ),
@@ -556,8 +581,8 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                     context,
                   )!.successProbabilityLabel(successPercent),
                   style: TimeFactoryTextStyles.bodyMono.copyWith(
-                    color: _riskColor(selectedRisk),
-                    fontSize: 9,
+                    color: expeditionRiskColor(selectedRisk),
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.6,
                   ),
@@ -573,7 +598,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                   textAlign: TextAlign.right,
                   style: TimeFactoryTextStyles.bodyMono.copyWith(
                     color: Colors.white70,
-                    fontSize: 9,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.6,
                   ),
@@ -581,15 +606,15 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.xs),
           ClipRRect(
             borderRadius: BorderRadius.circular(99),
             child: LinearProgressIndicator(
               value: successChance,
-              minHeight: 5,
+              minHeight: 8,
               backgroundColor: Colors.white10,
               valueColor: AlwaysStoppedAnimation<Color>(
-                _riskColor(selectedRisk),
+                expeditionRiskColor(selectedRisk),
               ),
             ),
           ),
@@ -601,12 +626,12 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               if (index < selectedWorkers.length) {
                 return _buildWorkerSocket(
                   worker: selectedWorkers[index],
-                  accentColor: _riskColor(selectedRisk),
+                  accentColor: expeditionRiskColor(selectedRisk),
                   onTap: openWorkerPicker,
                 );
               }
               return _buildAddWorkerSocket(
-                accentColor: _riskColor(selectedRisk),
+                accentColor: expeditionRiskColor(selectedRisk),
                 onTap: openWorkerPicker,
               );
             }),
@@ -658,11 +683,15 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: selected
-                              ? _riskColor(risk).withValues(alpha: 0.22)
+                              ? expeditionRiskColor(
+                                  risk,
+                                ).withValues(alpha: 0.22)
                               : Colors.black45,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: selected ? _riskColor(risk) : Colors.white24,
+                            color: selected
+                                ? expeditionRiskColor(risk)
+                                : Colors.white24,
                           ),
                         ),
                         child: Text(
@@ -674,7 +703,9 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                           ),
                           style: TimeFactoryTextStyles.bodyMono.copyWith(
                             fontSize: 9,
-                            color: selected ? _riskColor(risk) : Colors.white60,
+                            color: selected
+                                ? expeditionRiskColor(risk)
+                                : Colors.white60,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -724,10 +755,10 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                       gradient: canStart
                           ? LinearGradient(
                               colors: <Color>[
-                                _riskColor(
+                                expeditionRiskColor(
                                   selectedRisk,
                                 ).withValues(alpha: 0.95),
-                                _riskColor(
+                                expeditionRiskColor(
                                   selectedRisk,
                                 ).withValues(alpha: 0.55),
                               ],
@@ -739,13 +770,13 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: canStart
-                            ? _riskColor(selectedRisk)
+                            ? expeditionRiskColor(selectedRisk)
                             : Colors.white24,
                       ),
                       boxShadow: canStart
                           ? <BoxShadow>[
                               BoxShadow(
-                                color: _riskColor(
+                                color: expeditionRiskColor(
                                   selectedRisk,
                                 ).withValues(alpha: 0.35),
                                 blurRadius: 12,
@@ -754,25 +785,29 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                             ]
                           : const <BoxShadow>[],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        AppIcon(
-                          AppHugeIcons.rocket_launch,
-                          color: canStart ? Colors.black : Colors.white54,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          AppLocalizations.of(context)!.initiateExpedition,
-                          style: TimeFactoryTextStyles.bodyMono.copyWith(
+                    child: _PulsingGlow(
+                      enabled: canStart,
+                      color: expeditionRiskColor(selectedRisk),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          AppIcon(
+                            AppHugeIcons.rocket_launch,
                             color: canStart ? Colors.black : Colors.white54,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.1,
+                            size: 16,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            AppLocalizations.of(context)!.initiateExpedition,
+                            style: TimeFactoryTextStyles.bodyMono.copyWith(
+                              color: canStart ? Colors.black : Colors.white54,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -852,13 +887,26 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
         .toList();
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.black26,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: _riskColor(expedition.risk).withValues(alpha: 0.6),
+        gradient: LinearGradient(
+          colors: <Color>[
+            TimeFactoryColors.surface,
+            TimeFactoryColors.background.withValues(alpha: 0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: expeditionRiskColor(expedition.risk).withValues(alpha: 0.6),
+        ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: expeditionRiskColor(expedition.risk).withValues(alpha: 0.1),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -868,7 +916,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               AppIcon(
                 AppHugeIcons.access_time,
                 size: 18,
-                color: _riskColor(expedition.risk),
+                color: expeditionRiskColor(expedition.risk),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -897,28 +945,21 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                 .map(
                   (Worker worker) => _buildWorkerSocket(
                     worker: worker,
-                    accentColor: _riskColor(expedition.risk),
+                    accentColor: expeditionRiskColor(expedition.risk),
                   ),
                 )
                 .toList(),
           ),
           const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(99),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 6,
-              backgroundColor: Colors.white12,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                _riskColor(expedition.risk),
-              ),
-            ),
+          _ShimmerProgressBar(
+            progress: progress,
+            color: expeditionRiskColor(expedition.risk),
           ),
           const SizedBox(height: 6),
           Text(
             'Progress: $progressPercent% | success chance ${(expedition.successProbability * 100).round()}%',
             style: TimeFactoryTextStyles.bodyMono.copyWith(
-              color: _riskColor(expedition.risk),
+              color: expeditionRiskColor(expedition.risk),
               fontSize: 10,
               fontWeight: FontWeight.bold,
             ),
@@ -946,15 +987,29 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
         expedition.resolvedReward ?? ExpeditionReward.zero;
     final bool failed = expedition.wasSuccessful == false;
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.black26,
-        borderRadius: BorderRadius.circular(10),
+        gradient: LinearGradient(
+          colors: <Color>[
+            TimeFactoryColors.surface,
+            TimeFactoryColors.background.withValues(alpha: 0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: failed
               ? Colors.redAccent.withValues(alpha: 0.7)
               : TimeFactoryColors.acidGreen.withValues(alpha: 0.6),
         ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: (failed ? Colors.redAccent : TimeFactoryColors.acidGreen)
+                .withValues(alpha: 0.08),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: Row(
         children: <Widget>[
@@ -1002,19 +1057,27 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () =>
-                _claimExpeditionWithPresentation(context, expedition),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: failed
-                  ? Colors.redAccent
-                  : TimeFactoryColors.acidGreen,
-              foregroundColor: failed ? Colors.white : Colors.black,
-            ),
-            child: Text(
-              failed
-                  ? AppLocalizations.of(context)!.ack
-                  : AppLocalizations.of(context)!.claim,
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.85, end: 1.0),
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.elasticOut,
+            builder: (BuildContext context, double scale, Widget? child) {
+              return Transform.scale(scale: scale, child: child);
+            },
+            child: ElevatedButton(
+              onPressed: () =>
+                  _claimExpeditionWithPresentation(context, expedition),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: failed
+                    ? Colors.redAccent
+                    : TimeFactoryColors.acidGreen,
+                foregroundColor: failed ? Colors.white : Colors.black,
+              ),
+              child: Text(
+                failed
+                    ? AppLocalizations.of(context)!.ack
+                    : AppLocalizations.of(context)!.claim,
+              ),
             ),
           ),
         ],
@@ -1022,12 +1085,12 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     );
   }
 
-  void _startExpedition(
+  Future<void> _startExpedition(
     BuildContext context,
     ExpeditionSlot slot,
     ExpeditionRisk risk,
     List<String> workerIds,
-  ) {
+  ) async {
     final bool success = ref
         .read(gameStateProvider.notifier)
         .startExpedition(slotId: slot.id, risk: risk, workerIds: workerIds);
@@ -1042,21 +1105,44 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     }
 
     setState(() {
-      _activePanel = _ExpeditionPanel.active;
       _expandedSlotId = null;
     });
 
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          AppLocalizations.of(context)!.expeditionStarted(
-            slot.name,
-            risk.name.toUpperCase(),
-            workerIds.length,
-          ),
+        content: Row(
+          children: <Widget>[
+            const AppIcon(
+              AppHugeIcons.rocket_launch,
+              size: 18,
+              color: Colors.white,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context)!.expeditionStarted(
+                  slot.name,
+                  risk.name.toUpperCase(),
+                  workerIds.length,
+                ),
+              ),
+            ),
+          ],
         ),
+        backgroundColor: expeditionRiskColor(risk).withValues(alpha: 0.85),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 2),
       ),
     );
+
+    // Brief delay before switching to ACTIVE tab for launch sequence feel
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    if (mounted) {
+      setState(() => _activePanel = _ExpeditionPanel.active);
+    }
   }
 
   Future<void> _claimExpeditionWithPresentation(
@@ -1091,7 +1177,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     await showDialog<void>(
       context: context,
       barrierDismissible: true,
-      builder: (BuildContext dialogContext) => _ExpeditionRewardDialog(
+      builder: (BuildContext dialogContext) => ExpeditionRewardDialog(
         slotName: _slotName(expedition.slotId),
         risk: expedition.risk,
         reward: result.reward,
@@ -1147,15 +1233,15 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     VoidCallback? onTap,
   }) {
     final Widget socket = Container(
-      width: 34,
-      height: 34,
+      width: 42,
+      height: 42,
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(7),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: accentColor.withValues(alpha: 0.8)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(5),
         child: WorkerIconHelper.buildIcon(
           worker.era,
           worker.rarity,
@@ -1181,17 +1267,17 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(7),
       child: Container(
-        width: 34,
-        height: 34,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: accentColor.withValues(alpha: 0.55)),
         ),
         child: Center(
           child: AppIcon(
             AppHugeIcons.add,
-            size: 16,
+            size: 18,
             color: accentColor.withValues(alpha: 0.85),
           ),
         ),
@@ -1275,7 +1361,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                 maxHeight: MediaQuery.of(ctx).size.height * 0.72,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF0A1520),
+                color: TimeFactoryColors.surface,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(20),
                 ),
@@ -1542,16 +1628,177 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     }
     return AppLocalizations.of(context)!.durationSeconds(seconds);
   }
+}
 
-  Color _riskColor(ExpeditionRisk risk) {
-    switch (risk) {
-      case ExpeditionRisk.safe:
-        return TimeFactoryColors.electricCyan;
-      case ExpeditionRisk.risky:
-        return TimeFactoryColors.voltageYellow;
-      case ExpeditionRisk.volatile:
-        return TimeFactoryColors.hotMagenta;
+/// Isolates 1-second timer rebuilds so only the child tree is updated,
+/// instead of rebuilding the entire ExpeditionsScreen widget tree.
+class _TickingBuilder extends StatefulWidget {
+  final Widget Function(DateTime now) builder;
+  const _TickingBuilder({required this.builder});
+
+  @override
+  State<_TickingBuilder> createState() => _TickingBuilderState();
+}
+
+class _TickingBuilderState extends State<_TickingBuilder> {
+  Timer? _timer;
+  DateTime _now = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() => _now = DateTime.now());
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(_now);
+}
+
+/// Adds a subtle pulsing glow effect around its child when [enabled].
+class _PulsingGlow extends StatefulWidget {
+  final bool enabled;
+  final Color color;
+  final Widget child;
+  const _PulsingGlow({
+    required this.enabled,
+    required this.color,
+    required this.child,
+  });
+
+  @override
+  State<_PulsingGlow> createState() => _PulsingGlowState();
+}
+
+class _PulsingGlowState extends State<_PulsingGlow>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+    if (widget.enabled) {
+      _controller.repeat(reverse: true);
     }
+  }
+
+  @override
+  void didUpdateWidget(_PulsingGlow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.enabled && !oldWidget.enabled) {
+      _controller.repeat(reverse: true);
+    } else if (!widget.enabled && oldWidget.enabled) {
+      _controller.stop();
+      _controller.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled) return widget.child;
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (BuildContext context, Widget? child) {
+        final double t = _controller.value;
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: widget.color.withValues(alpha: 0.15 + (t * 0.2)),
+                blurRadius: 8 + (t * 8),
+                spreadRadius: t * 2,
+              ),
+            ],
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+/// Progress bar with a sweeping shimmer highlight for active expeditions.
+class _ShimmerProgressBar extends StatefulWidget {
+  final double progress;
+  final Color color;
+  const _ShimmerProgressBar({required this.progress, required this.color});
+
+  @override
+  State<_ShimmerProgressBar> createState() => _ShimmerProgressBarState();
+}
+
+class _ShimmerProgressBarState extends State<_ShimmerProgressBar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shimmer;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmer = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shimmer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _shimmer,
+      builder: (BuildContext context, Widget? child) {
+        final double pos = _shimmer.value;
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: ShaderMask(
+            shaderCallback: (Rect bounds) => LinearGradient(
+              colors: <Color>[
+                Colors.white,
+                Colors.white.withValues(alpha: 0.5),
+                Colors.white,
+              ],
+              stops: <double>[
+                (pos - 0.2).clamp(0.0, 1.0),
+                pos.clamp(0.0, 1.0),
+                (pos + 0.2).clamp(0.0, 1.0),
+              ],
+            ).createShader(bounds),
+            blendMode: BlendMode.modulate,
+            child: LinearProgressIndicator(
+              value: widget.progress,
+              minHeight: 6,
+              backgroundColor: Colors.white12,
+              valueColor: AlwaysStoppedAnimation<Color>(widget.color),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -1562,13 +1809,26 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label.toUpperCase(),
-      style: TimeFactoryTextStyles.bodyMono.copyWith(
-        color: Colors.white70,
-        letterSpacing: 1.6,
-        fontWeight: FontWeight.bold,
-      ),
+    return Row(
+      children: <Widget>[
+        Container(
+          width: 3,
+          height: 16,
+          decoration: BoxDecoration(
+            color: TimeFactoryColors.electricCyan,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Text(
+          label.toUpperCase(),
+          style: TimeFactoryTextStyles.label.copyWith(
+            color: Colors.white70,
+            letterSpacing: 1.6,
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1581,241 +1841,36 @@ class _EmptyBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.lg,
+      ),
       decoration: BoxDecoration(
-        color: Colors.black26,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Text(
-        label,
-        style: TimeFactoryTextStyles.bodyMono.copyWith(
-          color: Colors.white54,
-          fontSize: 11,
+        color: TimeFactoryColors.surface.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: TimeFactoryColors.smokeGray.withValues(alpha: 0.4),
         ),
       ),
-    );
-  }
-}
-
-class _ExpeditionRewardDialog extends StatefulWidget {
-  final String slotName;
-  final ExpeditionRisk risk;
-  final ExpeditionReward reward;
-
-  const _ExpeditionRewardDialog({
-    required this.slotName,
-    required this.risk,
-    required this.reward,
-  });
-
-  @override
-  State<_ExpeditionRewardDialog> createState() =>
-      _ExpeditionRewardDialogState();
-}
-
-class _ExpeditionRewardDialogState extends State<_ExpeditionRewardDialog>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _flameController;
-
-  @override
-  void initState() {
-    super.initState();
-    _flameController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _flameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final Color accent = _accentColor(widget.risk);
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: <Color>[Color(0xFF10171F), Color(0xFF090D13)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      child: Column(
+        children: <Widget>[
+          const AppIcon(
+            AppHugeIcons.rocket_launch,
+            size: 32,
+            color: Colors.white24,
           ),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: accent, width: 1.2),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: accent.withValues(alpha: 0.35),
-              blurRadius: 20,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            AnimatedBuilder(
-              animation: _flameController,
-              builder: (BuildContext context, Widget? child) {
-                final double t = _flameController.value;
-                final double pulse = 0.9 + (t * 0.3);
-                return SizedBox(
-                  height: 84,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      Transform.scale(
-                        scale: 1.2 + (t * 0.35),
-                        child: Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: accent.withValues(alpha: 0.12),
-                          ),
-                        ),
-                      ),
-                      Transform.scale(
-                        scale: pulse,
-                        child: const Icon(
-                          Icons.local_fire_department_rounded,
-                          color: TimeFactoryColors.voltageYellow,
-                          size: 42,
-                        ),
-                      ),
-                      Positioned(
-                        left: 12,
-                        child: Icon(
-                          Icons.local_fire_department_rounded,
-                          color: accent.withValues(alpha: 0.75),
-                          size: 22,
-                        ),
-                      ),
-                      Positioned(
-                        right: 12,
-                        child: Icon(
-                          Icons.local_fire_department_rounded,
-                          color: TimeFactoryColors.hotMagenta.withValues(
-                            alpha: 0.75,
-                          ),
-                          size: 22,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 4),
-            Text(
-              AppLocalizations.of(context)!.expeditionReward,
-              style: TimeFactoryTextStyles.bodyMono.copyWith(
-                color: accent,
-                fontSize: 11,
-                letterSpacing: 1.8,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              widget.slotName.toUpperCase(),
-              style: TimeFactoryTextStyles.header.copyWith(
-                color: Colors.white,
-                fontSize: 16,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: Column(
-                children: <Widget>[
-                  _rewardRow(
-                    label: AppLocalizations.of(context)!.chronoEnergyUpper,
-                    value:
-                        '+${NumberFormatter.formatCE(widget.reward.chronoEnergy)}',
-                    color: TimeFactoryColors.electricCyan,
-                  ),
-                  const SizedBox(height: 8),
-                  _rewardRow(
-                    label: AppLocalizations.of(context)!.timeShardsUpper,
-                    value: '+${widget.reward.timeShards}',
-                    color: TimeFactoryColors.voltageYellow,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: accent,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(AppLocalizations.of(context)!.awesome),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _rewardRow({
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: Text(
+          const SizedBox(height: AppSpacing.xs),
+          Text(
             label,
             style: TimeFactoryTextStyles.bodyMono.copyWith(
-              color: Colors.white70,
-              fontSize: 10,
-              letterSpacing: 1.2,
+              color: Colors.white38,
+              fontSize: 12,
             ),
+            textAlign: TextAlign.center,
           ),
-        ),
-        Text(
-          value,
-          style: TimeFactoryTextStyles.bodyMono.copyWith(
-            color: color,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
-  }
-
-  Color _accentColor(ExpeditionRisk risk) {
-    switch (risk) {
-      case ExpeditionRisk.safe:
-        return TimeFactoryColors.electricCyan;
-      case ExpeditionRisk.risky:
-        return TimeFactoryColors.voltageYellow;
-      case ExpeditionRisk.volatile:
-        return TimeFactoryColors.hotMagenta;
-    }
   }
 }
