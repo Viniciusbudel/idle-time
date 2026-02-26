@@ -410,7 +410,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
     if (worker == null || station == null) return false;
     if (worker.isDeployed) return false;
-    if (_isWorkerOnActiveExpedition(workerId)) return false;
     if (!station.canAddWorker) return false;
 
     // Update worker
@@ -440,7 +439,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
   bool undeployWorker(String workerId) {
     final worker = state.workers[workerId];
     if (worker == null || !worker.isDeployed) return false;
-    if (_isWorkerOnActiveExpedition(workerId)) return false;
 
     final stationId = worker.deployedStationId;
 
@@ -1183,10 +1181,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
         .where((Worker worker) => !worker.isDeployed)
         .where((Worker worker) => !activeExpeditionWorkers.contains(worker.id))
         .toList();
-  }
-
-  bool _isWorkerOnActiveExpedition(String workerId) {
-    return _activeExpeditionWorkerIds().contains(workerId);
   }
 
   /// Claim a completed daily mission objective.
