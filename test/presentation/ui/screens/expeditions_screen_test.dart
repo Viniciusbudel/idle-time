@@ -90,6 +90,9 @@ void main() {
 
     expect(find.text('Auto Assemble Crew'), findsOneWidget);
     expect(find.text('Hire Now'), findsOneWidget);
+    expect(find.textContaining('SAFE'), findsWidgets);
+    expect(find.textContaining('RISK'), findsWidgets);
+    expect(find.textContaining('VOLATILE'), findsWidgets);
   });
 
   testWidgets('worker picker shows deployed chamber workers as candidates', (

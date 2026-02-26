@@ -773,6 +773,12 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                   runSpacing: 6,
                   children: ExpeditionRisk.values.map((ExpeditionRisk risk) {
                     final bool selected = selectedRisk == risk;
+                    final _RiskProfile profile = _riskProfilePreview(
+                      gameState: gameState,
+                      workers: previewWorkers,
+                      duration: slot.duration,
+                      risk: risk,
+                    );
                     return GestureDetector(
                       onTap: () {
                         setState(() {
@@ -800,10 +806,10 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                         ),
                         child: Text(
                           AppLocalizations.of(context)!.expeditionRiskBadge(
-                            risk.name.toUpperCase(),
-                            risk.ceMultiplier.toStringAsFixed(1),
-                            risk.shardReward,
-                            (risk.artifactDropChance * 100).round(),
+                            _riskLabel(risk),
+                            profile.ceMultiplierLabel,
+                            profile.timeShards,
+                            profile.relicChancePercent,
                           ),
                           style: TimeFactoryTextStyles.bodyMono.copyWith(
                             fontSize: 9,
@@ -1029,6 +1035,12 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
         .map((String workerId) => gameState.workers[workerId])
         .whereType<Worker>()
         .toList();
+    final _RiskProfile activeProfile = _riskProfilePreview(
+      gameState: gameState,
+      workers: assignedWorkers,
+      duration: total,
+      risk: expedition.risk,
+    );
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
@@ -1065,7 +1077,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '${_slotName(expedition.slotId)} | ${expedition.risk.name.toUpperCase()}',
+                  '${_slotName(expedition.slotId)} | ${_riskLabel(expedition.risk)}',
                   style: TimeFactoryTextStyles.bodyMono.copyWith(
                     color: Colors.white,
                     fontSize: 11,
@@ -1112,9 +1124,9 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
           Text(
             AppLocalizations.of(context)!.expeditionWorkersAssigned(
               expedition.workerIds.length,
-              expedition.risk.ceMultiplier.toStringAsFixed(1),
-              expedition.risk.shardReward,
-              (expedition.risk.artifactDropChance * 100).round(),
+              activeProfile.ceMultiplierLabel,
+              activeProfile.timeShards,
+              activeProfile.relicChancePercent,
             ),
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               color: Colors.white60,
@@ -1268,7 +1280,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
               child: Text(
                 AppLocalizations.of(context)!.expeditionStarted(
                   slot.name,
-                  risk.name.toUpperCase(),
+                  _riskLabel(risk),
                   workerIds.length,
                 ),
               ),
@@ -1482,6 +1494,56 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       risk: risk,
       succeeded: true,
     );
+  }
+
+  _RiskProfile _riskProfilePreview({
+    required GameState gameState,
+    required List<Worker> workers,
+    required Duration duration,
+    required ExpeditionRisk risk,
+  }) {
+    final ExpeditionReward reward = _resolveExpeditionsUseCase
+        .estimateRewardPreview(
+          gameState,
+          workers: workers,
+          duration: duration,
+          risk: risk,
+          succeeded: true,
+        );
+
+    final int safeDurationSeconds = duration.inSeconds.clamp(1, 60 * 60 * 24);
+    BigInt totalWorkerPower = BigInt.zero;
+    for (final Worker worker in workers) {
+      totalWorkerPower += worker.currentProduction;
+    }
+    final BigInt baseUnits =
+        totalWorkerPower * BigInt.from(safeDurationSeconds);
+
+    String ceMultiplierLabel = '0.0';
+    if (baseUnits > BigInt.zero) {
+      final BigInt scaled10 =
+          reward.chronoEnergy * BigInt.from(10) ~/ baseUnits;
+      final BigInt whole = scaled10 ~/ BigInt.from(10);
+      final BigInt tenth = scaled10.remainder(BigInt.from(10));
+      ceMultiplierLabel = '$whole.$tenth';
+    }
+
+    return _RiskProfile(
+      ceMultiplierLabel: ceMultiplierLabel,
+      timeShards: reward.timeShards,
+      relicChancePercent: (reward.artifactDropChance * 100).round(),
+    );
+  }
+
+  String _riskLabel(ExpeditionRisk risk) {
+    switch (risk) {
+      case ExpeditionRisk.safe:
+        return 'SAFE';
+      case ExpeditionRisk.risky:
+        return 'RISK';
+      case ExpeditionRisk.volatile:
+        return 'VOLATILE';
+    }
   }
 
   Future<List<String>?> _pickWorkersForSlot(
@@ -1789,6 +1851,18 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     }
     return AppLocalizations.of(context)!.durationSeconds(seconds);
   }
+}
+
+class _RiskProfile {
+  final String ceMultiplierLabel;
+  final int timeShards;
+  final int relicChancePercent;
+
+  const _RiskProfile({
+    required this.ceMultiplierLabel,
+    required this.timeShards,
+    required this.relicChancePercent,
+  });
 }
 
 /// Isolates 1-second timer rebuilds so only the child tree is updated,
