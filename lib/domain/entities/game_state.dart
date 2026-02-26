@@ -212,24 +212,6 @@ class GameState {
   List<Worker> get activeWorkers =>
       workers.values.where((w) => w.isDeployed).toList();
 
-  /// Workers currently locked into unresolved expeditions.
-  Set<String> get activeExpeditionWorkerIds {
-    final Set<String> ids = <String>{};
-    for (final Expedition expedition in expeditions) {
-      if (expedition.resolved) continue;
-      ids.addAll(expedition.workerIds);
-    }
-    return ids;
-  }
-
-  /// Deployed workers that are still producing inside chambers.
-  List<Worker> get productiveWorkers {
-    final Set<String> expeditionWorkerIds = activeExpeditionWorkerIds;
-    return activeWorkers
-        .where((Worker worker) => !expeditionWorkerIds.contains(worker.id))
-        .toList();
-  }
-
   /// Derived mastery levels by era from cumulative XP.
   Map<String, int> get eraMasteryLevels => {
     for (final era in WorkerEra.values) era.id: getEraMasteryLevel(era.id),
@@ -250,7 +232,7 @@ class GameState {
   BigInt get productionPerSecond {
     BigInt total = BigInt.zero;
 
-    for (final worker in productiveWorkers) {
+    for (final worker in activeWorkers) {
       final station = stations[worker.deployedStationId];
       if (station == null) continue;
 
@@ -288,13 +270,13 @@ class GameState {
   /// Calculate paradox accumulation rate per second
   double get paradoxPerSecond {
     double rate = 0.0;
-    rate += productiveWorkers.length * 0.001;
+    rate += activeWorkers.length * 0.001;
 
     for (final station in stations.values) {
       rate += station.paradoxRate;
     }
 
-    final eraVariety = productiveWorkers.map((w) => w.era).toSet().length;
+    final eraVariety = activeWorkers.map((w) => w.era).toSet().length;
     if (eraVariety > 1) {
       rate += (eraVariety - 1) * 0.002;
     }
@@ -315,7 +297,7 @@ class GameState {
     if (station == null) return BigInt.zero;
 
     BigInt total = BigInt.zero;
-    final stationWorkers = productiveWorkers.where(
+    final stationWorkers = activeWorkers.where(
       (w) => w.deployedStationId == stationId,
     );
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/spacing.dart';
-import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
@@ -89,11 +88,7 @@ class LoopChambersTab extends ConsumerWidget {
         .where((w) => station.workerIds.contains(w.id))
         .toList();
 
-    final production = _calculateStationProduction(
-      gameState,
-      station,
-      assigned,
-    );
+    final production = _calculateStationProduction(station, assigned);
 
     return MegaChamberCard(
       station: station,
@@ -102,7 +97,8 @@ class LoopChambersTab extends ConsumerWidget {
       highlightFirstEmptySlot: isFirstCard,
       onUpgrade: () => _upgradeStation(ref, context, station),
       onAssignSlot: (slot) => _assignWorkerToSlot(ref, context, station, slot),
-      onRemoveWorker: (id) => _removeWorkerFromStation(ref, station, id),
+      onRemoveWorker: (id) =>
+          _removeWorkerFromStation(ref, context, station, id),
     );
   }
 
@@ -155,28 +151,33 @@ class LoopChambersTab extends ConsumerWidget {
 
   void _removeWorkerFromStation(
     WidgetRef ref,
+    BuildContext context,
     Station station,
     String workerId,
   ) {
+    final gameState = ref.read(gameStateProvider);
+    final bool onActiveExpedition = gameState.expeditions.any(
+      (expedition) =>
+          !expedition.resolved && expedition.workerIds.contains(workerId),
+    );
+    if (onActiveExpedition) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Worker is on an active expedition.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     ref
         .read(gameStateProvider.notifier)
         .removeWorkerFromStation(workerId, station.id);
   }
 
-  BigInt _calculateStationProduction(
-    GameState gameState,
-    Station station,
-    List<Worker> workers,
-  ) {
-    final Set<String> activeExpeditionWorkerIds = gameState.expeditions
-        .where((Expedition expedition) => !expedition.resolved)
-        .expand((Expedition expedition) => expedition.workerIds)
-        .toSet();
+  BigInt _calculateStationProduction(Station station, List<Worker> workers) {
     BigInt production = BigInt.zero;
     for (final worker in workers) {
-      if (activeExpeditionWorkerIds.contains(worker.id)) {
-        continue;
-      }
       production +=
           worker.currentProduction *
           BigInt.from((station.productionBonus * 100).toInt()) ~/

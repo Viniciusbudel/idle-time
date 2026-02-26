@@ -271,13 +271,14 @@ void main() {
     });
 
     test(
-      'workers on active expedition stop chamber production while keeping assignment',
+      'workers on active expedition keep chamber production while keeping assignment',
       () {
         final useCase = StartExpeditionUseCase();
         final DateTime now = DateTime(2026, 2, 22, 12, 0);
         final GameState state = GameState.initial();
 
-        expect(state.productionPerSecond, greaterThan(BigInt.zero));
+        final BigInt baselineProduction = state.productionPerSecond;
+        expect(baselineProduction, greaterThan(BigInt.zero));
 
         final StartExpeditionResult? started = useCase.execute(
           state,
@@ -293,7 +294,7 @@ void main() {
           started.newState.stations['station_starter']?.workerIds,
           contains('worker_starter'),
         );
-        expect(started.newState.productionPerSecond, BigInt.zero);
+        expect(started.newState.productionPerSecond, baselineProduction);
       },
     );
 
