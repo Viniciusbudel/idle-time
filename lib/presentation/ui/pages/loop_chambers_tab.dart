@@ -126,14 +126,8 @@ class LoopChambersTab extends ConsumerWidget {
     int slotIndex,
   ) {
     final gameState = ref.read(gameStateProvider);
-    final activeExpeditionWorkerIds = gameState.expeditions
-        .where((expedition) => !expedition.resolved)
-        .expand((expedition) => expedition.workerIds)
-        .toSet();
     final idleWorkers = gameState.workers.values
-        .where(
-          (w) => !w.isDeployed && !activeExpeditionWorkerIds.contains(w.id),
-        )
+        .where((w) => !w.isDeployed)
         .toList();
 
     AssignWorkerDialog.show(
@@ -142,9 +136,17 @@ class LoopChambersTab extends ConsumerWidget {
       slotIndex: slotIndex,
       idleWorkers: idleWorkers,
       onAssign: (worker) {
-        ref
+        final bool success = ref
             .read(gameStateProvider.notifier)
             .assignWorkerToStation(worker.id, station.id);
+        if (!success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Worker unavailable while expedition is active.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       },
     );
   }

@@ -437,9 +437,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
   }
 
   /// Remove worker from station
-  void undeployWorker(String workerId) {
+  bool undeployWorker(String workerId) {
     final worker = state.workers[workerId];
-    if (worker == null || !worker.isDeployed) return;
+    if (worker == null || !worker.isDeployed) return false;
+    if (_isWorkerOnActiveExpedition(workerId)) return false;
 
     final stationId = worker.deployedStationId;
 
@@ -461,6 +462,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
 
     state = state.copyWith(workers: newWorkers, stations: newStations);
+    return true;
   }
 
   /// Assign worker to station (alias for deployWorker)
@@ -469,8 +471,8 @@ class GameStateNotifier extends StateNotifier<GameState> {
   }
 
   /// Remove worker from station (alias for undeployWorker)
-  void removeWorkerFromStation(String workerId, String stationId) {
-    undeployWorker(workerId);
+  bool removeWorkerFromStation(String workerId, String stationId) {
+    return undeployWorker(workerId);
   }
 
   /// Equip an artifact to a worker
