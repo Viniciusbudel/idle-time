@@ -1324,7 +1324,6 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     }
 
     return gameState.workers.values
-        .where((Worker worker) => !worker.isDeployed)
         .where(
           (Worker worker) => !activeExpeditionWorkerIds.contains(worker.id),
         )
@@ -1653,7 +1652,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${worker.era.localizedName(context)} | ${worker.rarity.displayName} | ${NumberFormatter.formatPerSecond(worker.currentProduction)}',
+                                          '${worker.era.localizedName(context)} | ${worker.rarity.displayName} | ${NumberFormatter.formatPerSecond(worker.currentProduction)}${worker.isDeployed ? ' | CHAMBER' : ''}',
                                           style: TimeFactoryTextStyles.bodyMono
                                               .copyWith(
                                                 color: Colors.white54,

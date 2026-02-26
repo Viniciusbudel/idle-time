@@ -66,6 +66,8 @@ void main() {
     WidgetTester tester,
   ) async {
     final GameState state = GameState.initial().copyWith(
+      workers: const {},
+      stations: const {},
       unlockedEras: const {'victorian'},
       currentEraId: 'victorian',
     );
@@ -88,5 +90,43 @@ void main() {
 
     expect(find.text('Auto Assemble Crew'), findsOneWidget);
     expect(find.text('Hire Now'), findsOneWidget);
+  });
+
+  testWidgets('worker picker shows deployed chamber workers as candidates', (
+    WidgetTester tester,
+  ) async {
+    final GameState state = GameState.initial().copyWith(
+      unlockedEras: const {'victorian'},
+      currentEraId: 'victorian',
+    );
+
+    await pumpExpeditionsScreen(tester, state: state);
+
+    final Finder collapsedChevron = find.byWidgetPredicate(
+      (Widget widget) =>
+          widget is AppIcon &&
+          identical(widget.icon, AppHugeIcons.chevron_right),
+    );
+    if (collapsedChevron.evaluate().isNotEmpty) {
+      final Finder expandButton = find.ancestor(
+        of: collapsedChevron,
+        matching: find.byType(InkWell),
+      );
+      await tester.tap(expandButton.first);
+      await tester.pump(const Duration(milliseconds: 220));
+    }
+
+    final Finder addWorkerIcon = find.byWidgetPredicate(
+      (Widget widget) =>
+          widget is AppIcon && identical(widget.icon, AppHugeIcons.add),
+    );
+    final Finder addSocketButton = find.ancestor(
+      of: addWorkerIcon.first,
+      matching: find.byType(InkWell),
+    );
+    await tester.tap(addSocketButton.first);
+    await tester.pump(const Duration(milliseconds: 450));
+
+    expect(find.textContaining('CHAMBER'), findsWidgets);
   });
 }

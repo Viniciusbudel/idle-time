@@ -1076,6 +1076,31 @@ class GameStateNotifier extends StateNotifier<GameState> {
     required ExpeditionRisk risk,
     required List<String> workerIds,
   }) {
+    final ExpeditionSlot? slot = _startExpeditionUseCase.getSlotById(
+      slotId,
+      slots: expeditionSlots,
+    );
+    if (slot == null) return false;
+    if (workerIds.length != slot.requiredWorkers) return false;
+    if (workerIds.toSet().length != workerIds.length) return false;
+
+    final Set<String> activeExpeditionWorkers = _activeExpeditionWorkerIds();
+    for (final String workerId in workerIds) {
+      final Worker? worker = state.workers[workerId];
+      if (worker == null) return false;
+      if (activeExpeditionWorkers.contains(workerId)) return false;
+    }
+
+    // Allow selecting chamber workers from expedition UI:
+    // undeploy them first, then dispatch start use case.
+    for (final String workerId in workerIds) {
+      final Worker? worker = state.workers[workerId];
+      if (worker == null) continue;
+      if (worker.isDeployed) {
+        undeployWorker(workerId);
+      }
+    }
+
     final result = _startExpeditionUseCase.execute(
       state,
       slotId: slotId,
