@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/prestige_upgrade.dart';
 import 'package:time_factory/domain/entities/worker_artifact.dart';
@@ -127,6 +128,65 @@ void main() {
       final highParadox = base.copyWith(paradoxLevel: 0.95);
 
       expect(highParadox.productionPerSecond, base.productionPerSecond);
+    });
+
+    test('should apply prestige luck bonus to expedition success chance', () {
+      final baseState = GameState.initial();
+      final upgradedState = GameState.initial().copyWith(
+        paradoxPointsSpent: {PrestigeUpgradeType.timekeepersFavor.id: 3},
+      );
+
+      final baseChance = GameState.baseExpeditionSuccessChanceForRisk(
+        ExpeditionRisk.risky,
+      );
+      final adjustedBase = baseState.adjustedExpeditionSuccessProbability(
+        risk: ExpeditionRisk.risky,
+        baseSuccessProbability: baseChance,
+      );
+      final adjustedUpgraded =
+          upgradedState.adjustedExpeditionSuccessProbability(
+            risk: ExpeditionRisk.risky,
+            baseSuccessProbability: baseChance,
+          );
+
+      expect(adjustedBase, closeTo(baseChance, 1e-9));
+      expect(adjustedUpgraded, greaterThan(adjustedBase));
+    });
+
+    test('should increase simulated expedition success distribution by risk', () {
+      final baseState = GameState.initial();
+      final upgradedState = GameState.initial().copyWith(
+        paradoxPointsSpent: {PrestigeUpgradeType.timekeepersFavor.id: 4},
+      );
+      final rolls = List<double>.generate(1000, (i) => (i % 100) / 100.0);
+
+      for (final risk in ExpeditionRisk.values) {
+        final baseChance = GameState.baseExpeditionSuccessChanceForRisk(risk);
+        final upgradedChance = upgradedState.adjustedExpeditionSuccessProbability(
+          risk: risk,
+          baseSuccessProbability: baseChance,
+        );
+
+        final baseSuccesses = rolls.where((roll) => roll <= baseChance).length;
+        final upgradedSuccesses = rolls
+            .where((roll) => roll <= upgradedChance)
+            .length;
+
+        expect(
+          upgradedSuccesses,
+          greaterThan(baseSuccesses),
+          reason: 'Expected upgraded success distribution to be higher for $risk',
+        );
+        expect(
+          upgradedChance,
+          greaterThan(
+            baseState.adjustedExpeditionSuccessProbability(
+              risk: risk,
+              baseSuccessProbability: baseChance,
+            ),
+          ),
+        );
+      }
     });
 
     test(

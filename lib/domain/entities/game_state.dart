@@ -221,6 +221,44 @@ class GameState {
   int get paradoxClickBonusPercent =>
       ((paradoxClickBonusMultiplier - 1.0) * 100).round();
 
+  int get expeditionLuckUpgradeLevel =>
+      PrestigeUpgradeType.timekeepersFavor.clampLevel(
+        paradoxPointsSpent[PrestigeUpgradeType.timekeepersFavor.id] ?? 0,
+      );
+
+  double get expeditionLuckMultiplier =>
+      1.0 + (expeditionLuckUpgradeLevel * 0.05);
+
+  static double baseExpeditionSuccessChanceForRisk(ExpeditionRisk risk) {
+    switch (risk) {
+      case ExpeditionRisk.safe:
+        return 0.72;
+      case ExpeditionRisk.risky:
+        return 0.58;
+      case ExpeditionRisk.volatile:
+        return 0.42;
+    }
+  }
+
+  double adjustedExpeditionSuccessProbability({
+    required ExpeditionRisk risk,
+    required double baseSuccessProbability,
+  }) {
+    final adjusted = baseSuccessProbability * expeditionLuckMultiplier;
+    return adjusted.clamp(0.05, 0.99);
+  }
+
+  double expeditionLuckDeltaForRisk(ExpeditionRisk risk, {int? levelOverride}) {
+    final level = PrestigeUpgradeType.timekeepersFavor.clampLevel(
+      levelOverride ?? expeditionLuckUpgradeLevel,
+    );
+    if (level <= 0) return 0.0;
+    final multiplier = 1.0 + (level * 0.05);
+    final baseChance = baseExpeditionSuccessChanceForRisk(risk);
+    final adjustedChance = (baseChance * multiplier).clamp(0.05, 0.99);
+    return adjustedChance - baseChance;
+  }
+
   /// Derived mastery levels by era from cumulative XP.
   Map<String, int> get eraMasteryLevels => {
     for (final era in WorkerEra.values) era.id: getEraMasteryLevel(era.id),

@@ -22,7 +22,7 @@ enum PrestigeUpgradeType {
   timekeepersFavor(
     'timekeepers_favor',
     'Timekeeper\'s Favor',
-    '+5% Better Gacha luck',
+    '+5% Expedition luck',
     AppHugeIcons.star,
   ),
   temporalMemory(
@@ -129,7 +129,7 @@ enum PrestigeUpgradeType {
       case PrestigeUpgradeType.riftStability:
         return '-${level * 5}% Paradox';
       case PrestigeUpgradeType.timekeepersFavor:
-        return '+${level * 5}% Luck';
+        return '+${level * 5}% Expedition Luck';
       case PrestigeUpgradeType.temporalMemory:
         return '+${level * 10}% Offline';
     }

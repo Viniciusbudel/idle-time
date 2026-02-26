@@ -7,6 +7,7 @@ import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
+import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/prestige_upgrade.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
@@ -71,7 +72,11 @@ class PrestigeTab extends ConsumerWidget {
                       child: _UpgradeCard(
                         type: type,
                         title: _getUpgradeName(context, type),
-                        description: _getUpgradeDescription(context, type),
+                        description: _getUpgradeDescription(
+                          context,
+                          type,
+                          gameState,
+                        ),
                         level: level,
                         availablePoints: gameState.availableParadoxPoints,
                         onBuy: () {
@@ -311,6 +316,7 @@ class PrestigeTab extends ConsumerWidget {
   String _getUpgradeDescription(
     BuildContext context,
     PrestigeUpgradeType type,
+    GameState gameState,
   ) {
     final l10n = AppLocalizations.of(context)!;
     switch (type) {
@@ -321,7 +327,17 @@ class PrestigeTab extends ConsumerWidget {
       case PrestigeUpgradeType.riftStability:
         return l10n.riftStabilityDescription;
       case PrestigeUpgradeType.timekeepersFavor:
-        return l10n.timekeepersFavorDescription;
+        final safe = (gameState.expeditionLuckDeltaForRisk(ExpeditionRisk.safe) *
+                100)
+            .toStringAsFixed(1);
+        final risky =
+            (gameState.expeditionLuckDeltaForRisk(ExpeditionRisk.risky) * 100)
+                .toStringAsFixed(1);
+        final volatile = (gameState
+                    .expeditionLuckDeltaForRisk(ExpeditionRisk.volatile) *
+                100)
+            .toStringAsFixed(1);
+        return 'Expedition success boost: Safe +$safe%, Risky +$risky%, Volatile +$volatile%';
       case PrestigeUpgradeType.temporalMemory:
         return l10n.offlineBonusDescription;
     }
@@ -399,7 +415,7 @@ class _UpgradeCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       description,
-                      maxLines: 2,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: typography.bodySmall.copyWith(
                         color: Colors.white.withValues(alpha: 0.72),

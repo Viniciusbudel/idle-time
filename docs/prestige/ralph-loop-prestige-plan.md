@@ -58,7 +58,7 @@ Done when:
 ---
 
 ## STORY-3: Wire Prestige Luck Percent To Expeditions + Text Update
-status: todo
+status: done
 
 Description:
 Ensure prestige luck percent upgrades affect expedition outcomes and rename any misleading prestige shop text to explicitly mention expedition luck.

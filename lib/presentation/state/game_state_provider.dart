@@ -1119,7 +1119,16 @@ class GameStateNotifier extends StateNotifier<GameState> {
     );
     if (result == null) return false;
 
-    state = result.newState;
+    final adjustedSuccessProbability = state.adjustedExpeditionSuccessProbability(
+      risk: risk,
+      baseSuccessProbability: result.expedition.successProbability,
+    );
+    final adjustedExpedition = result.expedition.copyWith(
+      successProbability: adjustedSuccessProbability,
+    );
+    final updatedExpeditions = List<Expedition>.from(state.expeditions)
+      ..add(adjustedExpedition);
+    state = state.copyWith(expeditions: updatedExpeditions);
     return true;
   }
 
