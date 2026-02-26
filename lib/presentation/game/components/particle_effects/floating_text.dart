@@ -17,9 +17,7 @@ class FloatingTextComponent extends TextComponent {
            style: TimeFactoryTextStyles.numbers.copyWith(
              fontSize: 24,
              color: color,
-             shadows: [
-               Shadow(color: color.withOpacity( 0.8), blurRadius: 10),
-             ],
+             shadows: [Shadow(color: color.withOpacity(0.8), blurRadius: 10)],
            ),
          ),
          anchor: Anchor.center,
@@ -36,25 +34,25 @@ class FloatingTextComponent extends TextComponent {
     );
 
     // Scale down and remove
-    add(
-      ScaleEffect.to(
-        Vector2.zero(),
-        EffectController(
-          duration: 0.5,
-          startDelay: 1.0, // Wait a bit before shrinking
-          curve: Curves.easeIn,
-        ),
-        onComplete: () => removeFromParent(),
+    final shrink = ScaleEffect.to(
+      Vector2.zero(),
+      EffectController(
+        duration: 0.5,
+        startDelay: 1.0, // Wait a bit before shrinking
+        curve: Curves.easeIn,
       ),
+      onComplete: () => removeFromParent(),
     );
+    shrink.target = this;
+    add(shrink);
 
     // Scale up slightly at start for pop effect
     scale = Vector2.all(0.5);
-    add(
-      ScaleEffect.to(
-        Vector2.all(1.0),
-        EffectController(duration: 0.2, curve: Curves.elasticOut),
-      ),
+    final popIn = ScaleEffect.to(
+      Vector2.all(1.0),
+      EffectController(duration: 0.2, curve: Curves.elasticOut),
     );
+    popIn.target = this;
+    add(popIn);
   }
 }

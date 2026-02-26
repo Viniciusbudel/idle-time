@@ -56,66 +56,67 @@ class HiringEffectComponent extends PositionComponent with HasGameReference {
   void _spawnSingularity(Color color) {
     // 1. Event Horizon (The Void)
     // Black circle that grows
-    add(
-      CircleComponent(
-          radius: 20,
-          anchor: Anchor.center,
-          position: size / 2,
-          paint: Paint()
-            ..color = Colors.black
-            ..style = PaintingStyle.fill
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
-        )
-        ..scale = Vector2.zero()
-        ..add(
-          ScaleEffect.to(
-            Vector2.all(1.0),
-            EffectController(duration: 0.5, curve: Curves.easeOutBack),
-          ),
-        )
-        // Collapse before explosion
-        ..add(
-          ScaleEffect.to(
-            Vector2.zero(),
-            EffectController(
-              startDelay: 1.3,
-              duration: 0.1,
-              curve: Curves.easeInExpo,
-            ),
-          ),
-        ),
+    final eventHorizon = CircleComponent(
+      radius: 20,
+      anchor: Anchor.center,
+      position: size / 2,
+      paint: Paint()
+        ..color = Colors.black
+        ..style = PaintingStyle.fill
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
+    eventHorizon.scale = Vector2.zero();
+    eventHorizon.add(
+      _scaleTo(
+        eventHorizon,
+        Vector2.all(1.0),
+        EffectController(duration: 0.5, curve: Curves.easeOutBack),
+      ),
+    );
+    eventHorizon.add(
+      _scaleTo(
+        eventHorizon,
+        Vector2.zero(),
+        EffectController(
+          startDelay: 1.3,
+          duration: 0.1,
+          curve: Curves.easeInExpo,
+        ),
+      ),
+    );
+    add(eventHorizon);
 
     // 2. Photon Ring (Glowing Edge)
-    add(
-      CircleComponent(
-          radius: 22,
-          anchor: Anchor.center,
-          position: size / 2,
-          paint: Paint()
-            ..color = color.withOpacity( 0.8)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.0
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
-        )
-        ..scale = Vector2.zero()
-        ..add(
-          ScaleEffect.to(
-            Vector2.all(1.0),
-            EffectController(duration: 0.5, curve: Curves.easeOutBack),
-          ),
-        )
-        ..add(
-          ScaleEffect.to(
-            Vector2.zero(),
-            EffectController(
-              startDelay: 1.3,
-              duration: 0.1,
-              curve: Curves.easeInExpo,
-            ),
-          ),
-        ),
+    final photonRing = CircleComponent(
+      radius: 22,
+      anchor: Anchor.center,
+      position: size / 2,
+      paint: Paint()
+        ..color = color.withOpacity(0.8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
     );
+    photonRing.scale = Vector2.zero();
+    photonRing.add(
+      _scaleTo(
+        photonRing,
+        Vector2.all(1.0),
+        EffectController(duration: 0.5, curve: Curves.easeOutBack),
+      ),
+    );
+    photonRing.add(
+      _scaleTo(
+        photonRing,
+        Vector2.zero(),
+        EffectController(
+          startDelay: 1.3,
+          duration: 0.1,
+          curve: Curves.easeInExpo,
+        ),
+      ),
+    );
+    add(photonRing);
   }
 
   void _startAccretionDisk(Color color) {
@@ -156,30 +157,30 @@ class HiringEffectComponent extends PositionComponent with HasGameReference {
 
   void _triggerVoidExplosion(Color color) {
     // 1. Shockwave
-    add(
-      CircleComponent(
-          radius: 10,
-          anchor: Anchor.center,
-          position: size / 2,
-          paint: Paint()
-            ..color = color
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 5.0
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
-        )
-        ..add(
-          ScaleEffect.to(
-            Vector2.all(8.0),
-            EffectController(duration: 0.4, curve: Curves.easeOutQuad),
-          ),
-        )
-        ..add(
-          OpacityEffect.fadeOut(
-            EffectController(duration: 0.4),
-            onComplete: () => removeFromParent(),
-          ),
-        ),
+    final shockwave = CircleComponent(
+      radius: 10,
+      anchor: Anchor.center,
+      position: size / 2,
+      paint: Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.0
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
+    shockwave.add(
+      _scaleTo(
+        shockwave,
+        Vector2.all(8.0),
+        EffectController(duration: 0.4, curve: Curves.easeOutQuad),
+      ),
+    );
+    shockwave.add(
+      OpacityEffect.fadeOut(
+        EffectController(duration: 0.4),
+        onComplete: () => removeFromParent(),
+      ),
+    );
+    add(shockwave);
 
     // 2. Flash
     add(
@@ -213,13 +214,23 @@ class HiringEffectComponent extends PositionComponent with HasGameReference {
               speed: Vector2(cos(angle), sin(angle)) * speed,
               child: CircleParticle(
                 radius: 2.0,
-                paint: Paint()..color = color.withOpacity( 0.8),
+                paint: Paint()..color = color.withOpacity(0.8),
               ),
             );
           },
         ),
       ),
     );
+  }
+
+  ScaleEffect _scaleTo(
+    PositionComponent target,
+    Vector2 scale,
+    EffectController controller,
+  ) {
+    final effect = ScaleEffect.to(scale, controller);
+    effect.target = target;
+    return effect;
   }
 
   Color _getRarityColor(WorkerRarity rarity) {
@@ -272,7 +283,7 @@ class _AccretionParticle extends Particle {
 
     final opacity = (lifespan - progress * lifespan) / lifespan;
 
-    final paint = Paint()..color = color.withOpacity( 1.0 * opacity);
+    final paint = Paint()..color = color.withOpacity(1.0 * opacity);
     canvas.drawCircle(pos.toOffset(), 1.5, paint);
   }
 }

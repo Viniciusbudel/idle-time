@@ -37,12 +37,12 @@ class FallbackReactor extends SvgComponent
   void onTapDown(TapDownEvent event) {
     gameRef.handleReactorTap();
     HapticFeedback.mediumImpact();
-    add(
-      ScaleEffect.to(
-        Vector2.all(0.9),
-        EffectController(duration: 0.05, reverseDuration: 0.05),
-      ),
+    final tapBounce = ScaleEffect.to(
+      Vector2.all(0.9),
+      EffectController(duration: 0.05, reverseDuration: 0.05),
     );
+    tapBounce.target = this;
+    add(tapBounce);
   }
 
   static Future<FallbackReactor> create(double size) async {
