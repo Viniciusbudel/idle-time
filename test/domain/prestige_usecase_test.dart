@@ -95,6 +95,40 @@ void main() {
       expect(result.unlockedEras, {'victorian'});
     });
 
+    test('should return zero paradox click bonus at zero paradox balance', () {
+      final state = GameState.initial().copyWith(paradoxLevel: 0.0);
+
+      expect(state.paradoxClickBonusSteps, 0);
+      expect(state.paradoxClickBonusMultiplier, 1.0);
+      expect(state.paradoxClickBonusPercent, 0);
+    });
+
+    test('should return one paradox click bonus step at 10% paradox balance', () {
+      final state = GameState.initial().copyWith(paradoxLevel: 0.1);
+
+      expect(state.paradoxClickBonusSteps, 1);
+      expect(state.paradoxClickBonusMultiplier, 1.1);
+      expect(state.paradoxClickBonusPercent, 10);
+    });
+
+    test('should return multiple paradox click bonus steps at higher balance', () {
+      final state = GameState.initial().copyWith(paradoxLevel: 0.36);
+
+      expect(state.paradoxClickBonusSteps, 3);
+      expect(state.paradoxClickBonusMultiplier, 1.3);
+      expect(state.paradoxClickBonusPercent, 30);
+    });
+
+    test('should keep production formula unchanged by paradox click bonus', () {
+      final base = GameState.initial().copyWith(
+        paradoxLevel: 0.0,
+        paradoxPointsSpent: {PrestigeUpgradeType.chronoMastery.id: 4},
+      );
+      final highParadox = base.copyWith(paradoxLevel: 0.95);
+
+      expect(highParadox.productionPerSecond, base.productionPerSecond);
+    });
+
     test(
       'should calculate correct prestigePointsToGain based on lifetimeChronoEnergy',
       () {

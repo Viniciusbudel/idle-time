@@ -40,7 +40,7 @@ Done when:
 ---
 
 ## STORY-2: Add Paradox-Based Click Power Bonus (+10%)
-status: todo
+status: done
 
 Description:
 Apply click power scaling from paradox balance using the same progression model used by production, with +10% per configured step.

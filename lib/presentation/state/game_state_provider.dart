@@ -312,6 +312,12 @@ class GameStateNotifier extends StateNotifier<GameState> {
       base = BigInt.from((base.toDouble() * multiplier).round());
     }
 
+    // 4. Apply paradox balance click bonus (+10% per progression step)
+    final paradoxClickMultiplier = state.paradoxClickBonusMultiplier;
+    if (paradoxClickMultiplier > 1.0) {
+      base = BigInt.from((base.toDouble() * paradoxClickMultiplier).round());
+    }
+
     return base;
   }
 

@@ -212,6 +212,15 @@ class GameState {
   List<Worker> get activeWorkers =>
       workers.values.where((w) => w.isDeployed).toList();
 
+  int get paradoxClickBonusSteps =>
+      PrestigeUpgradeType.paradoxClickBonusSteps(paradoxLevel);
+
+  double get paradoxClickBonusMultiplier =>
+      PrestigeUpgradeType.paradoxClickBonusMultiplier(paradoxLevel);
+
+  int get paradoxClickBonusPercent =>
+      ((paradoxClickBonusMultiplier - 1.0) * 100).round();
+
   /// Derived mastery levels by era from cumulative XP.
   Map<String, int> get eraMasteryLevels => {
     for (final era in WorkerEra.values) era.id: getEraMasteryLevel(era.id),

@@ -44,6 +44,19 @@ enum PrestigeUpgradeType {
     this.icon,
   );
 
+  static const double paradoxClickBonusStepSize = 0.1;
+  static const double paradoxClickBonusPerStep = 0.1;
+
+  static int paradoxClickBonusSteps(double paradoxLevel) {
+    final normalized = paradoxLevel.clamp(0.0, 1.0);
+    return (normalized / paradoxClickBonusStepSize).floor();
+  }
+
+  static double paradoxClickBonusMultiplier(double paradoxLevel) {
+    final steps = paradoxClickBonusSteps(paradoxLevel);
+    return 1.0 + (steps * paradoxClickBonusPerStep);
+  }
+
   static const Set<String> removedShopUpgradeIds = {
     'era_insight',
     'rift_stability',

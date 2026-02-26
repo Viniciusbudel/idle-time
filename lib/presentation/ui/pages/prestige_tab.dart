@@ -143,6 +143,13 @@ class PrestigeTab extends ConsumerWidget {
               label: l10n.prestigesCount(gameState.totalPrestiges),
               color: colors.primary,
             ),
+            const SizedBox(height: 8),
+            _InlineBadge(
+              icon: AppHugeIcons.bolt,
+              label:
+                  'Click +${gameState.paradoxClickBonusPercent}% from Paradox',
+              color: colors.warning,
+            ),
           ],
         ),
       ),
