@@ -136,17 +136,9 @@ class LoopChambersTab extends ConsumerWidget {
       slotIndex: slotIndex,
       idleWorkers: idleWorkers,
       onAssign: (worker) {
-        final bool success = ref
+        return ref
             .read(gameStateProvider.notifier)
             .assignWorkerToStation(worker.id, station.id);
-        if (!success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Worker unavailable while expedition is active.'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
       },
     );
   }
