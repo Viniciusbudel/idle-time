@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:time_factory/core/constants/game_constants.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/station.dart';
@@ -11,6 +12,169 @@ import 'package:time_factory/domain/entities/expedition.dart';
 
 void main() {
   group('Expedition use cases', () {
+    test('slot catalog includes one expedition per configured era', () {
+      final useCase = StartExpeditionUseCase();
+
+      expect(useCase.availableSlots.length, GameConstants.eraOrder.length);
+      expect(
+        useCase.availableSlots.map((slot) => slot.eraId).toList(),
+        GameConstants.eraOrder,
+      );
+    });
+
+    test('new save exposes only victorian expedition slot', () {
+      final useCase = StartExpeditionUseCase();
+      final state = GameState.initial();
+
+      final available = useCase.getAvailableExpeditionSlots(state);
+
+      expect(available.length, 1);
+      expect(available.first.eraId, 'victorian');
+      expect(available.first.id, 'salvage_run');
+    });
+
+    test('unlocking roaring_20s exposes two expedition slots', () {
+      final useCase = StartExpeditionUseCase();
+      final state = GameState.initial().copyWith(
+        unlockedEras: {'victorian', 'roaring_20s'},
+        currentEraId: 'roaring_20s',
+      );
+
+      final available = useCase.getAvailableExpeditionSlots(state);
+
+      expect(available.length, 2);
+      expect(available.map((slot) => slot.eraId).toList(), const <String>[
+        'victorian',
+        'roaring_20s',
+      ]);
+    });
+
+    test('unlocking atomic_age exposes three expedition slots', () {
+      final useCase = StartExpeditionUseCase();
+      final state = GameState.initial().copyWith(
+        unlockedEras: {'victorian', 'roaring_20s', 'atomic_age'},
+        currentEraId: 'atomic_age',
+      );
+
+      final available = useCase.getAvailableExpeditionSlots(state);
+
+      expect(available.length, 3);
+      expect(available.map((slot) => slot.eraId).toList(), const <String>[
+        'victorian',
+        'roaring_20s',
+        'atomic_age',
+      ]);
+    });
+
+    test('autoSelectCrew prioritizes rarity order and avoids duplicates', () {
+      final useCase = StartExpeditionUseCase();
+      final ExpeditionSlot slot = useCase.getSlotById('rift_probe')!;
+
+      final Worker commonWorker = Worker(
+        id: 'crew_common',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(8),
+        rarity: WorkerRarity.common,
+      );
+      final Worker duplicateCommonWorker = Worker(
+        id: 'crew_common',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(20),
+        rarity: WorkerRarity.common,
+      );
+      final Worker rareWorker = Worker(
+        id: 'crew_rare',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(12),
+        rarity: WorkerRarity.rare,
+      );
+      final Worker paradoxWorker = Worker(
+        id: 'crew_paradox',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(40),
+        rarity: WorkerRarity.paradox,
+      );
+      final Worker deployedCommonWorker = Worker(
+        id: 'crew_deployed',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(9),
+        rarity: WorkerRarity.common,
+        isDeployed: true,
+      );
+
+      final List<String> selected = useCase.autoSelectCrew(slot, <Worker>[
+        paradoxWorker,
+        rareWorker,
+        commonWorker,
+        duplicateCommonWorker,
+        deployedCommonWorker,
+      ]);
+
+      expect(selected.length, slot.requiredWorkers);
+      expect(selected.toSet().length, selected.length);
+      expect(selected, const <String>['crew_common', 'crew_rare']);
+    });
+
+    test(
+      'quickHireForCrewGap plans hires to fill crew gap when affordable',
+      () {
+        final useCase = StartExpeditionUseCase();
+        final ExpeditionSlot slot = useCase.getSlotById('rift_probe')!;
+
+        final Worker idleWorker = Worker(
+          id: 'idle_gap_worker',
+          era: WorkerEra.victorian,
+          baseProduction: BigInt.from(10),
+        );
+        final GameState state = GameState.initial().copyWith(
+          chronoEnergy: BigInt.from(200000),
+          workers: {'idle_gap_worker': idleWorker},
+          stations: const {},
+          expeditions: const [],
+          unlockedEras: const {'victorian', 'roaring_20s'},
+          currentEraId: 'roaring_20s',
+        );
+
+        final QuickHirePlan plan = useCase.quickHireForCrewGap(slot, state);
+
+        expect(plan.era, WorkerEra.roaring20s);
+        expect(plan.missingWorkers, 1);
+        expect(plan.affordableWorkers, 1);
+        expect(plan.canHireAny, isTrue);
+        expect(plan.fillsCrewGap, isTrue);
+        expect(plan.totalCost, greaterThan(BigInt.zero));
+      },
+    );
+
+    test(
+      'quickHireForCrewGap reports no affordable hires when CE is insufficient',
+      () {
+        final useCase = StartExpeditionUseCase();
+        final ExpeditionSlot slot = useCase.getSlotById('rift_probe')!;
+
+        final Worker idleWorker = Worker(
+          id: 'idle_low_ce',
+          era: WorkerEra.victorian,
+          baseProduction: BigInt.from(10),
+        );
+        final GameState state = GameState.initial().copyWith(
+          chronoEnergy: BigInt.from(50000),
+          workers: {'idle_low_ce': idleWorker},
+          stations: const {},
+          expeditions: const [],
+          unlockedEras: const {'victorian', 'roaring_20s'},
+          currentEraId: 'roaring_20s',
+        );
+
+        final QuickHirePlan plan = useCase.quickHireForCrewGap(slot, state);
+
+        expect(plan.missingWorkers, 1);
+        expect(plan.affordableWorkers, 0);
+        expect(plan.canHireAny, isFalse);
+        expect(plan.totalCost, BigInt.zero);
+      },
+    );
+
     test(
       'success probability scales with worker count, rarity and artifacts',
       () {
@@ -86,6 +250,74 @@ void main() {
       );
 
       expect(result, isNull);
+    });
+
+    test('start returns null when slot era is still locked', () {
+      final useCase = StartExpeditionUseCase();
+      final now = DateTime(2026, 2, 26, 10, 0);
+
+      final idleWorkerA = Worker(
+        id: 'idle_lock_a',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(10),
+      );
+      final idleWorkerB = Worker(
+        id: 'idle_lock_b',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(10),
+      );
+
+      final state = GameState.initial().copyWith(
+        workers: {'idle_lock_a': idleWorkerA, 'idle_lock_b': idleWorkerB},
+        stations: const {},
+        expeditions: const [],
+        unlockedEras: const {'victorian'},
+      );
+
+      final result = useCase.execute(
+        state,
+        slotId: 'rift_probe',
+        risk: ExpeditionRisk.risky,
+        workerIds: const ['idle_lock_a', 'idle_lock_b'],
+        now: now,
+      );
+
+      expect(result, isNull);
+    });
+
+    test('start succeeds for slot after unlocking its era', () {
+      final useCase = StartExpeditionUseCase();
+      final now = DateTime(2026, 2, 26, 10, 5);
+
+      final idleWorkerA = Worker(
+        id: 'idle_unlock_a',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(10),
+      );
+      final idleWorkerB = Worker(
+        id: 'idle_unlock_b',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(10),
+      );
+
+      final state = GameState.initial().copyWith(
+        workers: {'idle_unlock_a': idleWorkerA, 'idle_unlock_b': idleWorkerB},
+        stations: const {},
+        expeditions: const [],
+        unlockedEras: const {'victorian', 'roaring_20s'},
+        currentEraId: 'roaring_20s',
+      );
+
+      final result = useCase.execute(
+        state,
+        slotId: 'rift_probe',
+        risk: ExpeditionRisk.risky,
+        workerIds: const ['idle_unlock_a', 'idle_unlock_b'],
+        now: now,
+      );
+
+      expect(result, isNotNull);
+      expect(result!.expedition.slotId, 'rift_probe');
     });
 
     test(

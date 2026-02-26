@@ -40,6 +40,24 @@ final gameStateProvider = StateNotifierProvider<GameStateNotifier, GameState>((
   return GameStateNotifier();
 });
 
+class QuickHireExpeditionCrewResult {
+  final List<String> crewWorkerIds;
+  final int hiredWorkers;
+  final int missingBefore;
+  final int missingAfter;
+  final BigInt spentChronoEnergy;
+
+  const QuickHireExpeditionCrewResult({
+    required this.crewWorkerIds,
+    required this.hiredWorkers,
+    required this.missingBefore,
+    required this.missingAfter,
+    required this.spentChronoEnergy,
+  });
+
+  bool get filledCrew => missingAfter <= 0;
+}
+
 /// Notifier for managing game state
 class GameStateNotifier extends StateNotifier<GameState> {
   final HireWorkerUseCase _hireWorkerUseCase = HireWorkerUseCase();
@@ -316,11 +334,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   /// Hire a new worker from a specific era (costs CE based on era)
   /// Unlimited hires, exponential cost
-  Worker? hireWorker(WorkerEra era) {
+  Worker? hireWorker(WorkerEra era, {WorkerRarity? forceRarity}) {
     final cost = getNextWorkerCost(era);
     if (!spendChronoEnergy(cost)) return null;
 
-    final worker = _hireWorkerUseCase.execute(era);
+    final worker = _hireWorkerUseCase.execute(era, forceRarity: forceRarity);
 
     // Add worker and increment hire count
     final newWorkers = Map<String, Worker>.from(state.workers);
@@ -976,7 +994,82 @@ class GameStateNotifier extends StateNotifier<GameState> {
   // ===== EXPEDITIONS =====
 
   List<ExpeditionSlot> get expeditionSlots =>
-      _startExpeditionUseCase.availableSlots;
+      _startExpeditionUseCase.getAvailableExpeditionSlots(state);
+
+  List<String>? autoAssembleCrewForExpedition(String slotId) {
+    final ExpeditionSlot? slot = _startExpeditionUseCase.getSlotById(
+      slotId,
+      slots: expeditionSlots,
+    );
+    if (slot == null) return null;
+
+    return _startExpeditionUseCase.autoSelectCrew(
+      slot,
+      _availableWorkersForExpedition(),
+    );
+  }
+
+  QuickHireExpeditionCrewResult? quickHireForExpeditionCrew(String slotId) {
+    final ExpeditionSlot? slot = _startExpeditionUseCase.getSlotById(
+      slotId,
+      slots: expeditionSlots,
+    );
+    if (slot == null) return null;
+
+    final QuickHirePlan plan = _startExpeditionUseCase.quickHireForCrewGap(
+      slot,
+      state,
+    );
+    final List<String> crewBefore = _startExpeditionUseCase.autoSelectCrew(
+      slot,
+      _availableWorkersForExpedition(),
+    );
+    final int missingBefore = (slot.requiredWorkers - crewBefore.length).clamp(
+      0,
+      slot.requiredWorkers,
+    );
+
+    if (plan.era == null || !plan.canHireAny) {
+      return QuickHireExpeditionCrewResult(
+        crewWorkerIds: crewBefore,
+        hiredWorkers: 0,
+        missingBefore: missingBefore,
+        missingAfter: missingBefore,
+        spentChronoEnergy: BigInt.zero,
+      );
+    }
+
+    final BigInt chronoEnergyBefore = state.chronoEnergy;
+    var hiredWorkers = 0;
+
+    for (var i = 0; i < plan.affordableWorkers; i++) {
+      final Worker? hired = hireWorker(
+        plan.era!,
+        forceRarity: WorkerRarity.common,
+      );
+      if (hired == null) {
+        break;
+      }
+      hiredWorkers++;
+    }
+
+    final List<String> crewAfter = _startExpeditionUseCase.autoSelectCrew(
+      slot,
+      _availableWorkersForExpedition(),
+    );
+    final int missingAfter = (slot.requiredWorkers - crewAfter.length).clamp(
+      0,
+      slot.requiredWorkers,
+    );
+
+    return QuickHireExpeditionCrewResult(
+      crewWorkerIds: crewAfter,
+      hiredWorkers: hiredWorkers,
+      missingBefore: missingBefore,
+      missingAfter: missingAfter,
+      spentChronoEnergy: chronoEnergyBefore - state.chronoEnergy,
+    );
+  }
 
   bool startExpedition({
     required String slotId,
@@ -1065,6 +1158,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
       ids.addAll(expedition.workerIds);
     }
     return ids;
+  }
+
+  List<Worker> _availableWorkersForExpedition() {
+    final activeExpeditionWorkers = _activeExpeditionWorkerIds();
+    return state.workers.values
+        .where((Worker worker) => !worker.isDeployed)
+        .where((Worker worker) => !activeExpeditionWorkers.contains(worker.id))
+        .toList();
   }
 
   bool _isWorkerOnActiveExpedition(String workerId) {

@@ -461,6 +461,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     final ExpeditionRisk selectedRisk =
         _selectedRiskBySlotId[slot.id] ?? slot.defaultRisk;
     final bool canStart = availableWorkers.length >= slot.requiredWorkers;
+    final bool shouldShowQuickHire = !canStart;
     final bool isExpanded = _expandedSlotId == slot.id;
     final List<Worker> selectedWorkers = _selectedWorkersForSlot(
       slot.id,
@@ -480,6 +481,39 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
           requiredWorkers: slot.requiredWorkers,
         );
     final int successPercent = (successChance * 100).round();
+
+    void autoAssembleCrew() {
+      final List<String>? autoSelected = ref
+          .read(gameStateProvider.notifier)
+          .autoAssembleCrewForExpedition(slot.id);
+      if (autoSelected == null) {
+        return;
+      }
+      setState(() {
+        _selectedWorkerIdsBySlotId[slot.id] = autoSelected;
+      });
+    }
+
+    void quickHireCrew() {
+      final QuickHireExpeditionCrewResult? hireResult = ref
+          .read(gameStateProvider.notifier)
+          .quickHireForExpeditionCrew(slot.id);
+      if (hireResult == null) {
+        return;
+      }
+      setState(() {
+        _selectedWorkerIdsBySlotId[slot.id] = hireResult.crewWorkerIds;
+      });
+
+      final String message = hireResult.hiredWorkers > 0
+          ? '${AppLocalizations.of(context)!.hireSuccessful} (+${hireResult.hiredWorkers})'
+          : AppLocalizations.of(context)!.insufficientCE;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+
     Future<void> openWorkerPicker() async {
       final List<String>? pickedWorkerIds = await _pickWorkersForSlot(
         context,
@@ -720,6 +754,48 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                     color: Colors.white54,
                     fontSize: 10,
                   ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: <Widget>[
+                    OutlinedButton.icon(
+                      onPressed: availableWorkers.isNotEmpty
+                          ? autoAssembleCrew
+                          : null,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: expeditionRiskColor(
+                            selectedRisk,
+                          ).withValues(alpha: 0.55),
+                        ),
+                        foregroundColor: expeditionRiskColor(selectedRisk),
+                      ),
+                      icon: AppIcon(
+                        AppHugeIcons.groups,
+                        size: 14,
+                        color: expeditionRiskColor(selectedRisk),
+                      ),
+                      label: const Text('Auto Assemble Crew'),
+                    ),
+                    if (shouldShowQuickHire)
+                      ElevatedButton.icon(
+                        onPressed: quickHireCrew,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: expeditionRiskColor(
+                            selectedRisk,
+                          ).withValues(alpha: 0.88),
+                          foregroundColor: Colors.black,
+                        ),
+                        icon: const AppIcon(
+                          AppHugeIcons.person_add,
+                          size: 14,
+                          color: Colors.black,
+                        ),
+                        label: const Text('Hire Now'),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 InkWell(

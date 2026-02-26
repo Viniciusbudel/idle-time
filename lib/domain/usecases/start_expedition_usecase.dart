@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:time_factory/core/constants/game_constants.dart';
 import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
@@ -13,8 +16,110 @@ class StartExpeditionResult {
   });
 }
 
+class QuickHirePlan {
+  final WorkerEra? era;
+  final int missingWorkers;
+  final int affordableWorkers;
+  final BigInt totalCost;
+
+  const QuickHirePlan({
+    required this.era,
+    required this.missingWorkers,
+    required this.affordableWorkers,
+    required this.totalCost,
+  });
+
+  bool get canHireAny => affordableWorkers > 0;
+  bool get fillsCrewGap => affordableWorkers >= missingWorkers;
+}
+
 class StartExpeditionUseCase {
-  List<ExpeditionSlot> get availableSlots => ExpeditionSlot.defaults;
+  List<ExpeditionSlot> get availableSlots => ExpeditionSlot.catalog;
+
+  List<ExpeditionSlot> getAvailableExpeditionSlots(GameState state) {
+    final int playerMaxEraIndex = _getPlayerMaxEraIndex(state);
+    return availableSlots
+        .where(
+          (ExpeditionSlot slot) => slot.unlockEraIndex <= playerMaxEraIndex,
+        )
+        .toList();
+  }
+
+  bool isSlotUnlockedForState(GameState state, String slotId) {
+    final availableForState = getAvailableExpeditionSlots(state);
+    return getSlotById(slotId, slots: availableForState) != null;
+  }
+
+  List<String> autoSelectCrew(ExpeditionSlot slot, Iterable<Worker> workers) {
+    final List<Worker> sorted =
+        workers.where((Worker worker) => !worker.isDeployed).toList()
+          ..sort((Worker a, Worker b) {
+            final int rarityOrder = _rarityAssemblyOrder(
+              a.rarity,
+            ).compareTo(_rarityAssemblyOrder(b.rarity));
+            if (rarityOrder != 0) {
+              return rarityOrder;
+            }
+            return b.currentProduction.compareTo(a.currentProduction);
+          });
+
+    final Set<String> uniqueIds = <String>{};
+    final List<String> selected = <String>[];
+
+    for (final Worker worker in sorted) {
+      if (!uniqueIds.add(worker.id)) {
+        continue;
+      }
+      selected.add(worker.id);
+      if (selected.length >= slot.requiredWorkers) {
+        break;
+      }
+    }
+
+    return selected;
+  }
+
+  QuickHirePlan quickHireForCrewGap(ExpeditionSlot slot, GameState state) {
+    final WorkerEra? hireEra = WorkerEra.fromIdOrNull(slot.eraId);
+    final List<Worker> availableWorkers = _availableCrewWorkers(state);
+    final int missingWorkers =
+        slot.requiredWorkers - autoSelectCrew(slot, availableWorkers).length;
+
+    if (hireEra == null || missingWorkers <= 0) {
+      return QuickHirePlan(
+        era: null,
+        missingWorkers: 0,
+        affordableWorkers: 0,
+        totalCost: BigInt.zero,
+      );
+    }
+
+    var affordableWorkers = 0;
+    var totalCost = BigInt.zero;
+    BigInt remainingChronoEnergy = state.chronoEnergy;
+    final int currentEraHires = state.eraHires[hireEra.id] ?? 0;
+
+    while (affordableWorkers < missingWorkers) {
+      final int projectedHires = currentEraHires + affordableWorkers;
+      final BigInt hireCost = _getWorkerHireCost(
+        era: hireEra,
+        currentHires: projectedHires,
+      );
+      if (remainingChronoEnergy < hireCost) {
+        break;
+      }
+      affordableWorkers++;
+      totalCost += hireCost;
+      remainingChronoEnergy -= hireCost;
+    }
+
+    return QuickHirePlan(
+      era: hireEra,
+      missingWorkers: missingWorkers,
+      affordableWorkers: affordableWorkers,
+      totalCost: totalCost,
+    );
+  }
 
   static double calculateSuccessProbability({
     required ExpeditionRisk risk,
@@ -51,8 +156,8 @@ class StartExpeditionUseCase {
     );
   }
 
-  ExpeditionSlot? getSlotById(String slotId) {
-    for (final slot in availableSlots) {
+  ExpeditionSlot? getSlotById(String slotId, {List<ExpeditionSlot>? slots}) {
+    for (final slot in slots ?? availableSlots) {
       if (slot.id == slotId) return slot;
     }
     return null;
@@ -65,6 +170,8 @@ class StartExpeditionUseCase {
     required List<String> workerIds,
     DateTime? now,
   }) {
+    if (!isSlotUnlockedForState(currentState, slotId)) return null;
+
     final selectedSlot = getSlotById(slotId);
     if (selectedSlot == null) return null;
     if (workerIds.length != selectedSlot.requiredWorkers) return null;
@@ -117,6 +224,27 @@ class StartExpeditionUseCase {
     return ids;
   }
 
+  List<Worker> _availableCrewWorkers(GameState state) {
+    final Set<String> unresolvedWorkers = _unresolvedWorkerIds(state);
+    return state.workers.values
+        .where((Worker worker) => !worker.isDeployed)
+        .where((Worker worker) => !unresolvedWorkers.contains(worker.id))
+        .toList();
+  }
+
+  int _getPlayerMaxEraIndex(GameState state) {
+    var maxEraIndex = 0;
+
+    for (final eraId in state.unlockedEras) {
+      final int index = GameConstants.eraOrder.indexOf(eraId);
+      if (index > maxEraIndex) {
+        maxEraIndex = index;
+      }
+    }
+
+    return maxEraIndex;
+  }
+
   static double _raritySuccessScore(WorkerRarity rarity) {
     switch (rarity) {
       case WorkerRarity.common:
@@ -130,5 +258,33 @@ class StartExpeditionUseCase {
       case WorkerRarity.paradox:
         return 1.0;
     }
+  }
+
+  static int _rarityAssemblyOrder(WorkerRarity rarity) {
+    switch (rarity) {
+      case WorkerRarity.common:
+        return 0;
+      case WorkerRarity.rare:
+        return 1;
+      case WorkerRarity.epic:
+        return 2;
+      case WorkerRarity.legendary:
+        return 3;
+      case WorkerRarity.paradox:
+        return 4;
+    }
+  }
+
+  static BigInt _getWorkerHireCost({
+    required WorkerEra era,
+    required int currentHires,
+  }) {
+    final double growth = switch (era.id) {
+      'atomic_age' => 1.48,
+      'cyberpunk_80s' => 1.58,
+      _ => 1.40,
+    };
+    final double multiplier = math.pow(growth, currentHires).toDouble();
+    return BigInt.from((era.hireCost.toDouble() * multiplier).toInt());
   }
 }

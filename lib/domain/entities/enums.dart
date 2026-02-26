@@ -15,6 +15,15 @@ enum WorkerEra {
 
   const WorkerEra(this.id, this.displayName, this.year);
 
+  static WorkerEra? fromIdOrNull(String eraId) {
+    for (final WorkerEra era in WorkerEra.values) {
+      if (era.id == eraId) {
+        return era;
+      }
+    }
+    return null;
+  }
+
   /// Get era multiplier from game constants
   double get multiplier {
     const multipliers = {
