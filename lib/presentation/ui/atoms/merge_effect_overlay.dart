@@ -30,6 +30,6 @@ class _MergeEffectOverlayState extends State<MergeEffectOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(child: GameWidget(game: _game));
+    return GameWidget(game: _game);
   }
 }
