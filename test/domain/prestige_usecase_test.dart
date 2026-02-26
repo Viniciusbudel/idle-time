@@ -4,6 +4,7 @@ import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/prestige_upgrade.dart';
 import 'package:time_factory/domain/entities/worker_artifact.dart';
 import 'package:time_factory/domain/entities/enums.dart';
+import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/usecases/prestige_usecase.dart';
 
 void main() {
@@ -66,6 +67,113 @@ void main() {
 
         // Assert: Eras should reset to only victorian (since no era_insight upgrade)
         expect(result.unlockedEras, {'victorian'});
+      },
+    );
+
+    test(
+      'should return equipped artifacts to inventory when workers are reset by prestige',
+      () {
+        final equippedArtifact = WorkerArtifact(
+          id: 'artifact_equipped_reset_case',
+          name: 'Reset Relic',
+          rarity: WorkerRarity.epic,
+          eraMatch: WorkerEra.atomicAge,
+          basePowerBonus: BigInt.from(5),
+          productionMultiplier: 0.08,
+        );
+        final inventoryArtifact = WorkerArtifact(
+          id: 'artifact_inventory_keep_case',
+          name: 'Stored Relic',
+          rarity: WorkerRarity.rare,
+          eraMatch: null,
+          basePowerBonus: BigInt.from(2),
+          productionMultiplier: 0.05,
+        );
+
+        final worker = Worker(
+          id: 'worker_reset_target',
+          era: WorkerEra.atomicAge,
+          baseProduction: BigInt.from(10),
+          rarity: WorkerRarity.rare,
+          equippedArtifacts: [equippedArtifact],
+        );
+
+        final state = GameState.initial().copyWith(
+          lifetimeChronoEnergy: BigInt.from(1200000),
+          workers: {'worker_reset_target': worker},
+          stations: const {},
+          inventory: [inventoryArtifact],
+        );
+
+        final afterPrestige = useCase.execute(state);
+        final reconciled = afterPrestige.reconcileArtifactsAfterPrestige(state);
+        final loaded = GameState.fromMap(reconciled.toMap());
+
+        final inventoryIds = reconciled.inventory.map((a) => a.id).toSet();
+        expect(
+          inventoryIds,
+          containsAll(
+            const ['artifact_equipped_reset_case', 'artifact_inventory_keep_case'],
+          ),
+        );
+        expect(reconciled.inventory.length, inventoryIds.length);
+        expect(
+          reconciled.workers.values.any(
+            (w) => w.equippedArtifacts.any(
+              (a) => a.id == 'artifact_equipped_reset_case',
+            ),
+          ),
+          isFalse,
+        );
+        expect(loaded.inventory.map((a) => a.id).toSet(), inventoryIds);
+      },
+    );
+
+    test(
+      'should keep equipped artifacts attached when worker id persists across prestige',
+      () {
+        final equippedArtifact = WorkerArtifact(
+          id: 'artifact_equipped_persist_case',
+          name: 'Timeline Anchor',
+          rarity: WorkerRarity.legendary,
+          eraMatch: WorkerEra.victorian,
+          basePowerBonus: BigInt.from(10),
+          productionMultiplier: 0.12,
+        );
+
+        final starterWorker = GameState.initial().workers['worker_starter']!
+            .copyWith(equippedArtifacts: [equippedArtifact]);
+
+        final state = GameState.initial().copyWith(
+          lifetimeChronoEnergy: BigInt.from(1200000),
+          workers: {'worker_starter': starterWorker},
+          inventory: const [],
+        );
+
+        final afterPrestige = useCase.execute(state);
+        final reconciled = afterPrestige.reconcileArtifactsAfterPrestige(state);
+        final loaded = GameState.fromMap(reconciled.toMap());
+        final persistedWorker = reconciled.workers['worker_starter'];
+
+        expect(persistedWorker, isNotNull);
+        expect(
+          persistedWorker!.equippedArtifacts
+              .map((a) => a.id)
+              .contains('artifact_equipped_persist_case'),
+          isTrue,
+        );
+        expect(
+          reconciled.inventory
+              .map((a) => a.id)
+              .contains('artifact_equipped_persist_case'),
+          isFalse,
+        );
+        expect(
+          loaded.workers['worker_starter']!.equippedArtifacts
+              .map((a) => a.id)
+              .contains('artifact_equipped_persist_case'),
+          isTrue,
+        );
       },
     );
 

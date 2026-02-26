@@ -462,6 +462,92 @@ class GameState {
     return stations.values.where((s) => s.type.era.id == eraId).length;
   }
 
+  /// Ensures each artifact id exists in exactly one location:
+  /// equipped on at most one worker OR in inventory.
+  /// Equipped artifacts are prioritized over inventory copies.
+  static MapEntry<Map<String, Worker>, List<WorkerArtifact>>
+  normalizeArtifactOwnership({
+    required Map<String, Worker> workers,
+    required List<WorkerArtifact> inventory,
+    int inventoryCap = 999,
+  }) {
+    final normalizedWorkers = Map<String, Worker>.from(workers);
+    final seenArtifactIds = <String>{};
+    final sortedWorkerIds = normalizedWorkers.keys.toList()..sort();
+
+    for (final workerId in sortedWorkerIds) {
+      final worker = normalizedWorkers[workerId];
+      if (worker == null || worker.equippedArtifacts.isEmpty) continue;
+
+      final normalizedEquipped = <WorkerArtifact>[];
+      for (final artifact in worker.equippedArtifacts) {
+        if (seenArtifactIds.add(artifact.id)) {
+          normalizedEquipped.add(artifact);
+        }
+      }
+
+      if (normalizedEquipped.length != worker.equippedArtifacts.length) {
+        normalizedWorkers[workerId] = worker.copyWith(
+          equippedArtifacts: normalizedEquipped,
+        );
+      }
+    }
+
+    final normalizedInventory = <WorkerArtifact>[];
+    for (final artifact in inventory) {
+      if (seenArtifactIds.add(artifact.id)) {
+        normalizedInventory.add(artifact);
+      }
+    }
+
+    if (normalizedInventory.length > inventoryCap) {
+      normalizedInventory.removeRange(inventoryCap, normalizedInventory.length);
+    }
+
+    return MapEntry(normalizedWorkers, normalizedInventory);
+  }
+
+  /// Reconciles artifact ownership after prestige so no equipped artifact is lost.
+  /// If a worker survives prestige by id, keep artifacts equipped on that worker.
+  /// If a worker is reset/removed, move equipped artifacts into inventory.
+  GameState reconcileArtifactsAfterPrestige(GameState prePrestigeState) {
+    if (!prePrestigeState.canPrestige) return this;
+
+    final reconciledWorkers = Map<String, Worker>.from(workers);
+    final reconciledInventory = List<WorkerArtifact>.from(inventory);
+    final sortedPreviousWorkerIds = prePrestigeState.workers.keys.toList()
+      ..sort();
+
+    for (final workerId in sortedPreviousWorkerIds) {
+      final previousWorker = prePrestigeState.workers[workerId];
+      if (previousWorker == null || previousWorker.equippedArtifacts.isEmpty) {
+        continue;
+      }
+
+      final currentWorker = reconciledWorkers[workerId];
+      if (currentWorker != null) {
+        reconciledWorkers[workerId] = currentWorker.copyWith(
+          equippedArtifacts: [
+            ...currentWorker.equippedArtifacts,
+            ...previousWorker.equippedArtifacts,
+          ],
+        );
+      } else {
+        reconciledInventory.addAll(previousWorker.equippedArtifacts);
+      }
+    }
+
+    final normalized = normalizeArtifactOwnership(
+      workers: reconciledWorkers,
+      inventory: reconciledInventory,
+    );
+
+    return copyWith(
+      workers: normalized.key,
+      inventory: normalized.value,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'chronoEnergy': chronoEnergy.toString(),
@@ -504,6 +590,17 @@ class GameState {
     final parsedWorkers = (map['workers'] as Map<String, dynamic>).map(
       (k, v) => MapEntry(k, Worker.fromMap(v as Map<String, dynamic>)),
     );
+    final parsedInventory =
+        (map['inventory'] as List<dynamic>?)
+            ?.map((e) => WorkerArtifact.fromMap(e as Map<String, dynamic>))
+            .toList() ??
+        <WorkerArtifact>[];
+    final normalizedArtifacts = normalizeArtifactOwnership(
+      workers: parsedWorkers,
+      inventory: parsedInventory,
+    );
+    final normalizedWorkers = normalizedArtifacts.key;
+    final normalizedInventory = normalizedArtifacts.value;
     final rawParadoxSpent = Map<String, int>.from(map['paradoxPointsSpent'] ?? {});
     final normalizedParadoxSpent = <String, int>{};
     for (final entry in rawParadoxSpent.entries) {
@@ -518,20 +615,16 @@ class GameState {
       chronoEnergy: BigInt.parse(map['chronoEnergy']),
       timeShards: map['timeShards'] ?? 0,
       lifetimeChronoEnergy: BigInt.parse(map['lifetimeChronoEnergy']),
-      workers: parsedWorkers,
+      workers: normalizedWorkers,
       stations: (map['stations'] as Map<String, dynamic>).map((k, v) {
         final station = Station.fromMap(v as Map<String, dynamic>);
         // Cleanup ghost workers (e.g. from buggy version saves or merges)
         final validIds = station.workerIds
-            .where((id) => parsedWorkers.containsKey(id))
+            .where((id) => normalizedWorkers.containsKey(id))
             .toList();
         return MapEntry(k, station.copyWith(workerIds: validIds));
       }),
-      inventory:
-          (map['inventory'] as List<dynamic>?)
-              ?.map((e) => WorkerArtifact.fromMap(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+      inventory: normalizedInventory,
       artifactDust: map['artifactDust'] ?? 0,
       artifactCraftStreak: map['artifactCraftStreak'] ?? 0,
       paradoxLevel: (map['paradoxLevel'] as num).toDouble(),

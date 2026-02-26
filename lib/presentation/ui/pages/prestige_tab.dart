@@ -142,6 +142,14 @@ class PrestigeTab extends ConsumerWidget {
                 height: 1.3,
               ),
             ),
+            const SizedBox(height: 6),
+            Text(
+              'Equipped artifacts are preserved on surviving workers and returned to inventory if workers reset.',
+              style: typography.bodySmall.copyWith(
+                color: Colors.white.withValues(alpha: 0.62),
+                height: 1.25,
+              ),
+            ),
             const SizedBox(height: 8),
             _InlineBadge(
               icon: AppHugeIcons.repeat,

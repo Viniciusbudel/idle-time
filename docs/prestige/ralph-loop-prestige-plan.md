@@ -76,7 +76,7 @@ Done when:
 ---
 
 ## STORY-4: Preserve Equipped Worker Artifacts Through Prestige
-status: todo
+status: done
 
 Description:
 Fix prestige reset flow so worker artifact assignments do not vanish. If a worker is reset, artifact must return to inventory deterministically.
