@@ -543,6 +543,99 @@ void main() {
       expect(second, isNull);
     });
 
+    test('same expedition slot cannot have two active runs at once', () {
+      final useCase = StartExpeditionUseCase();
+      final now = DateTime(2026, 2, 22, 13, 0);
+
+      final workerA = Worker(
+        id: 'slot_guard_a',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(10),
+      );
+      final workerB = Worker(
+        id: 'slot_guard_b',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(12),
+      );
+
+      final state = GameState.initial().copyWith(
+        workers: {'slot_guard_a': workerA, 'slot_guard_b': workerB},
+        stations: const {},
+        expeditions: const [],
+        unlockedEras: const {'victorian'},
+      );
+
+      final first = useCase.execute(
+        state,
+        slotId: 'salvage_run',
+        risk: ExpeditionRisk.safe,
+        workerIds: const ['slot_guard_a'],
+        now: now,
+      );
+      expect(first, isNotNull);
+
+      final second = useCase.execute(
+        first!.newState,
+        slotId: 'salvage_run',
+        risk: ExpeditionRisk.safe,
+        workerIds: const ['slot_guard_b'],
+        now: now.add(const Duration(minutes: 1)),
+      );
+      expect(second, isNull);
+    });
+
+    test('different expedition slots can run in parallel', () {
+      final useCase = StartExpeditionUseCase();
+      final now = DateTime(2026, 2, 22, 14, 0);
+
+      final workerA = Worker(
+        id: 'parallel_a',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(10),
+      );
+      final workerB = Worker(
+        id: 'parallel_b',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(11),
+      );
+      final workerC = Worker(
+        id: 'parallel_c',
+        era: WorkerEra.victorian,
+        baseProduction: BigInt.from(12),
+      );
+
+      final state = GameState.initial().copyWith(
+        workers: {
+          'parallel_a': workerA,
+          'parallel_b': workerB,
+          'parallel_c': workerC,
+        },
+        stations: const {},
+        expeditions: const [],
+        unlockedEras: const {'victorian', 'roaring_20s'},
+        currentEraId: 'roaring_20s',
+      );
+
+      final first = useCase.execute(
+        state,
+        slotId: 'salvage_run',
+        risk: ExpeditionRisk.safe,
+        workerIds: const ['parallel_a'],
+        now: now,
+      );
+      expect(first, isNotNull);
+
+      final second = useCase.execute(
+        first!.newState,
+        slotId: 'rift_probe',
+        risk: ExpeditionRisk.risky,
+        workerIds: const ['parallel_b', 'parallel_c'],
+        now: now.add(const Duration(minutes: 1)),
+      );
+      expect(second, isNotNull);
+      expect(second!.newState.expeditions.length, 2);
+    });
+
     test('reward compensates chamber multipliers for high-power workers', () {
       final start = StartExpeditionUseCase();
       final resolve = ResolveExpeditionsUseCase();

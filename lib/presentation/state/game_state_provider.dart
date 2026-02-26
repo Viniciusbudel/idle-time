@@ -1081,6 +1081,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
       slots: expeditionSlots,
     );
     if (slot == null) return false;
+    final bool sameSlotAlreadyActive = state.expeditions.any(
+      (Expedition expedition) =>
+          !expedition.resolved && expedition.slotId == slotId,
+    );
+    if (sameSlotAlreadyActive) return false;
     if (workerIds.length != slot.requiredWorkers) return false;
     if (workerIds.toSet().length != workerIds.length) return false;
 

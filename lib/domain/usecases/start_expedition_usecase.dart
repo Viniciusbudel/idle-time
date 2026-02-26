@@ -171,6 +171,7 @@ class StartExpeditionUseCase {
     DateTime? now,
   }) {
     if (!isSlotUnlockedForState(currentState, slotId)) return null;
+    if (_hasUnresolvedExpeditionForSlot(currentState, slotId)) return null;
 
     final selectedSlot = getSlotById(slotId);
     if (selectedSlot == null) return null;
@@ -221,6 +222,15 @@ class StartExpeditionUseCase {
       ids.addAll(expedition.workerIds);
     }
     return ids;
+  }
+
+  bool _hasUnresolvedExpeditionForSlot(GameState state, String slotId) {
+    for (final expedition in state.expeditions) {
+      if (!expedition.resolved && expedition.slotId == slotId) {
+        return true;
+      }
+    }
+    return false;
   }
 
   List<Worker> _availableCrewWorkers(GameState state) {
