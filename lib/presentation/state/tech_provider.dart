@@ -95,18 +95,18 @@ class TechNotifier extends StateNotifier<List<TechUpgrade>> {
 
 // Helper providers for specific boosts
 final efficiencyMultiplierProvider = Provider<double>((ref) {
-  final gameState = ref.watch(gameStateProvider);
-  return TechData.calculateEfficiencyMultiplier(gameState.techLevels);
+  final techLevels = ref.watch(gameStateProvider.select((s) => s.techLevels));
+  return TechData.calculateEfficiencyMultiplier(techLevels);
 });
 
 final timeWarpMultiplierProvider = Provider<double>((ref) {
-  final gameState = ref.watch(gameStateProvider);
-  return TechData.calculateTimeWarpMultiplier(gameState.techLevels);
+  final techLevels = ref.watch(gameStateProvider.select((s) => s.techLevels));
+  return TechData.calculateTimeWarpMultiplier(techLevels);
 });
 
-final automationLevelProvider = Provider<int>((ref) {
-  final gameState = ref.watch(gameStateProvider);
-  return gameState.techLevels['clockwork_metronome'] ?? 0;
+final automationLevelProvider = Provider<double>((ref) {
+  final techLevels = ref.watch(gameStateProvider.select((s) => s.techLevels));
+  return TechData.calculateAutomationLevel(techLevels);
 });
 
 // NEW: Filtered list for the current era

@@ -77,6 +77,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   // Accumulator for fractional CE production
   double _fractionalAccumulator = 0.0;
+  DateTime _runtimeLastTickTime = DateTime.now();
 
   GameStateNotifier() : super(GameState.initial()) {
     _init();
@@ -159,6 +160,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
   }
 
   void _onTick() {
+    _runtimeLastTickTime = DateTime.now();
     _ensureDailyMissions();
     _resolveExpeditions();
 
@@ -167,7 +169,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
         DateTime.now().isAfter(state.paradoxEventEndTime!)) {
       endParadoxEvent();
     }
-    updateLastTickTime();
   }
 
   /// Apply results from the game loop production tick
@@ -184,8 +185,13 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   /// Save current state to storage
   Future<void> saveToStorage() async {
-    await _saveService.save(state);
-    updateLastSaveTime();
+    final saveTime = DateTime.now();
+    final snapshot = state.copyWith(
+      lastTickTime: _runtimeLastTickTime,
+      lastSaveTime: saveTime,
+    );
+    await _saveService.save(snapshot);
+    state = snapshot;
   }
 
   /// Load state from storage
@@ -193,17 +199,20 @@ class GameStateNotifier extends StateNotifier<GameState> {
     final savedState = await _saveService.load();
     if (savedState != null) {
       state = savedState;
+      _runtimeLastTickTime = savedState.lastTickTime ?? DateTime.now();
     }
   }
 
   /// Reset to initial state (for testing or new game)
   void reset() {
     state = GameState.initial();
+    _runtimeLastTickTime = state.lastTickTime ?? DateTime.now();
   }
 
   /// Load state from saved data
   void loadState(GameState savedState) {
     state = savedState;
+    _runtimeLastTickTime = savedState.lastTickTime ?? DateTime.now();
   }
 
   // ===== RESOURCES =====
@@ -884,10 +893,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
     addChronoEnergy(amount);
   }
 
-  void updateLastTickTime() {
-    state = state.copyWith(lastTickTime: DateTime.now());
-  }
-
   /// Buy a specific prestige upgrade
   bool buyPrestigeUpgrade(PrestigeUpgradeType type) {
     final currentLevel = state.paradoxPointsSpent[type.id] ?? 0;
@@ -1114,57 +1119,61 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
 /// Current Chrono-Energy
 final chronoEnergyProvider = Provider<BigInt>((ref) {
-  return ref.watch(gameStateProvider).chronoEnergy;
+  return ref.watch(gameStateProvider.select((s) => s.chronoEnergy));
 });
 
 /// Paradox level
 final paradoxLevelProvider = Provider<double>((ref) {
-  return ref.watch(gameStateProvider).paradoxLevel;
+  return ref.watch(gameStateProvider.select((s) => s.paradoxLevel));
 });
 
 /// Time Shards
 final timeShardsProvider = Provider<int>((ref) {
-  return ref.watch(gameStateProvider).timeShards;
+  return ref.watch(gameStateProvider.select((s) => s.timeShards));
 });
 
 /// Current Artifact Dust balance.
 final artifactDustProvider = Provider<int>((ref) {
-  return ref.watch(gameStateProvider).artifactDust;
+  return ref.watch(gameStateProvider.select((s) => s.artifactDust));
 });
 
 /// All workers
 final workersProvider = Provider<Map<String, Worker>>((ref) {
-  return ref.watch(gameStateProvider).workers;
+  return ref.watch(gameStateProvider.select((s) => s.workers));
 });
 
 /// All stations
 final stationsProvider = Provider<Map<String, Station>>((ref) {
-  return ref.watch(gameStateProvider).stations;
+  return ref.watch(gameStateProvider.select((s) => s.stations));
 });
 
 /// Tech Levels map
 final techLevelsProvider = Provider<Map<String, int>>((ref) {
-  return ref.watch(gameStateProvider).techLevels;
+  return ref.watch(gameStateProvider.select((s) => s.techLevels));
 });
 
 /// Era mastery XP map keyed by era ID.
 final eraMasteryXpProvider = Provider<Map<String, int>>((ref) {
-  return ref.watch(gameStateProvider).eraMasteryXp;
+  return ref.watch(gameStateProvider.select((s) => s.eraMasteryXp));
 });
 
 /// Era mastery levels derived from mastery XP.
 final eraMasteryLevelsProvider = Provider<Map<String, int>>((ref) {
-  return ref.watch(gameStateProvider).eraMasteryLevels;
+  final masteryXp = ref.watch(gameStateProvider.select((s) => s.eraMasteryXp));
+  return {
+    for (final era in WorkerEra.values)
+      era.id: EraMasteryConstants.levelFromXp(masteryXp[era.id] ?? 0),
+  };
 });
 
 /// Daily missions currently active for the player.
 final dailyMissionsProvider = Provider<List<DailyMission>>((ref) {
-  return ref.watch(gameStateProvider).dailyMissions;
+  return ref.watch(gameStateProvider.select((s) => s.dailyMissions));
 });
 
 /// Expeditions that are ongoing or waiting reward claim.
 final expeditionsProvider = Provider<List<Expedition>>((ref) {
-  return ref.watch(gameStateProvider).expeditions;
+  return ref.watch(gameStateProvider.select((s) => s.expeditions));
 });
 
 /// Available expedition slot definitions.
