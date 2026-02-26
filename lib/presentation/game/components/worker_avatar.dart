@@ -5,7 +5,6 @@ import 'package:flame/particles.dart';
 import 'package:flame_svg/flame_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
-import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/enums.dart';
@@ -29,27 +28,27 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
 
     if (!lowPerformanceMode) {
       // 1. Pulsing Aura (Background)
-      add(
-        CircleComponent(
-          radius: 12,
-          anchor: Anchor.center,
-          position: size / 2,
-          paint: Paint()
-            ..color = rarityColor.withOpacity(0.15)
-            ..style = PaintingStyle.fill
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
-        )..add(
-          ScaleEffect.to(
-            Vector2.all(1.5),
-            EffectController(
-              duration: 2.0,
-              reverseDuration: 2.0,
-              infinite: true,
-              curve: Curves.easeInOut,
-            ),
-          ),
+      final aura = CircleComponent(
+        radius: 12,
+        anchor: Anchor.center,
+        position: size / 2,
+        paint: Paint()
+          ..color = rarityColor.withOpacity(0.15)
+          ..style = PaintingStyle.fill
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+      );
+      final auraPulse = ScaleEffect.to(
+        Vector2.all(1.5),
+        EffectController(
+          duration: 2.0,
+          reverseDuration: 2.0,
+          infinite: true,
+          curve: Curves.easeInOut,
         ),
       );
+      auraPulse.target = aura;
+      aura.add(auraPulse);
+      add(aura);
 
       // 2. Rotating Data Ring (Outer)
       add(
@@ -76,11 +75,15 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
 
     // 3. Inner Core (The "Worker" Icon)
     final iconPath = WorkerIconHelper.getIconPath(worker.era, worker.rarity);
+    final flamePath = WorkerIconHelper.getFlameLoadPath(
+      worker.era,
+      worker.rarity,
+    );
 
     try {
       if (WorkerIconHelper.isSvg(worker.era)) {
         // Load SVG using flame_svg
-        final svg = await Svg.load(iconPath);
+        final svg = await Svg.load(flamePath);
         add(
           SvgComponent(
             svg: svg,
@@ -93,7 +96,7 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
         );
       } else {
         // Load PNG/raster image via Sprite
-        final sprite = await Sprite.load(iconPath);
+        final sprite = await Sprite.load(flamePath);
         add(
           SpriteComponent(
             sprite: sprite,
@@ -134,20 +137,20 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
     }
 
     // 4. Era Year Label (Floating)
-    add(
-      TextComponent(
-        text: worker.era.year.toString(),
-        textRenderer: TextPaint(
-          style: TimeFactoryTextStyles.numbersSmall.copyWith(
-            fontSize: 10,
-            color: Colors.white,
-            shadows: [const Shadow(color: Colors.black, blurRadius: 4)],
-          ),
-        ),
-        anchor: Anchor.center,
-        position: size / 2,
-      ),
-    );
+    // add(
+    //   TextComponent(
+    //     text: worker.era.year.toString(),
+    //     textRenderer: TextPaint(
+    //       style: TimeFactoryTextStyles.numbersSmall.copyWith(
+    //         fontSize: 10,
+    //         color: Colors.white,
+    //         shadows: [const Shadow(color: Colors.black, blurRadius: 4)],
+    //       ),
+    //     ),
+    //     anchor: Anchor.center,
+    //     position: size / 2,
+    //   ),
+    // );
 
     if (!lowPerformanceMode) {
       // 5. Floating movement

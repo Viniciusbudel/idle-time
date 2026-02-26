@@ -31,4 +31,20 @@ void main() {
       'assets/images/icons/cyberpunk-icon-paradox.png',
     );
   });
+
+  test('flame load path removes assets/images prefix for raster icons', () {
+    final victorianPath = WorkerIconHelper.getFlameLoadPath(
+      WorkerEra.victorian,
+      WorkerRarity.epic,
+    );
+    final cyberpunkPath = WorkerIconHelper.getFlameLoadPath(
+      WorkerEra.cyberpunk80s,
+      WorkerRarity.rare,
+    );
+
+    expect(victorianPath, 'icons/victorian-icon-epic.png');
+    expect(cyberpunkPath, 'icons/cyberpunk-icon-rare.png');
+    expect(victorianPath.startsWith('/'), isFalse);
+    expect(cyberpunkPath.startsWith('/'), isFalse);
+  });
 }

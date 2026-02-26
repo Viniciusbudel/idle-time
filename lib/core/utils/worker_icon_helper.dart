@@ -29,6 +29,19 @@ class WorkerIconHelper {
   /// Whether this era's icons are SVG (true) or raster PNG (false).
   static bool isSvg(WorkerEra era) => _eraExtension(era) == 'svg';
 
+  /// Returns a path normalized for Flame loaders.
+  ///
+  /// Flame's `Sprite.load` uses the global images prefix (`assets/images/` by
+  /// default), so raster paths must be relative to that prefix (e.g.
+  /// `icons/foo.png`). For `Svg.load`, paths should be relative to `assets/`.
+  static String getFlameLoadPath(WorkerEra era, WorkerRarity rarity) {
+    final path = getIconPath(era, rarity);
+    final normalized = isSvg(era)
+        ? path.replaceFirst('assets/', '')
+        : path.replaceFirst('assets/images/', '');
+    return normalized.startsWith('/') ? normalized.substring(1) : normalized;
+  }
+
   /// Build the correct widget (SvgPicture or Image) for a worker icon.
   static Widget buildIcon(
     WorkerEra era,
