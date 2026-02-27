@@ -9,7 +9,6 @@ import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
-import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
@@ -627,21 +626,6 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
         ),
       ),
     );
-  }
-
-  Color _getWorkerColor(Worker worker, ThemeColors colors) {
-    switch (worker.rarity) {
-      case WorkerRarity.common:
-        return colors.rarityCommon;
-      case WorkerRarity.rare:
-        return colors.rarityRare;
-      case WorkerRarity.epic:
-        return colors.rarityEpic;
-      case WorkerRarity.legendary:
-        return colors.rarityLegendary;
-      case WorkerRarity.paradox:
-        return colors.rarityParadox;
-    }
   }
 }
 

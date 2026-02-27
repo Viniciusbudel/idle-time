@@ -5,7 +5,6 @@ import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
-import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:flame/game.dart';
 import 'package:time_factory/presentation/anim/portal_game.dart';

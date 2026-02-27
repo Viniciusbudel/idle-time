@@ -5,8 +5,6 @@ import '../../domain/entities/enums.dart';
 /// Helper utility for resolving worker icon paths
 class WorkerIconHelper {
   WorkerIconHelper._();
-  static const String _victorianFallbackIcon =
-      'assets/images/workers/victorian_common_worker.png';
 
   /// Get the icon path for a worker based on era and rarity.
   ///
@@ -16,10 +14,6 @@ class WorkerIconHelper {
     // Performance fast-path:
     // Victorian SVGs are expensive to parse on low-end devices and when many
     // worker widgets/components are on-screen, so use a lightweight raster icon.
-    // if (era == WorkerEra.victorian) {
-    //   return _victorianFallbackIcon;
-    // }
-
     final rarityStr = rarity == WorkerRarity.common ? 'commum' : rarity.id;
     final prefix = _eraPrefix(era);
     final ext = _eraExtension(era);

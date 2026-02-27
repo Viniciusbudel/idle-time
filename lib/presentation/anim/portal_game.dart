@@ -61,7 +61,7 @@ class PortalGame extends FlameGame {
         radius: 26.0,
         anchor: Anchor.center,
         paint: Paint()
-          ..color = Colors.white.withOpacity( 0.6)
+          ..color = Colors.white.withOpacity(0.6)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.0
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
@@ -93,9 +93,6 @@ class PortalGame extends FlameGame {
                     // We don't have easy access to current position in ComputedParticle without tracking.
                     // But AcceleratedParticle updates the position of the canvas context effectively?
                     // No, AcceleratedParticle translates the canvas.
-
-                    final distToCenter = particle.progress; // 0 to 1
-                    // As it gets closer (progress -> 1), it fades and stretches
 
                     final paint = Paint()
                       ..color = primaryColor.withValues(
@@ -161,7 +158,7 @@ class _AccretionParticle extends Particle {
 
     final opacity = (lifespan - progress * lifespan) / lifespan; // Fade out
 
-    final paint = Paint()..color = color.withOpacity( 0.6 * opacity);
+    final paint = Paint()..color = color.withOpacity(0.6 * opacity);
 
     canvas.drawCircle(pos.toOffset(), 2.0, paint);
   }
