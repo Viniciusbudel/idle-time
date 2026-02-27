@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:time_factory/core/utils/app_log.dart';
 import '../../domain/entities/game_state.dart';
 import '../../domain/entities/offline_earnings.dart';
 
@@ -43,8 +44,12 @@ class SaveService {
       final Map<String, dynamic> map = jsonDecode(jsonString);
 
       return GameState.fromMap(map);
-    } catch (e) {
-      print('Error loading game: $e');
+    } catch (e, stackTrace) {
+      AppLog.debug(
+        'Error loading game state',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }

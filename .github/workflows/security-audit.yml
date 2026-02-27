@@ -1,0 +1,46 @@
+name: Security Audit
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run audit script
+        run: |
+          python .agent/scripts/audit-app.py . --json .agent/audit-report.json
+
+      - name: Enforce high-severity gate
+        run: |
+          python - <<'PY'
+          import json
+          from collections import Counter
+          with open(".agent/audit-report.json", encoding="utf-8") as f:
+              findings = json.load(f).get("findings", [])
+          counts = Counter(item.get("severity", "low") for item in findings)
+          high = counts.get("high", 0)
+          print(f"Audit counts: high={high} medium={counts.get('medium',0)} low={counts.get('low',0)}")
+          if high > 0:
+              raise SystemExit(f"Failing build: {high} high-severity finding(s) detected")
+          PY
+
+      - name: Upload audit report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report
+          path: .agent/audit-report.json
+

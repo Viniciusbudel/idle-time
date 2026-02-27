@@ -97,10 +97,7 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
     // Listen to worker map changes and derive active workers from the
     // stable map reference. This avoids false-positive syncs caused by
     // activeWorkers list allocation on each state read.
-    ref.listen(gameStateProvider.select((s) => s.workers), (
-      previous,
-      next,
-    ) {
+    ref.listen(gameStateProvider.select((s) => s.workers), (previous, next) {
       if (_game.isMounted) {
         final activeWorkers = next.values
             .where((worker) => worker.isDeployed)
@@ -186,12 +183,13 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
                   child: Column(
                     children: [
                       // Global Resource Header Bar
-                      if (_selectedTab != 0) const ResourceAppBar(),
+                      if (_selectedTab != 0)
+                        ResourceAppBar( ),
 
                       // Tab Content
                       Expanded(
                         key: TutorialKeys.mainContent,
-                        child: _buildCurrentTab(size, lowPerformanceMode),
+                        child: _buildCurrentTab(lowPerformanceMode),
                       ),
                     ],
                   ),
@@ -233,10 +231,10 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
               ),
 
               // 7. Save Indicator
-              const Positioned(
-                top: 8,
+              Positioned(
+                top: _saveIndicatorTop(size),
                 right: 8,
-                child: SafeArea(child: SaveIndicator()),
+                child: const SafeArea(child: SaveIndicator()),
               ),
 
               // 8. Chaos Trigger Button (Factory Tab Only)
@@ -282,12 +280,12 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
   }
 
   /// Build the current tab content
-  Widget _buildCurrentTab(Size size, bool lowPerformanceMode) {
+  Widget _buildCurrentTab(bool lowPerformanceMode) {
     switch (_selectedTab) {
       case 0:
         return const ChambersScreen();
       case 1:
-        return _buildFactoryTab(size, lowPerformanceMode);
+        return _buildFactoryTab(lowPerformanceMode);
       case 2:
         return const GachaScreen();
       case 3:
@@ -300,35 +298,63 @@ class _FactoryScreenState extends ConsumerState<FactoryScreen> {
   }
 
   /// Factory Tab - Reactor Dashboard
-  Widget _buildFactoryTab(Size size, bool lowPerformanceMode) {
-    return Stack(
-      children: [
-        // Time Warp Speed Indicator (top-left, below header)
-        if (!lowPerformanceMode)
-          const Positioned(top: 40, left: 16, child: TimeWarpIndicator()),
+  Widget _buildFactoryTab(bool lowPerformanceMode) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compactWidth = constraints.maxWidth < 400;
+        final compactHeight = constraints.maxHeight < 600;
+        final sidePadding = compactWidth ? 12.0 : 16.0;
+        final topPadding = compactHeight ? 14.0 : 20.0;
+        final monitorBottomOffset = compactHeight ? 124.0 : 152.0;
+        final objectivesPanelWidth =
+            (constraints.maxWidth * (compactWidth ? 0.58 : 0.44))
+                .clamp(180.0, 240.0)
+                .toDouble();
 
-        // Auto-Click Indicator (below time warp)
-        if (!lowPerformanceMode)
-          const Positioned(top: 70, left: 16, child: AutoClickIndicator()),
-
-        // Daily Objectives (top-right, below header)
-        const Positioned(top: 44, right: 16, child: DailyObjectivePanel()),
-
-        // System Monitor Text (bottom right)
-        Positioned(
-          bottom: 160,
-          right: 16,
-          child: Consumer(
-            builder: (context, ref, child) {
-              final paradoxLevel = ref.watch(
-                gameStateProvider.select((s) => s.paradoxLevel),
-              );
-              return SystemMonitorText(gridIntegrity: 1.0 - paradoxLevel);
-            },
-          ),
-        ),
-      ],
+        return Stack(
+          children: [
+            if (!lowPerformanceMode)
+              Positioned(
+                top: topPadding,
+                left: sidePadding,
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TimeWarpIndicator(),
+                    SizedBox(height: 6),
+                    AutoClickIndicator(),
+                  ],
+                ),
+              ),
+            Positioned(
+              top: topPadding,
+              right: sidePadding,
+              child: DailyObjectivePanel(expandedWidth: objectivesPanelWidth),
+            ),
+            if (!compactHeight)
+              Positioned(
+                bottom: monitorBottomOffset,
+                right: sidePadding,
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final paradoxLevel = ref.watch(
+                      gameStateProvider.select((s) => s.paradoxLevel),
+                    );
+                    return SystemMonitorText(gridIntegrity: 1.0 - paradoxLevel);
+                  },
+                ),
+              ),
+          ],
+        );
+      },
     );
+  }
+
+  double _saveIndicatorTop(Size size) {
+    if (_selectedTab == 0) return 8;
+    if (size.width < 420) return 96;
+    return 112;
   }
 
   bool _isLowPerformanceMode(

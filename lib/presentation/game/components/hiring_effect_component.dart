@@ -53,6 +53,15 @@ class HiringEffectComponent extends PositionComponent with HasGameReference {
     );
   }
 
+  @override
+  void updateTree(double dt) {
+    update(dt);
+    final snapshot = children.toList(growable: false);
+    for (final child in snapshot) {
+      child.updateTree(dt);
+    }
+  }
+
   void _spawnSingularity(Color color) {
     // 1. Event Horizon (The Void)
     // Black circle that grows

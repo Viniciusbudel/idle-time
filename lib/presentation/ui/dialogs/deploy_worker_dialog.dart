@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
@@ -26,7 +27,16 @@ class DeployWorkerDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameStateProvider);
-    final stations = gameState.stations.values.toList();
+    Station? chamber;
+    for (final station in gameState.stations.values) {
+      if (station.type.era.id == gameState.currentEraId) {
+        chamber = station;
+        break;
+      }
+    }
+    chamber ??= gameState.stations.isNotEmpty
+        ? gameState.stations.values.first
+        : null;
 
     return Container(
       constraints: BoxConstraints(
@@ -36,7 +46,7 @@ class DeployWorkerDialog extends ConsumerWidget {
         color: TimeFactoryColors.voidBlack,
         border: Border(
           top: BorderSide(
-            color: TimeFactoryColors.electricCyan.withOpacity(0.5),
+            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
             width: 2,
           ),
         ),
@@ -65,7 +75,7 @@ class DeployWorkerDialog extends ConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: worker.era.color.withOpacity(0.2),
+                    color: worker.era.color.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: worker.era.color, width: 1),
                   ),
@@ -109,18 +119,14 @@ class DeployWorkerDialog extends ConsumerWidget {
 
           const Divider(color: Colors.white12, height: 1),
 
-          // Station list
+          // Single chamber assignment
           Flexible(
-            child: stations.isEmpty
+            child: chamber == null
                 ? _buildNoStations(context)
-                : ListView.builder(
+                : ListView(
                     shrinkWrap: true,
                     padding: const EdgeInsets.all(16),
-                    itemCount: stations.length,
-                    itemBuilder: (context, index) {
-                      final station = stations[index];
-                      return _buildStationTile(context, ref, station);
-                    },
+                    children: [_buildStationTile(context, ref, chamber)],
                   ),
           ),
 
@@ -172,9 +178,9 @@ class DeployWorkerDialog extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         text,
@@ -198,7 +204,7 @@ class DeployWorkerDialog extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            AppLocalizations.of(context)!.noStationsAvailable,
+            AppLocalizations.of(context)!.noChambersYet,
             style: TimeFactoryTextStyles.bodyMono.copyWith(
               color: Colors.white38,
             ),
@@ -219,7 +225,7 @@ class DeployWorkerDialog extends ConsumerWidget {
   Widget _buildStationTile(
     BuildContext context,
     WidgetRef ref,
-    dynamic station,
+    Station station,
   ) {
     final isCurrentStation = worker.deployedStationId == station.id;
     final canDeploy = station.canAddWorker && !isCurrentStation;
@@ -228,7 +234,7 @@ class DeployWorkerDialog extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isCurrentStation
-            ? TimeFactoryColors.acidGreen.withOpacity(0.1)
+            ? TimeFactoryColors.acidGreen.withValues(alpha: 0.1)
             : TimeFactoryColors.surfaceDark,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
@@ -243,7 +249,7 @@ class DeployWorkerDialog extends ConsumerWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: TimeFactoryColors.electricCyan.withOpacity(0.2),
+            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: const AppIcon(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
+import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/presentation/ui/pages/loop_chambers_tab.dart';
 import 'package:time_factory/presentation/ui/pages/expeditions_screen.dart';
 import 'package:time_factory/core/constants/spacing.dart';
@@ -68,215 +69,261 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: 8.0,
+        vertical: AppSpacing.xs,
       ),
-      child: Row(
-        children: [
-          // Icon Button (Menu/Grid)
-          Container(
-            padding: const EdgeInsets.all(8),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool compact = constraints.maxWidth < 620;
+
+          return Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              // hover effect simulation could go here
+              color: Colors.black.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colors.primary.withValues(alpha: 0.28)),
             ),
-            child: AppIcon(
-              AppHugeIcons.grid_view,
-              color: colors.primary,
-              size: 28,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (compact) ...[
+                  _buildTitleBlock(theme),
+                  const SizedBox(height: AppSpacing.sm),
+                  _buildExpeditionAction(
+                    context,
+                    theme,
+                    activeExpeditions,
+                    readyExpeditions,
+                    expanded: true,
+                  ),
+                ] else
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: _buildTitleBlock(theme)),
+                      const SizedBox(width: AppSpacing.sm),
+                      _buildExpeditionAction(
+                        context,
+                        theme,
+                        activeExpeditions,
+                        readyExpeditions,
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    _buildStatusChip(
+                      icon: AppHugeIcons.person,
+                      label: '$idleCount IDLE',
+                      color: colors.primary,
+                      typography: typography,
+                    ),
+                    _buildStatusChip(
+                      icon: AppHugeIcons.rocket_launch,
+                      label: '$activeExpeditions ACTIVE',
+                      color: colors.secondary,
+                      typography: typography,
+                    ),
+                    if (readyExpeditions > 0)
+                      _buildStatusChip(
+                        icon: AppHugeIcons.check_circle,
+                        label: '$readyExpeditions READY',
+                        color: colors.success,
+                        typography: typography,
+                      ),
+                    _buildStatusChip(
+                      icon: AppHugeIcons.shield,
+                      label: 'SYS.LC1',
+                      color: colors.accent,
+                      typography: typography,
+                    ),
+                  ],
+                ),
+              ],
             ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTitleBlock(NeonTheme theme) {
+    final colors = theme.colors;
+    final typography = theme.typography;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.xs),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: colors.primary.withValues(alpha: 0.24)),
+            color: colors.primary.withValues(alpha: 0.08),
           ),
-
-          const SizedBox(width: 8),
-
-          // Title with Glow
-          Column(
+          child: AppIcon(
+            AppHugeIcons.grid_view,
+            color: colors.primary,
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Flexible(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'LOOP',
-                style: typography.titleLarge.copyWith(
-                  height: 1.0,
-                  fontSize: 24,
-                  color: colors.primary,
-                  letterSpacing: 2.0,
-                  shadows: [
-                    Shadow(
-                      color: colors.primary.withValues(alpha: 0.7),
-                      blurRadius: 8,
-                    ),
-                  ],
+                style: typography.bodyMedium.copyWith(
+                  fontSize: 11,
+                  color: colors.primary.withValues(alpha: 0.75),
+                  letterSpacing: 2.2,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               Text(
-                'CHAMBERS',
+                'CHAMBER',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: typography.titleLarge.copyWith(
                   height: 1.0,
                   fontSize: 24,
                   color: colors.primary,
-                  letterSpacing: 2.0,
+                  letterSpacing: 1.8,
                   shadows: [
                     Shadow(
-                      color: colors.primary.withValues(alpha: 0.7),
-                      blurRadius: 8,
+                      color: colors.primary.withValues(alpha: 0.55),
+                      blurRadius: 6,
                     ),
                   ],
                 ),
               ),
             ],
           ),
+        ),
+      ],
+    );
+  }
 
-          const Spacer(),
+  Widget _buildExpeditionAction(
+    BuildContext context,
+    NeonTheme theme,
+    int activeExpeditions,
+    int readyExpeditions, {
+    bool expanded = false,
+  }) {
+    final colors = theme.colors;
+    final typography = theme.typography;
 
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ExpeditionsScreen(),
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: <Color>[
-                        colors.secondary.withValues(alpha: 0.24),
-                        colors.primary.withValues(alpha: 0.12),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    border: Border.all(
-                      color: readyExpeditions > 0
-                          ? colors.success
-                          : colors.secondary.withValues(alpha: 0.8),
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colors.secondary.withValues(alpha: 0.4),
-                        blurRadius: 10,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AppIcon(
-                            AppHugeIcons.rocket_launch,
-                            color: colors.secondary,
-                            size: 15,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'EXPEDITIONS',
-                            style: typography.bodyMedium.copyWith(
-                              fontSize: 10,
-                              color: colors.secondary,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          if (readyExpeditions > 0) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: colors.success.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(99),
-                                border: Border.all(color: colors.success),
-                              ),
-                              child: Text(
-                                '$readyExpeditions READY',
-                                style: typography.bodyMedium.copyWith(
-                                  fontSize: 8,
-                                  color: colors.success,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Active runs: $activeExpeditions',
-                        style: typography.bodyMedium.copyWith(
-                          fontSize: 9,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+    final Widget button = SizedBox(
+      width: expanded ? double.infinity : null,
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          side: BorderSide(
+            color: readyExpeditions > 0
+                ? colors.success
+                : colors.secondary.withValues(alpha: 0.72),
+          ),
+          backgroundColor: colors.secondary.withValues(alpha: 0.12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        onPressed: () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const ExpeditionsScreen()));
+        },
+        child: Row(
+          mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
+          children: [
+            AppIcon(
+              AppHugeIcons.rocket_launch,
+              color: colors.secondary,
+              size: 16,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              'EXPEDITIONS',
+              style: typography.bodyMedium.copyWith(
+                fontSize: 11,
+                color: colors.secondary,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.1,
               ),
-              const SizedBox(height: 6),
-              // Idle workers badge
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              '$activeExpeditions ACTIVE',
+              style: typography.bodyMedium.copyWith(
+                fontSize: 10,
+                color: Colors.white70,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
+              ),
+            ),
+            if (readyExpeditions > 0) ...[
+              const SizedBox(width: AppSpacing.xs),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.1),
-                  border: Border.all(
-                    color: colors.primary.withValues(alpha: 0.5),
+                  color: colors.success.withValues(alpha: 0.20),
+                  borderRadius: BorderRadius.circular(99),
+                  border: Border.all(color: colors.success),
+                ),
+                child: Text(
+                  '$readyExpeditions READY',
+                  style: typography.bodyMedium.copyWith(
+                    fontSize: 9,
+                    color: colors.success,
+                    fontWeight: FontWeight.bold,
                   ),
-                  borderRadius: BorderRadius.circular(4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AppIcon(
-                      AppHugeIcons.person,
-                      color: colors.primary,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$idleCount IDLE',
-                      style: typography.bodyMedium.copyWith(
-                        fontSize: 12.0,
-                        color: colors.primary,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              // Version/System Tag
-              Text(
-                'SYS.LC1',
-                style: typography.bodyMedium.copyWith(
-                  fontSize: 10.0,
-                  color: colors.primary.withValues(alpha: 0.6),
-                  letterSpacing: 2.0,
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+
+    return Semantics(button: true, label: 'Open expeditions', child: button);
+  }
+
+  Widget _buildStatusChip({
+    required AppIconData icon,
+    required String label,
+    required Color color,
+    required ThemeTypography typography,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.40)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppIcon(icon, color: color, size: 12),
+          const SizedBox(width: AppSpacing.xxs),
+          Text(
+            label,
+            style: typography.bodyMedium.copyWith(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+            ),
           ),
         ],
       ),

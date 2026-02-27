@@ -25,6 +25,7 @@ class ResolveExpeditionsUseCase {
     required Duration duration,
     required ExpeditionRisk risk,
     bool succeeded = true,
+    String? eraId,
   }) {
     final int durationSeconds = duration.inSeconds.clamp(1, 60 * 60 * 24);
     return _calculateRewardFromCrew(
@@ -33,6 +34,7 @@ class ResolveExpeditionsUseCase {
       durationSeconds: durationSeconds,
       risk: risk,
       succeeded: succeeded,
+      slotEraId: eraId,
     );
   }
 
@@ -158,6 +160,7 @@ class ResolveExpeditionsUseCase {
         .difference(expedition.startTime)
         .inSeconds
         .clamp(1, 60 * 60 * 24);
+    final String? slotEraId = ExpeditionSlot.byId(expedition.slotId)?.eraId;
 
     return _calculateRewardFromCrew(
       state: state,
@@ -165,6 +168,7 @@ class ResolveExpeditionsUseCase {
       durationSeconds: durationSeconds,
       risk: expedition.risk,
       succeeded: succeeded,
+      slotEraId: slotEraId,
     );
   }
 
@@ -174,6 +178,7 @@ class ResolveExpeditionsUseCase {
     required int durationSeconds,
     required ExpeditionRisk risk,
     required bool succeeded,
+    String? slotEraId,
   }) {
     final rewardedShards = succeeded ? risk.shardReward * 2 : 0;
     final rewardedArtifactDropChance = succeeded
@@ -222,9 +227,13 @@ class ResolveExpeditionsUseCase {
     );
     // Economy rebalance: keep expedition CE at 30% of the previous buffed output.
     final tunedChronoEnergy = _applyMultiplier(finalChronoEnergy, 0.30);
+    final eraBalancedChronoEnergy = _applyMultiplier(
+      tunedChronoEnergy,
+      _expeditionEraMultiplier(slotEraId),
+    );
 
     return ExpeditionReward(
-      chronoEnergy: tunedChronoEnergy,
+      chronoEnergy: eraBalancedChronoEnergy,
       timeShards: rewardedShards,
       artifactDropChance: rewardedArtifactDropChance,
     );
@@ -325,6 +334,14 @@ class ResolveExpeditionsUseCase {
     final double buffedChance =
         (baseChance * 1.35) + 0.04 + rarityBonus + artifactBonus;
     return buffedChance.clamp(0.0, 0.95);
+  }
+
+  double _expeditionEraMultiplier(String? eraId) {
+    // Early-game Victorian runs were overpaying CE relative to progression pace.
+    if (eraId == WorkerEra.victorian.id) {
+      return 0.10;
+    }
+    return 1.0;
   }
 }
 

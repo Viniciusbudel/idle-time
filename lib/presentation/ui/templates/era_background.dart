@@ -62,9 +62,7 @@ class EraBackground extends ConsumerWidget {
             image: AssetImage(backgroundImage),
             fit: BoxFit.cover,
             // Fallback to color if image fails (or hasn't been generated yet)
-            onError: (exception, stackTrace) {
-              // debugPrint('Background image failed to load: $backgroundImage');
-            },
+            onError: (exception, stackTrace) {},
           ),
         ),
         child: Stack(
@@ -87,7 +85,7 @@ class EraBackground extends ConsumerWidget {
                   radius: 1.5,
                   colors: [
                     Colors.transparent,
-                    theme.backgroundColor.withOpacity( 0.6),
+                    theme.backgroundColor.withOpacity(0.6),
                   ],
                   stops: const [0.3, 1.0],
                 ),

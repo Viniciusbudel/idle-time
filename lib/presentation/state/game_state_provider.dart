@@ -216,8 +216,8 @@ class GameStateNotifier extends StateNotifier<GameState> {
   Future<void> loadFromStorage() async {
     final savedState = await _saveService.load();
     if (savedState != null) {
-      state = savedState;
-      _runtimeLastTickTime = savedState.lastTickTime ?? DateTime.now();
+      state = savedState.normalizeSingleChamber();
+      _runtimeLastTickTime = state.lastTickTime ?? DateTime.now();
     }
   }
 
@@ -229,8 +229,8 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   /// Load state from saved data
   void loadState(GameState savedState) {
-    state = savedState;
-    _runtimeLastTickTime = savedState.lastTickTime ?? DateTime.now();
+    state = savedState.normalizeSingleChamber();
+    _runtimeLastTickTime = state.lastTickTime ?? DateTime.now();
   }
 
   // ===== RESOURCES =====
@@ -284,19 +284,23 @@ class GameStateNotifier extends StateNotifier<GameState> {
   /// Helper to calculate the value of a single manual click
   /// REBALANCED: Increased from 1% to 2% base, Pneumatic Hammer +150%/level
   BigInt _calculateManualClickValue() {
+    return calculateManualClickValueForState(state);
+  }
+
+  static BigInt calculateManualClickValueForState(GameState gameState) {
     // 1. Calculate Base Power
     // Base is 2% of current TRUE production (including tech multipliers)
     final techMultiplier = TechData.calculateEfficiencyMultiplier(
-      state.techLevels,
+      gameState.techLevels,
     );
     final trueProduction =
-        state.productionPerSecond.toDouble() * techMultiplier;
+        gameState.productionPerSecond.toDouble() * techMultiplier;
 
     BigInt base = BigInt.from(trueProduction / 50.0); // 2%
     if (base < BigInt.from(2)) base = BigInt.from(2); // Minimum 2
 
     // 2. Apply Tech Multiplier (Pneumatic Hammer)
-    final hammerLevel = state.techLevels['pneumatic_hammer'] ?? 0;
+    final hammerLevel = gameState.techLevels['pneumatic_hammer'] ?? 0;
     if (hammerLevel > 0) {
       // REBALANCED: +150% per level (was +100%)
       // Level 1: 2.5x, Level 2: 4.0x, Level 3: 5.5x
@@ -305,7 +309,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
 
     // 3. Apply Jazz Improvisation (Roaring 20s)
-    final jazzLevel = state.techLevels['jazz_improvisation'] ?? 0;
+    final jazzLevel = gameState.techLevels['jazz_improvisation'] ?? 0;
     if (jazzLevel > 0) {
       // +160% per level (1.6x)
       final multiplier = 1.0 + (jazzLevel * 1.1);
@@ -313,7 +317,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
     }
 
     // 4. Apply paradox balance click bonus (+10% per progression step)
-    final paradoxClickMultiplier = state.paradoxClickBonusMultiplier;
+    final paradoxClickMultiplier = gameState.paradoxClickBonusMultiplier;
     if (paradoxClickMultiplier > 1.0) {
       base = BigInt.from((base.toDouble() * paradoxClickMultiplier).round());
     }
@@ -713,14 +717,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
   // ===== STATIONS =====
 
   bool purchaseStation(StationType type, [int? gridX, int? gridY]) {
-    // Era-Specific Limit Check (Mega-Chamber: Max 1 per Era)
-    final stationEra = type.era;
-    final currentCount = state.getStationCountForEra(stationEra.id);
-    if (currentCount >= 1) return false;
+    // Single-chamber rule: the game keeps exactly one active chamber.
+    if (state.stations.isNotEmpty) return false;
+    if (type.era.id != state.currentEraId) return false;
 
-    // Use current count for cost scaling (per type or per era? Plan says per type usually,
-    // but maybe per era for floor scaling? Sticking to existing per-type scaling for now
-    // unless design changes, effectively capping cost scaling at 5th station)
+    // Cost scaling still uses owned count for this type.
     final ownedCount = state.stations.values
         .where((s) => s.type == type)
         .length;
@@ -748,9 +749,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
 
   /// Add a new station
   void addStation(Station station) {
-    final newStations = Map<String, Station>.from(state.stations);
-    newStations[station.id] = station;
-    state = state.copyWith(stations: newStations);
+    // Single-chamber guard: ignore attempts to add a second chamber.
+    if (state.stations.isNotEmpty) return;
+    state = state
+        .copyWith(stations: {station.id: station})
+        .normalizeSingleChamber();
   }
 
   /// Upgrade a station
@@ -872,8 +875,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
   /// - Deducts CE cost
   /// - Marks current era as completed
   /// - Switches to next era
-  /// - Auto-creates a free starter station for the new era
-  /// - Workers from old eras stay deployed in their chambers
+  /// - Upgrades the single chamber to the new era chamber
   void advanceEra(String nextEraId, BigInt cost) {
     // Double check we can afford it (validation)
     if (state.chronoEnergy < cost) return;
@@ -889,29 +891,14 @@ class GameStateNotifier extends StateNotifier<GameState> {
         (updatedMasteryXp[state.currentEraId] ?? 0) +
         EraMasteryConstants.eraTechCompletionXp;
 
-    // Auto-create a free starter station for the new era
-    final newEraStationType = StationType.values.firstWhere(
-      (type) => type.era.id == nextEraId,
-      orElse: () => StationType.basicLoop, // Fallback
-    );
-
-    final starterStation = StationFactory.create(
-      type: newEraStationType,
-      gridX: 0,
-      gridY: 0,
-    );
-
-    final newStations = Map<String, Station>.from(state.stations);
-    newStations[starterStation.id] = starterStation;
-
-    state = state.copyWith(
+    final progressed = state.copyWith(
       chronoEnergy: state.chronoEnergy - cost,
       currentEraId: nextEraId,
       unlockedEras: newUnlocked,
       completedEras: newCompleted,
       eraMasteryXp: updatedMasteryXp,
-      stations: newStations,
     );
+    state = progressed.upgradeSingleChamberToEra(nextEraId);
   }
 
   /// Switch to an already unlocked era
@@ -1123,10 +1110,11 @@ class GameStateNotifier extends StateNotifier<GameState> {
     );
     if (result == null) return false;
 
-    final adjustedSuccessProbability = state.adjustedExpeditionSuccessProbability(
-      risk: risk,
-      baseSuccessProbability: result.expedition.successProbability,
-    );
+    final adjustedSuccessProbability = state
+        .adjustedExpeditionSuccessProbability(
+          risk: risk,
+          baseSuccessProbability: result.expedition.successProbability,
+        );
     final adjustedExpedition = result.expedition.copyWith(
       successProbability: adjustedSuccessProbability,
     );

@@ -1,7 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter/foundation.dart';
+import 'package:time_factory/core/utils/app_log.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -48,7 +48,7 @@ class NotificationService {
 
   void _onNotificationTapped(NotificationResponse response) {
     // Handle tap if needed (e.g. navigation)
-    debugPrint("Notification tapped: ${response.payload}");
+    AppLog.debug('Notification tapped');
   }
 
   Future<bool> requestPermissions() async {

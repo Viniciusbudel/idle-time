@@ -1,49 +1,46 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
-import 'package:flame/effects.dart';
-import 'package:flutter/widgets.dart'; // for Curves
 import 'package:time_factory/core/constants/game_assets.dart';
 
 class CityBackground extends SpriteComponent with HasGameRef {
+  double _breathTime = 0.0;
+  Vector2 _basePosition = Vector2.zero();
+
   CityBackground() : super(priority: -100);
 
   @override
   Future<void> onLoad() async {
-    // Load the background image
+    // Load the background image.
     sprite = await gameRef.loadSprite(
       GameAssets.backgroundCity.replaceFirst('assets/images/', ''),
     );
 
-    // Scale to slightly larger than screen for parallax breathing
+    // Scale to slightly larger than screen for parallax breathing.
     size = gameRef.size * 1.1;
-    position = Vector2(0, 0); // Start at top-left
-
-    // Center it initially relative to overscan
     final overscan = size - gameRef.size;
-    position = -overscan / 2;
+    _basePosition = -overscan / 2;
+    position = _basePosition.clone();
+  }
 
-    // Add breathing effect (slow gentle movement)
-    add(
-      MoveEffect.by(
-        Vector2(-20, -20),
-        EffectController(
-          duration: 10,
-          reverseDuration: 10,
-          infinite: true,
-          curve: Curves.easeInOut,
-        ),
-      ),
-    );
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _breathTime += dt;
+
+    // 20s cycle: 0 -> -20 -> 0 to match prior ping-pong drift.
+    final phase = (_breathTime / 20.0) * (2 * pi);
+    final pingPong = 0.5 - 0.5 * cos(phase); // 0..1..0
+    final drift = -20.0 * pingPong;
+    position.setValues(_basePosition.x + drift, _basePosition.y + drift);
   }
 
   @override
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
-    // Maintain 1.1x scale
+    // Maintain 1.1x scale.
     this.size = size * 1.1;
-
-    // Recenter approximately (resetting position might be jarring,
-    // but needed to handle resize accurately)
-    // We don't reset position here to avoid jumping during resize,
-    // relying on the scale update to cover mostly.
+    final overscan = this.size - size;
+    _basePosition = -overscan / 2;
   }
 }

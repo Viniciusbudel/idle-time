@@ -1,45 +1,59 @@
-# CONFIG
-$planPath = "C:\Dev\idle-time\docs\prestige\ralph-loop-prestige-plan.md"
+param(
+  [string]$RepoRoot = "C:\Dev\idle-time",
+  [string]$PlanPath = "docs\prestige\ralph-loop-prestige-plan.md",
+  [string]$FeaturePrefix = "prestige"
+)
 
-# Read file
-$content = Get-Content $planPath -Raw
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
 
-# Find first TODO story
-$storyMatch = [regex]::Match($content, "## (STORY-[0-9]+:.*?)(?=##|$)", "Singleline")
+function Info([string]$msg) { Write-Host $msg -ForegroundColor Cyan }
+function Fail([string]$msg) { Write-Host $msg -ForegroundColor Red; exit 1 }
 
-if (-not $storyMatch.Success) {
-    Write-Host "No stories found."
-    exit
+if (-not (Test-Path $RepoRoot)) { Fail "RepoRoot not found: $RepoRoot" }
+Set-Location $RepoRoot
+
+$planFull = Join-Path $RepoRoot $PlanPath
+if (-not (Test-Path $planFull)) { Fail "Plan file not found: $planFull" }
+
+$content = Get-Content $planFull -Raw
+$pattern = "(?ms)^##\s*(STORY-\d+)\s*:\s*(.+?)\s*$\r?\n(.*?)(?=^##\s*STORY-\d+\s*:|\z)"
+$matches = [regex]::Matches($content, $pattern)
+if ($matches.Count -eq 0) { Fail "No STORY blocks found. Expected: ## STORY-1: Title" }
+
+$next = $null
+foreach ($m in $matches) {
+  if ($m.Value -match "(?mi)^status:\s*todo\s*$") { $next = $m; break }
 }
+if ($null -eq $next) { Info "No TODO stories found. All done."; exit 0 }
 
-$storyBlock = $storyMatch.Value
+$storyId = $next.Groups[1].Value
+$storyTitle = $next.Groups[2].Value.Trim()
+$commitMsg = "feat(" + $FeaturePrefix + "): " + $storyId
 
-if ($storyBlock -notmatch "status:\s*todo") {
-    Write-Host "No TODO stories remaining."
-    exit
-}
+$scopeFiles = @(
+  "lib/domain/entities/prestige_upgrade.dart",
+  "lib/domain/entities/game_state.dart",
+  "lib/presentation/state/game_state_provider.dart",
+  "lib/presentation/ui/pages/prestige_tab.dart",
+  "test/domain/prestige_usecase_test.dart",
+  $PlanPath
+)
+$scopeFence = ($scopeFiles | ForEach-Object { "- " + $_ }) -join "`n"
 
-# Extract story ID
-$idMatch = [regex]::Match($storyBlock, "STORY-[0-9]+")
-$storyId = $idMatch.Value
+$promptLines = @()
+$promptLines += "Execute ONLY the next TODO story in $PlanPath."
+$promptLines += ""
+$promptLines += "Target story: $storyId - $storyTitle"
+$promptLines += ""
+$promptLines += "Hard rules:"
+$promptLines += "- Implement ONLY $storyId."
+$promptLines += "- Touch ONLY these files (no others):"
+$promptLines += $scopeFence
+$promptLines += "- Do NOT install dependencies and do NOT run network commands."
+$promptLines += "- When done: set status to done for $storyId in the plan, commit '$commitMsg', then stop."
+$prompt = $promptLines -join "`n"
 
-Write-Host "Executing $storyId..."
-
-# Build instruction
-$instruction = @"
-You are executing $planPath.
-
-Find $storyId.
-Implement only this story.
-Follow acceptance strictly.
-Do not modify unrelated files.
-When complete:
-- Change its status to done
-- Create commit message: feat(expeditions): $storyId
-Stop after completion.
-"@
-
-# Run Codex
-codex exec "$instruction"
-
-Write-Host "Execution finished."
+Info ("Running YOLO for " + $storyId + "...")
+& codex --cd $RepoRoot exec --yolo -- "$prompt"
+Info ("Done.")

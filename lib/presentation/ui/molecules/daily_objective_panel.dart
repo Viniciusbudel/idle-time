@@ -6,7 +6,9 @@ import 'package:time_factory/domain/entities/daily_mission.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 
 class DailyObjectivePanel extends ConsumerStatefulWidget {
-  const DailyObjectivePanel({super.key});
+  final double expandedWidth;
+
+  const DailyObjectivePanel({super.key, this.expandedWidth = 240});
 
   @override
   ConsumerState<DailyObjectivePanel> createState() =>
@@ -32,67 +34,69 @@ class _DailyObjectivePanelState extends ConsumerState<DailyObjectivePanel> {
       );
     }
 
-    return Container(
-      width: 240,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.62),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: TimeFactoryColors.electricCyan.withValues(alpha: 0.45),
+    return SizedBox(
+      width: widget.expandedWidth,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.62),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.45),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              const AppIcon(
-                AppHugeIcons.auto_awesome,
-                size: 14,
-                color: TimeFactoryColors.acidGreen,
-              ),
-              const SizedBox(width: 6),
-              const Expanded(
-                child: Text(
-                  'DAILY OBJECTIVES',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                    color: TimeFactoryColors.electricCyan,
-                  ),
-                ),
-              ),
-              if (allClaimed)
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
                 const AppIcon(
-                  AppHugeIcons.check_circle,
+                  AppHugeIcons.auto_awesome,
                   size: 14,
                   color: TimeFactoryColors.acidGreen,
                 ),
-              const SizedBox(width: 6),
-              GestureDetector(
-                onTap: () => setState(() => _expanded = false),
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: const Icon(
-                    Icons.keyboard_arrow_up,
-                    size: 14,
-                    color: Colors.white70,
+                const SizedBox(width: 6),
+                const Expanded(
+                  child: Text(
+                    'DAILY OBJECTIVES',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                      color: TimeFactoryColors.electricCyan,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ...missions.map((mission) => _MissionRow(mission: mission)),
-        ],
+                if (allClaimed)
+                  const AppIcon(
+                    AppHugeIcons.check_circle,
+                    size: 14,
+                    color: TimeFactoryColors.acidGreen,
+                  ),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () => setState(() => _expanded = false),
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Icon(
+                      Icons.keyboard_arrow_up,
+                      size: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ...missions.map((mission) => _MissionRow(mission: mission)),
+          ],
+        ),
       ),
     );
   }
@@ -115,52 +119,61 @@ class _CollapsedObjectivesButton extends StatelessWidget {
         ? TimeFactoryColors.acidGreen.withValues(alpha: 0.65)
         : TimeFactoryColors.electricCyan.withValues(alpha: 0.65);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.62),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: borderColor),
-          boxShadow: [
-            BoxShadow(
-              color: borderColor.withValues(alpha: 0.25),
-              blurRadius: 8,
+    return Semantics(
+      button: true,
+      label: allClaimed
+          ? 'Open completed daily objectives'
+          : 'Open daily objectives with $pendingCount pending',
+      child: GestureDetector(
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.62),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: borderColor.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppIcon(
-              allClaimed
-                  ? AppHugeIcons.check_circle
-                  : AppHugeIcons.auto_awesome,
-              size: 13,
-              color: allClaimed
-                  ? TimeFactoryColors.acidGreen
-                  : TimeFactoryColors.electricCyan,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppIcon(
+                  allClaimed
+                      ? AppHugeIcons.check_circle
+                      : AppHugeIcons.auto_awesome,
+                  size: 13,
+                  color: allClaimed
+                      ? TimeFactoryColors.acidGreen
+                      : TimeFactoryColors.electricCyan,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  allClaimed ? 'OBJECTIVES DONE' : '$pendingCount OBJECTIVES',
+                  style: TextStyle(
+                    color: allClaimed
+                        ? TimeFactoryColors.acidGreen
+                        : TimeFactoryColors.electricCyan,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 14,
+                  color: Colors.white70,
+                ),
+              ],
             ),
-            const SizedBox(width: 6),
-            Text(
-              allClaimed ? 'OBJECTIVES DONE' : '$pendingCount OBJECTIVES',
-              style: TextStyle(
-                color: allClaimed
-                    ? TimeFactoryColors.acidGreen
-                    : TimeFactoryColors.electricCyan,
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.8,
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.keyboard_arrow_down,
-              size: 14,
-              color: Colors.white70,
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -260,20 +273,23 @@ class _MissionRow extends ConsumerWidget {
       onTap: () {
         ref.read(gameStateProvider.notifier).claimDailyMission(mission.id);
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        decoration: BoxDecoration(
-          color: TimeFactoryColors.acidGreen.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: TimeFactoryColors.acidGreen),
-        ),
-        child: const Text(
-          'CLAIM',
-          style: TextStyle(
-            fontSize: 8,
-            color: TimeFactoryColors.acidGreen,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.8,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 24),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          decoration: BoxDecoration(
+            color: TimeFactoryColors.acidGreen.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: TimeFactoryColors.acidGreen),
+          ),
+          child: const Text(
+            'CLAIM',
+            style: TextStyle(
+              fontSize: 8,
+              color: TimeFactoryColors.acidGreen,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.8,
+            ),
           ),
         ),
       ),

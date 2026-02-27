@@ -5,6 +5,8 @@ import 'dart:math';
 
 /// Represents a temporal worker from a specific era
 class Worker {
+  static const Object _copyWithUnset = Object();
+
   final String id;
   final WorkerEra era;
   final BigInt baseProduction;
@@ -38,7 +40,7 @@ class Worker {
     String? name,
     String? specialAbility,
     bool? isDeployed,
-    String? deployedStationId,
+    Object? deployedStationId = _copyWithUnset,
     List<WorkerArtifact>? equippedArtifacts,
     double? chronalAttunement,
   }) {
@@ -50,7 +52,9 @@ class Worker {
       name: name ?? this.name,
       specialAbility: specialAbility ?? this.specialAbility,
       isDeployed: isDeployed ?? this.isDeployed,
-      deployedStationId: deployedStationId ?? this.deployedStationId,
+      deployedStationId: identical(deployedStationId, _copyWithUnset)
+          ? this.deployedStationId
+          : deployedStationId as String?,
       equippedArtifacts: equippedArtifacts ?? this.equippedArtifacts,
       chronalAttunement: chronalAttunement ?? this.chronalAttunement,
     );

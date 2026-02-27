@@ -705,6 +705,33 @@ void main() {
       expect(boostedReward > baselineReward * BigInt.from(3), isTrue);
     });
 
+    test('victorian slot payout is capped for early-game pace', () {
+      final start = StartExpeditionUseCase();
+      final resolve = ResolveExpeditionsUseCase();
+      final now = DateTime(2026, 2, 27, 9, 0);
+
+      final GameState state = GameState.initial();
+      final started = start.execute(
+        state,
+        slotId: 'salvage_run',
+        risk: ExpeditionRisk.safe,
+        workerIds: const ['worker_starter'],
+        now: now,
+      );
+      expect(started, isNotNull);
+
+      final resolved = resolve.execute(
+        started!.newState,
+        now: now.add(const Duration(minutes: 31)),
+        randomRoll: () => 0.0,
+      );
+      final BigInt reward =
+          resolved.newlyResolved.first.resolvedReward!.chronoEnergy;
+
+      expect(reward, greaterThan(BigInt.zero));
+      expect(reward, lessThan(BigInt.from(6000)));
+    });
+
     test(
       '2h paradox + legendary crew yields strong CE and buffed relic odds',
       () {

@@ -5,6 +5,7 @@ import 'package:flame/particles.dart';
 import 'package:flame_svg/flame_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
+import 'package:time_factory/core/utils/app_log.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/enums.dart';
@@ -15,6 +16,10 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
   final Worker worker;
   final bool lowPerformanceMode;
   final Random _rng = Random();
+  Vector2 _driftOffset = Vector2.zero();
+  double _driftDurationSeconds = 5.0;
+  double _driftElapsedSeconds = 0.0;
+  double _lastDriftFactor = 0.0;
 
   WorkerAvatar({required this.worker, this.lowPerformanceMode = false});
 
@@ -51,7 +56,8 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
       add(aura);
 
       // 2. Rotating Data Ring (Outer)
-      final ring = CircleComponent(
+      final ring = _SpinningCircleComponent(
+        radiansPerSecond: (2 * pi) / 8.0,
         radius: 18,
         anchor: Anchor.center,
         position: size / 2,
@@ -60,12 +66,6 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5,
       );
-      final ringRotate = RotateEffect.by(
-        2 * pi,
-        EffectController(duration: 8.0, infinite: true, curve: Curves.linear),
-      );
-      ringRotate.target = ring;
-      ring.add(ringRotate);
       add(ring);
     }
 
@@ -102,9 +102,11 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
           ),
         );
       }
-    } catch (e) {
-      debugPrint(
-        'Warning: Failed to load icon for ${worker.era.displayName} ${worker.rarity.displayName} Worker ($iconPath): $e',
+    } catch (e, stackTrace) {
+      AppLog.debug(
+        'Failed to load worker icon for ${worker.era.displayName} ${worker.rarity.displayName} ($iconPath)',
+        error: e,
+        stackTrace: stackTrace,
       );
 
       // Fallback to Procedural Icon based on Era
@@ -150,22 +152,13 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
 
     if (!lowPerformanceMode) {
       // 5. Floating movement
-      final driftOffset = Vector2(
+      _driftOffset = Vector2(
         (_rng.nextDouble() - 0.5) * 60,
         (_rng.nextDouble() - 0.5) * 40,
       );
-
-      add(
-        MoveEffect.by(
-          driftOffset,
-          EffectController(
-            duration: 4 + _rng.nextDouble() * 3,
-            reverseDuration: 4 + _rng.nextDouble() * 3,
-            infinite: true,
-            curve: Curves.easeInOut,
-          ),
-        ),
-      );
+      _driftDurationSeconds = 4 + _rng.nextDouble() * 3;
+      _driftElapsedSeconds = 0.0;
+      _lastDriftFactor = 0.0;
 
       // 6. Data trail particles
       add(
@@ -194,6 +187,30 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
     }
   }
 
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (lowPerformanceMode) return;
+
+    _driftElapsedSeconds += dt;
+    final phase = (_driftElapsedSeconds / _driftDurationSeconds) * (2 * pi);
+    final driftFactor = 0.5 - 0.5 * cos(phase); // 0..1..0
+    final deltaFactor = driftFactor - _lastDriftFactor;
+    if (deltaFactor != 0.0) {
+      position += _driftOffset * deltaFactor;
+    }
+    _lastDriftFactor = driftFactor;
+  }
+
+  @override
+  void updateTree(double dt) {
+    update(dt);
+    final snapshot = children.toList(growable: false);
+    for (final child in snapshot) {
+      child.updateTree(dt);
+    }
+  }
+
   Color _getRarityColor(WorkerRarity rarity) {
     switch (rarity) {
       case WorkerRarity.common:
@@ -207,5 +224,24 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
       case WorkerRarity.paradox:
         return TimeFactoryColors.hotMagenta;
     }
+  }
+}
+
+class _SpinningCircleComponent extends CircleComponent {
+  _SpinningCircleComponent({
+    required this.radiansPerSecond,
+    required super.radius,
+    required super.anchor,
+    required super.position,
+    required super.paint,
+  });
+
+  final double radiansPerSecond;
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    // Use direct rotation to avoid EffectTarget null-target crashes.
+    angle += radiansPerSecond * dt;
   }
 }

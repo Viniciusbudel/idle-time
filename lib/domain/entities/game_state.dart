@@ -221,13 +221,47 @@ class GameState {
   int get paradoxClickBonusPercent =>
       ((paradoxClickBonusMultiplier - 1.0) * 100).round();
 
+  int get chronoMasteryUpgradeLevel =>
+      PrestigeUpgradeType.chronoMastery.clampLevel(
+        paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
+      );
+
+  double get chronoMasteryMultiplier =>
+      PrestigeUpgradeType.percentPerLevelMultiplier(
+        level: chronoMasteryUpgradeLevel,
+        percentPerLevel: PrestigeUpgradeType.chronoMasteryPercentPerLevel,
+      );
+
+  int get chronoMasteryPercent =>
+      ((chronoMasteryMultiplier - 1.0) * 100).round();
+
   int get expeditionLuckUpgradeLevel =>
       PrestigeUpgradeType.timekeepersFavor.clampLevel(
         paradoxPointsSpent[PrestigeUpgradeType.timekeepersFavor.id] ?? 0,
       );
 
   double get expeditionLuckMultiplier =>
-      1.0 + (expeditionLuckUpgradeLevel * 0.05);
+      PrestigeUpgradeType.percentPerLevelMultiplier(
+        level: expeditionLuckUpgradeLevel,
+        percentPerLevel: PrestigeUpgradeType.expeditionLuckPercentPerLevel,
+      );
+
+  int get expeditionLuckPercent =>
+      ((expeditionLuckMultiplier - 1.0) * 100).round();
+
+  int get temporalMemoryUpgradeLevel =>
+      PrestigeUpgradeType.temporalMemory.clampLevel(
+        paradoxPointsSpent[PrestigeUpgradeType.temporalMemory.id] ?? 0,
+      );
+
+  double get temporalMemoryMultiplier =>
+      PrestigeUpgradeType.percentPerLevelMultiplier(
+        level: temporalMemoryUpgradeLevel,
+        percentPerLevel: PrestigeUpgradeType.offlinePercentPerLevel,
+      );
+
+  int get temporalMemoryPercent =>
+      ((temporalMemoryMultiplier - 1.0) * 100).round();
 
   static double baseExpeditionSuccessChanceForRisk(ExpeditionRisk risk) {
     switch (risk) {
@@ -253,11 +287,44 @@ class GameState {
       levelOverride ?? expeditionLuckUpgradeLevel,
     );
     if (level <= 0) return 0.0;
-    final multiplier = 1.0 + (level * 0.05);
+    final multiplier = PrestigeUpgradeType.percentPerLevelMultiplier(
+      level: level,
+      percentPerLevel: PrestigeUpgradeType.expeditionLuckPercentPerLevel,
+    );
     final baseChance = baseExpeditionSuccessChanceForRisk(risk);
     final adjustedChance = (baseChance * multiplier).clamp(0.05, 0.99);
     return adjustedChance - baseChance;
   }
+
+  /// Canonical percent-modifier chain snapshot used by tests and UI.
+  Map<String, Object> get prestigePercentModifierSnapshot => {
+    'production': {
+      'chronoMasteryLevel': chronoMasteryUpgradeLevel,
+      'chronoMasteryMultiplier': chronoMasteryMultiplier,
+      'chronoMasteryPercent': chronoMasteryPercent,
+    },
+    'click': {
+      'paradoxLevel': paradoxLevel,
+      'paradoxSteps': paradoxClickBonusSteps,
+      'paradoxMultiplier': paradoxClickBonusMultiplier,
+      'paradoxPercent': paradoxClickBonusPercent,
+    },
+    'expeditionLuck': {
+      'timekeepersFavorLevel': expeditionLuckUpgradeLevel,
+      'expeditionLuckMultiplier': expeditionLuckMultiplier,
+      'expeditionLuckPercent': expeditionLuckPercent,
+      'safeDeltaPercent': expeditionLuckDeltaForRisk(ExpeditionRisk.safe) * 100,
+      'riskyDeltaPercent':
+          expeditionLuckDeltaForRisk(ExpeditionRisk.risky) * 100,
+      'volatileDeltaPercent':
+          expeditionLuckDeltaForRisk(ExpeditionRisk.volatile) * 100,
+    },
+    'offline': {
+      'temporalMemoryLevel': temporalMemoryUpgradeLevel,
+      'temporalMemoryMultiplier': temporalMemoryMultiplier,
+      'temporalMemoryPercent': temporalMemoryPercent,
+    },
+  };
 
   /// Derived mastery levels by era from cumulative XP.
   Map<String, int> get eraMasteryLevels => {
@@ -294,14 +361,8 @@ class GameState {
         getEraMasteryProductionMultiplier(worker.era.id),
       );
 
-      final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
-        paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
-      );
-      if (chronoMasteryLevel > 0) {
-        production = _applyMultiplier(
-          production,
-          1.0 + (chronoMasteryLevel * 0.1),
-        );
+      if (chronoMasteryUpgradeLevel > 0) {
+        production = _applyMultiplier(production, chronoMasteryMultiplier);
       }
 
       if (paradoxEventActive) {
@@ -363,14 +424,8 @@ class GameState {
       );
 
       // Chrono Mastery
-      final chronoMasteryLevel = PrestigeUpgradeType.chronoMastery.clampLevel(
-        paradoxPointsSpent[PrestigeUpgradeType.chronoMastery.id] ?? 0,
-      );
-      if (chronoMasteryLevel > 0) {
-        production = _applyMultiplier(
-          production,
-          1.0 + (chronoMasteryLevel * 0.1),
-        );
+      if (chronoMasteryUpgradeLevel > 0) {
+        production = _applyMultiplier(production, chronoMasteryMultiplier);
       }
 
       // Paradox Event
@@ -387,9 +442,6 @@ class GameState {
   double get offlineEfficiency {
     const base = 0.1; // REBALANCED: 0.7 -> 0.1
     // Paradox Upgrade
-    final offlineBonusLevel = PrestigeUpgradeType.temporalMemory.clampLevel(
-      paradoxPointsSpent[PrestigeUpgradeType.temporalMemory.id] ?? 0,
-    );
     // Tech Upgrade (all offline techs: clockwork_arithmometer, radio_broadcast, etc.)
     final techMultiplier = TechData.calculateOfflineEfficiencyMultiplier(
       techLevels,
@@ -400,7 +452,8 @@ class GameState {
         EraMasteryConstants.victorianOfflineBonusPerLevel;
     // TechData returns 1.0 + bonus, subtract 1.0 to get just the bonus portion
     return base +
-        (offlineBonusLevel * 0.1) +
+        (temporalMemoryUpgradeLevel *
+            PrestigeUpgradeType.offlinePercentPerLevel) +
         (techMultiplier - 1.0) +
         victorianMasteryBonus;
   }
@@ -469,6 +522,182 @@ class GameState {
   /// Get number of stations owned in a specific era
   int getStationCountForEra(String eraId) {
     return stations.values.where((s) => s.type.era.id == eraId).length;
+  }
+
+  /// Normalize station/worker topology so there is exactly one active chamber.
+  /// Workers deployed to removed chambers are undeployed to avoid orphan refs.
+  GameState normalizeSingleChamber() {
+    final normalized = _normalizeSingleChamberState(
+      workers: workers,
+      stations: stations,
+      currentEraId: currentEraId,
+    );
+    return copyWith(workers: normalized.key, stations: normalized.value);
+  }
+
+  /// Upgrade/retarget the single chamber to match [eraId], preserving chamber
+  /// id, level and valid worker assignments when possible.
+  GameState upgradeSingleChamberToEra(String eraId) {
+    final normalizedState = normalizeSingleChamber();
+    final chamber = normalizedState.stations.values.first;
+    final targetType = _stationTypeForEra(eraId);
+    final retargeted = chamber.copyWith(type: targetType);
+
+    final newWorkers = Map<String, Worker>.from(normalizedState.workers);
+    final deployedOnChamber = <String>[];
+
+    // Preserve existing station ordering first, then include any missing deployed ids.
+    for (final workerId in chamber.workerIds) {
+      final worker = newWorkers[workerId];
+      if (worker != null &&
+          worker.isDeployed &&
+          worker.deployedStationId == chamber.id &&
+          !deployedOnChamber.contains(workerId)) {
+        deployedOnChamber.add(workerId);
+      }
+    }
+    final sortedWorkerIds = newWorkers.keys.toList()..sort();
+    for (final workerId in sortedWorkerIds) {
+      final worker = newWorkers[workerId];
+      if (worker == null) continue;
+      if (worker.isDeployed &&
+          worker.deployedStationId == chamber.id &&
+          !deployedOnChamber.contains(workerId)) {
+        deployedOnChamber.add(workerId);
+      }
+    }
+
+    final keptWorkerIds = deployedOnChamber
+        .take(retargeted.maxWorkerSlots)
+        .toList();
+    final overflowWorkerIds = deployedOnChamber.skip(retargeted.maxWorkerSlots);
+    for (final workerId in overflowWorkerIds) {
+      final worker = newWorkers[workerId];
+      if (worker == null) continue;
+      newWorkers[workerId] = worker.copyWith(
+        isDeployed: false,
+        deployedStationId: null,
+      );
+    }
+
+    final updatedChamber = retargeted.copyWith(workerIds: keptWorkerIds);
+    return normalizedState.copyWith(
+      workers: newWorkers,
+      stations: {updatedChamber.id: updatedChamber},
+    );
+  }
+
+  static MapEntry<Map<String, Worker>, Map<String, Station>>
+  _normalizeSingleChamberState({
+    required Map<String, Worker> workers,
+    required Map<String, Station> stations,
+    required String currentEraId,
+  }) {
+    final normalizedWorkers = Map<String, Worker>.from(workers);
+
+    if (stations.isEmpty) {
+      final fallbackType = _stationTypeForEra(currentEraId);
+      const fallbackId = 'station_singleton';
+      final fallbackStation = Station(
+        id: fallbackId,
+        type: fallbackType,
+        gridX: 0,
+        gridY: 0,
+      );
+
+      final sortedWorkerIds = normalizedWorkers.keys.toList()..sort();
+      for (final workerId in sortedWorkerIds) {
+        final worker = normalizedWorkers[workerId];
+        if (worker == null || !worker.isDeployed) continue;
+        normalizedWorkers[workerId] = worker.copyWith(
+          isDeployed: false,
+          deployedStationId: null,
+        );
+      }
+
+      return MapEntry(normalizedWorkers, <String, Station>{
+        fallbackStation.id: fallbackStation,
+      });
+    }
+
+    final primaryStation = _selectPrimaryStation(
+      stations.values.toList(),
+      currentEraId: currentEraId,
+    );
+    final primaryStationId = primaryStation.id;
+
+    final deployedWorkerIds = <String>[];
+    final sortedWorkerIds = normalizedWorkers.keys.toList()..sort();
+    for (final workerId in sortedWorkerIds) {
+      final worker = normalizedWorkers[workerId];
+      if (worker == null || !worker.isDeployed) continue;
+
+      if (worker.deployedStationId == primaryStationId) {
+        if (!deployedWorkerIds.contains(workerId)) {
+          deployedWorkerIds.add(workerId);
+        }
+      } else {
+        normalizedWorkers[workerId] = worker.copyWith(
+          isDeployed: false,
+          deployedStationId: null,
+        );
+      }
+    }
+
+    final trimmedWorkerIds = deployedWorkerIds
+        .take(primaryStation.maxWorkerSlots)
+        .toList();
+    final overflowWorkerIds = deployedWorkerIds.skip(
+      primaryStation.maxWorkerSlots,
+    );
+    for (final workerId in overflowWorkerIds) {
+      final worker = normalizedWorkers[workerId];
+      if (worker == null) continue;
+      normalizedWorkers[workerId] = worker.copyWith(
+        isDeployed: false,
+        deployedStationId: null,
+      );
+    }
+
+    final normalizedStation = primaryStation.copyWith(
+      workerIds: trimmedWorkerIds,
+    );
+    return MapEntry(normalizedWorkers, <String, Station>{
+      primaryStationId: normalizedStation,
+    });
+  }
+
+  static Station _selectPrimaryStation(
+    List<Station> stations, {
+    required String currentEraId,
+  }) {
+    final sortedStations = List<Station>.from(stations)
+      ..sort((a, b) {
+        final aCurrent = a.type.era.id == currentEraId ? 1 : 0;
+        final bCurrent = b.type.era.id == currentEraId ? 1 : 0;
+        if (aCurrent != bCurrent) {
+          return bCurrent.compareTo(aCurrent);
+        }
+
+        final aEraIndex = GameConstants.eraOrder.indexOf(a.type.era.id);
+        final bEraIndex = GameConstants.eraOrder.indexOf(b.type.era.id);
+        if (aEraIndex != bEraIndex) {
+          return bEraIndex.compareTo(aEraIndex);
+        }
+
+        if (a.level != b.level) {
+          return b.level.compareTo(a.level);
+        }
+        return a.id.compareTo(b.id);
+      });
+    return sortedStations.first;
+  }
+
+  static StationType _stationTypeForEra(String eraId) {
+    return StationType.values.firstWhere(
+      (type) => type.era.id == eraId,
+      orElse: () => StationType.basicLoop,
+    );
   }
 
   /// Ensures each artifact id exists in exactly one location:
@@ -551,10 +780,7 @@ class GameState {
       inventory: reconciledInventory,
     );
 
-    return copyWith(
-      workers: normalized.key,
-      inventory: normalized.value,
-    );
+    return copyWith(workers: normalized.key, inventory: normalized.value);
   }
 
   Map<String, dynamic> toMap() {
@@ -610,7 +836,9 @@ class GameState {
     );
     final normalizedWorkers = normalizedArtifacts.key;
     final normalizedInventory = normalizedArtifacts.value;
-    final rawParadoxSpent = Map<String, int>.from(map['paradoxPointsSpent'] ?? {});
+    final rawParadoxSpent = Map<String, int>.from(
+      map['paradoxPointsSpent'] ?? {},
+    );
     final normalizedParadoxSpent = <String, int>{};
     for (final entry in rawParadoxSpent.entries) {
       final type = PrestigeUpgradeType.fromId(entry.key);
@@ -620,12 +848,12 @@ class GameState {
       normalizedParadoxSpent[entry.key] = type.clampLevel(entry.value);
     }
 
-    return GameState(
+    final loadedState = GameState(
       chronoEnergy: BigInt.parse(map['chronoEnergy']),
       timeShards: map['timeShards'] ?? 0,
       lifetimeChronoEnergy: BigInt.parse(map['lifetimeChronoEnergy']),
       workers: normalizedWorkers,
-      stations: (map['stations'] as Map<String, dynamic>).map((k, v) {
+      stations: (map['stations'] as Map<String, dynamic>? ?? {}).map((k, v) {
         final station = Station.fromMap(v as Map<String, dynamic>);
         // Cleanup ghost workers (e.g. from buggy version saves or merges)
         final validIds = station.workerIds
@@ -679,5 +907,6 @@ class GameState {
               .toList() ??
           [],
     );
+    return loadedState.normalizeSingleChamber();
   }
 }

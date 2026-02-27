@@ -1,10 +1,18 @@
 import 'package:flame/components.dart';
-import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 
 class FloatingTextComponent extends TextComponent {
   final Color color;
+  static const double _moveDistance = 80.0;
+  static const double _moveDuration = 1.5;
+  static const double _popInDuration = 0.2;
+  static const double _shrinkStart = 1.0;
+  static const double _shrinkDuration = 0.5;
+
+  late final Vector2 _startPosition;
+  double _elapsed = 0.0;
+  bool _queuedRemoval = false;
 
   FloatingTextComponent({
     required String text,
@@ -25,34 +33,36 @@ class FloatingTextComponent extends TextComponent {
 
   @override
   Future<void> onLoad() async {
-    // Move up
-    add(
-      MoveEffect.by(
-        Vector2(0, -80),
-        EffectController(duration: 1.5, curve: Curves.easeOut),
-      ),
-    );
-
-    // Scale down and remove
-    final shrink = ScaleEffect.to(
-      Vector2.zero(),
-      EffectController(
-        duration: 0.5,
-        startDelay: 1.0, // Wait a bit before shrinking
-        curve: Curves.easeIn,
-      ),
-      onComplete: () => removeFromParent(),
-    );
-    shrink.target = this;
-    add(shrink);
-
-    // Scale up slightly at start for pop effect
+    await super.onLoad();
+    _startPosition = position.clone();
     scale = Vector2.all(0.5);
-    final popIn = ScaleEffect.to(
-      Vector2.all(1.0),
-      EffectController(duration: 0.2, curve: Curves.elasticOut),
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _elapsed += dt;
+
+    final moveT = (_elapsed / _moveDuration).clamp(0.0, 1.0);
+    final moveProgress = Curves.easeOut.transform(moveT);
+    position.setValues(
+      _startPosition.x,
+      _startPosition.y - (_moveDistance * moveProgress),
     );
-    popIn.target = this;
-    add(popIn);
+
+    double nextScale = 1.0;
+    if (_elapsed <= _popInDuration) {
+      final t = (_elapsed / _popInDuration).clamp(0.0, 1.0);
+      nextScale = 0.5 + (Curves.elasticOut.transform(t) * 0.5);
+    } else if (_elapsed >= _shrinkStart) {
+      final t = ((_elapsed - _shrinkStart) / _shrinkDuration).clamp(0.0, 1.0);
+      nextScale = 1.0 - Curves.easeIn.transform(t);
+    }
+    scale = Vector2.all(nextScale.clamp(0.0, 1.25));
+
+    if (_elapsed >= _moveDuration && !_queuedRemoval) {
+      _queuedRemoval = true;
+      removeFromParent();
+    }
   }
 }

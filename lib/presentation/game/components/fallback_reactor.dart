@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame_svg/flame_svg.dart';
@@ -8,23 +10,30 @@ import 'package:flame/effects.dart';
 
 class FallbackReactor extends SvgComponent
     with TapCallbacks, HasGameRef<TimeFactoryGame> {
+  static const double _fallbackSpinRadiansPerSecond = 2 * pi;
+
   FallbackReactor({super.svg, super.size}) : super(anchor: Anchor.center);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
     position = gameRef.size / 2;
+  }
 
-    // Add a spin effect since it's the fallback for the "animated" reactor
-    final spinEffect = RotateEffect.by(
-      6.28, // 360 degrees
-      EffectController(
-        duration: 1.0, // FAST spin to identify FALLBACK
-        infinite: true,
-      ),
-    );
-    spinEffect.target = this;
-    add(spinEffect);
+  @override
+  void update(double dt) {
+    super.update(dt);
+    // Use direct rotation instead of an effect to avoid null target edge cases.
+    angle += _fallbackSpinRadiansPerSecond * dt;
+  }
+
+  @override
+  void updateTree(double dt) {
+    update(dt);
+    final snapshot = children.toList(growable: false);
+    for (final child in snapshot) {
+      child.updateTree(dt);
+    }
   }
 
   @override

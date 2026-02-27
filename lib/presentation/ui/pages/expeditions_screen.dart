@@ -526,6 +526,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       requiredWorkers: slot.requiredWorkers,
       duration: slot.duration,
       risk: selectedRisk,
+      slotEraId: slot.eraId,
     );
     final double successChance =
         StartExpeditionUseCase.calculateSuccessProbability(
@@ -799,6 +800,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                       workers: previewWorkers,
                       duration: slot.duration,
                       risk: risk,
+                      slotEraId: slot.eraId,
                     );
                     return GestureDetector(
                       onTap: canConfigureSlot
@@ -1063,6 +1065,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       workers: assignedWorkers,
       duration: total,
       risk: expedition.risk,
+      slotEraId: ExpeditionSlot.byId(expedition.slotId)?.eraId,
     );
 
     return Container(
@@ -1509,6 +1512,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     required int requiredWorkers,
     required Duration duration,
     required ExpeditionRisk risk,
+    required String slotEraId,
   }) {
     if (previewWorkers.length < requiredWorkers) {
       return null;
@@ -1520,6 +1524,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
       duration: duration,
       risk: risk,
       succeeded: true,
+      eraId: slotEraId,
     );
   }
 
@@ -1528,6 +1533,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
     required List<Worker> workers,
     required Duration duration,
     required ExpeditionRisk risk,
+    String? slotEraId,
   }) {
     final ExpeditionReward reward = _resolveExpeditionsUseCase
         .estimateRewardPreview(
@@ -1536,6 +1542,7 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
           duration: duration,
           risk: risk,
           succeeded: true,
+          eraId: slotEraId,
         );
 
     final int safeDurationSeconds = duration.inSeconds.clamp(1, 60 * 60 * 24);

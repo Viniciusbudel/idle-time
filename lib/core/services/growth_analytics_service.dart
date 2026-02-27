@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:time_factory/core/utils/app_log.dart';
 
 /// Minimal local event tracker for growth experiments.
 class GrowthAnalyticsService {
@@ -16,9 +16,7 @@ class GrowthAnalyticsService {
     counts[eventName] = (counts[eventName] ?? 0) + 1;
     await prefs.setString(_eventsKey, jsonEncode(counts));
 
-    if (kDebugMode) {
-      debugPrint('[growth] $eventName ${jsonEncode(params)}');
-    }
+    AppLog.debug('[growth] $eventName ${jsonEncode(params)}');
   }
 
   Future<int> getEventCount(String eventName) async {

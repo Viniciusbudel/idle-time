@@ -46,6 +46,9 @@ enum PrestigeUpgradeType {
 
   static const double paradoxClickBonusStepSize = 0.1;
   static const double paradoxClickBonusPerStep = 0.1;
+  static const double chronoMasteryPercentPerLevel = 0.1;
+  static const double expeditionLuckPercentPerLevel = 0.05;
+  static const double offlinePercentPerLevel = 0.1;
 
   static int paradoxClickBonusSteps(double paradoxLevel) {
     final normalized = paradoxLevel.clamp(0.0, 1.0);
@@ -55,6 +58,14 @@ enum PrestigeUpgradeType {
   static double paradoxClickBonusMultiplier(double paradoxLevel) {
     final steps = paradoxClickBonusSteps(paradoxLevel);
     return 1.0 + (steps * paradoxClickBonusPerStep);
+  }
+
+  static double percentPerLevelMultiplier({
+    required int level,
+    required double percentPerLevel,
+  }) {
+    if (level <= 0) return 1.0;
+    return 1.0 + (level * percentPerLevel);
   }
 
   static const Set<String> removedShopUpgradeIds = {
@@ -123,15 +134,15 @@ enum PrestigeUpgradeType {
   String getEffectDescription(int level) {
     switch (this) {
       case PrestigeUpgradeType.chronoMastery:
-        return '+${level * 10}% Production';
+        return '+${(level * chronoMasteryPercentPerLevel * 100).round()}% Production';
       case PrestigeUpgradeType.eraInsight:
         return 'Start at Era ${level + 1}';
       case PrestigeUpgradeType.riftStability:
         return '-${level * 5}% Paradox';
       case PrestigeUpgradeType.timekeepersFavor:
-        return '+${level * 5}% Expedition Luck';
+        return '+${(level * expeditionLuckPercentPerLevel * 100).round()}% Expedition Luck';
       case PrestigeUpgradeType.temporalMemory:
-        return '+${level * 10}% Offline';
+        return '+${(level * offlinePercentPerLevel * 100).round()}% Offline';
     }
   }
 }

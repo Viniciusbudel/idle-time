@@ -56,6 +56,15 @@ class ReactorComponent extends PositionComponent
   }
 
   @override
+  void updateTree(double dt) {
+    update(dt);
+    final snapshot = children.toList(growable: false);
+    for (final child in snapshot) {
+      child.updateTree(dt);
+    }
+  }
+
+  @override
   void onTapDown(TapDownEvent event) {
     game.handleReactorTap();
     HapticFeedback.mediumImpact();

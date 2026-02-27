@@ -18,27 +18,8 @@ class LoopChambersTab extends ConsumerWidget {
     final gameState = ref.watch(gameStateProvider);
     // Force Neon Theme for this tab
     final theme = const NeonTheme();
-
-    // Show ALL stations across all eras, sorted by era order
-    final eraOrder = [
-      'victorian',
-      'roaring_20s',
-      'atomic_age',
-      'cyberpunk_80s',
-      'neo_tokyo',
-      'post_singularity',
-      'ancient_rome',
-      'far_future',
-    ];
-    final allStations = gameState.stations.values.toList()
-      ..sort((a, b) {
-        final aIndex = eraOrder.indexOf(a.type.era.id);
-        final bIndex = eraOrder.indexOf(b.type.era.id);
-        if (aIndex != bIndex) return aIndex.compareTo(bIndex);
-        return b.level.compareTo(a.level);
-      });
-
-    if (allStations.isEmpty) {
+    final stations = gameState.stations.values.toList(growable: false);
+    if (stations.isEmpty) {
       return Center(
         child: Text(
           AppLocalizations.of(context)!.noChambersYet,
@@ -46,31 +27,67 @@ class LoopChambersTab extends ConsumerWidget {
         ),
       );
     }
+    final activeStation = _selectActiveStation(gameState);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.md,
       ),
-      child: ListView.builder(
-        itemCount: allStations.length + 1, // +1 for bottom padding
-        itemBuilder: (context, index) {
-          if (index == allStations.length) {
-            return const SizedBox(height: 100); // Bottom padding
-          }
-          final card = _buildMegaChamber(
-            context,
-            ref,
-            theme,
-            allStations[index],
-            gameState,
-            isFirstCard: index == 0,
-          );
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: card,
-          );
-        },
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: AppSpacing.bottomSafe),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (stations.length > 1)
+              _buildMigrationNotice(context, theme, stations.length),
+            _buildMegaChamber(
+              context,
+              ref,
+              theme,
+              activeStation,
+              gameState,
+              isFirstCard: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Station _selectActiveStation(GameState gameState) {
+    for (final station in gameState.stations.values) {
+      if (station.type.era.id == gameState.currentEraId) {
+        return station;
+      }
+    }
+    return gameState.stations.values.first;
+  }
+
+  Widget _buildMigrationNotice(
+    BuildContext context,
+    NeonTheme theme,
+    int stationCount,
+  ) {
+    final colors = theme.colors;
+    final typography = theme.typography;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: colors.accent.withValues(alpha: 0.10),
+        border: Border.all(color: colors.accent.withValues(alpha: 0.45)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        'Single chamber mode active. Consolidated from $stationCount chambers.',
+        style: typography.bodyMedium.copyWith(
+          color: colors.accent.withValues(alpha: 0.92),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.2,
+        ),
       ),
     );
   }

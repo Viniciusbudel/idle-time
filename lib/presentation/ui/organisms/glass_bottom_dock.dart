@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
@@ -25,11 +26,22 @@ class GlassBottomDock extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = themeOverride ?? ref.watch(themeProvider);
     final colors = theme!.colors;
+    final width = MediaQuery.sizeOf(context).width;
+    final compact = width < 390;
+    final dockHeight = compact ? 68.0 : 72.0;
+    final horizontalMargin = compact ? AppSpacing.xs : AppSpacing.md;
+    final bottomMargin = compact ? AppSpacing.sm : AppSpacing.lg;
+    final iconSize = compact ? 22.0 : 26.0;
+    final labelSize = compact ? 7.0 : 8.0;
 
     // Floating Dock Container (Pill Shape)
     return Container(
-      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
-      height: 72,
+      margin: EdgeInsets.only(
+        left: horizontalMargin,
+        right: horizontalMargin,
+        bottom: bottomMargin,
+      ),
+      height: dockHeight,
       decoration: const BoxDecoration(
         // color: colors.dockBackground.withOpacity( 0.9),
         // borderRadius: BorderRadius.circular(24),
@@ -51,7 +63,10 @@ class GlassBottomDock extends ConsumerWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? AppSpacing.xs : AppSpacing.sm,
+              vertical: AppSpacing.xxs,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -61,6 +76,9 @@ class GlassBottomDock extends ConsumerWidget {
                   AppLocalizations.of(context)!.chambers,
                   colors,
                   theme,
+                  iconSize: iconSize,
+                  labelSize: labelSize,
+                  compact: compact,
                   key: TutorialKeys.chambersTab,
                 ),
                 _buildNavItem(
@@ -69,6 +87,9 @@ class GlassBottomDock extends ConsumerWidget {
                   AppLocalizations.of(context)!.factory,
                   colors,
                   theme,
+                  iconSize: iconSize,
+                  labelSize: labelSize,
+                  compact: compact,
                   key: TutorialKeys.factoryTab,
                 ),
                 _buildNavItem(
@@ -77,6 +98,9 @@ class GlassBottomDock extends ConsumerWidget {
                   AppLocalizations.of(context)!.summon,
                   colors,
                   theme,
+                  iconSize: iconSize,
+                  labelSize: labelSize,
+                  compact: compact,
                   key: TutorialKeys.gachaTab,
                 ),
                 _buildNavItem(
@@ -85,6 +109,9 @@ class GlassBottomDock extends ConsumerWidget {
                   AppLocalizations.of(context)!.tech,
                   colors,
                   theme,
+                  iconSize: iconSize,
+                  labelSize: labelSize,
+                  compact: compact,
                 ),
                 _buildNavItem(
                   4,
@@ -92,6 +119,9 @@ class GlassBottomDock extends ConsumerWidget {
                   AppLocalizations.of(context)!.prestige,
                   colors,
                   theme,
+                  iconSize: iconSize,
+                  labelSize: labelSize,
+                  compact: compact,
                 ),
               ],
             ),
@@ -107,96 +137,110 @@ class GlassBottomDock extends ConsumerWidget {
     String label,
     ThemeColors colors,
     GameTheme theme, {
+    required double iconSize,
+    required double labelSize,
+    required bool compact,
     Key? key,
   }) {
     final isSelected = selectedIndex == index;
-    final color = isSelected ? colors.primary : colors.primary.withOpacity(0.6);
+    final color = isSelected
+        ? colors.primary
+        : colors.primary.withValues(alpha: 0.6);
 
     return Expanded(
-      child: GestureDetector(
-        key: key,
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onItemSelected(index);
-        },
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Top Indicator (Floating Pill Style from HTML)
-            // HTML has a top bar indicator for active state:
-            // <div class="absolute -top-3 w-8 h-1 bg-primary ..."></div>
-            // We'll simulate this with a small top container if selected
-            if (isSelected)
-              Container(
-                width: 24,
-                height: 3,
-                margin: const EdgeInsets.only(bottom: 4),
-                decoration: BoxDecoration(
-                  color: colors.primary,
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.primary.withOpacity(0.8),
-                      blurRadius: 6,
-                      spreadRadius: 1,
+      child: Semantics(
+        button: true,
+        selected: isSelected,
+        label: label,
+        child: GestureDetector(
+          key: key,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onItemSelected(index);
+          },
+          behavior: HitTestBehavior.opaque,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Top Indicator (Floating Pill Style from HTML)
+                if (isSelected)
+                  Container(
+                    width: compact ? 20 : 24,
+                    height: 3,
+                    margin: EdgeInsets.only(
+                      bottom: compact ? AppSpacing.xxs : AppSpacing.xs,
                     ),
-                  ],
-                ),
-              )
-            else
-              const SizedBox(height: 7), // Spacer to keep icons aligned
-            // Icon with Glow
-            AppIcon(
-              icon,
-              size: 26,
-              color: color,
-              shadows: isSelected
-                  ? [
-                      Shadow(
-                        color: colors.primary.withOpacity(0.8),
-                        blurRadius: 8,
-                      ),
-                    ]
-                  : [],
-            ),
-
-            const SizedBox(height: 4),
-
-            // Label
-            Text(
-              label,
-              style: TimeFactoryTextStyles.bodySmall.copyWith(
-                fontFamily: theme.typography.fontFamily,
-                fontSize: 8,
-                color: isSelected
-                    ? Colors.white
-                    : color, // Active -> White, Inactive -> Dim Cyan
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-              ),
-            ),
-
-            // Bottom Dot (HTML has a bottom dot too)
-            if (isSelected)
-              Container(
-                margin: const EdgeInsets.only(top: 4),
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colors.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.primary.withOpacity(0.8),
-                      blurRadius: 4,
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      borderRadius: BorderRadius.circular(2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colors.primary.withValues(alpha: 0.8),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
-                  ],
+                  )
+                else
+                  SizedBox(
+                    height: compact ? AppSpacing.xs : 7,
+                  ), // Spacer to keep icons aligned
+                // Icon with Glow
+                AppIcon(
+                  icon,
+                  size: iconSize,
+                  color: color,
+                  shadows: isSelected
+                      ? [
+                          Shadow(
+                            color: colors.primary.withValues(alpha: 0.8),
+                            blurRadius: 8,
+                          ),
+                        ]
+                      : [],
                 ),
-              )
-            else
-              const SizedBox(height: 8), // Spacer
-          ],
+
+                SizedBox(height: compact ? AppSpacing.xxs : AppSpacing.xs / 2),
+
+                // Label
+                Text(
+                  label,
+                  style: TimeFactoryTextStyles.bodySmall.copyWith(
+                    fontFamily: theme.typography.fontFamily,
+                    fontSize: labelSize,
+                    color: isSelected ? Colors.white : color,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: compact ? 0.6 : 1.0,
+                  ),
+                ),
+
+                // Bottom Dot (HTML has a bottom dot too)
+                if (isSelected)
+                  Container(
+                    margin: EdgeInsets.only(
+                      top: compact ? AppSpacing.xxs : AppSpacing.xs / 2,
+                    ),
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: colors.primary.withValues(alpha: 0.8),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  SizedBox(height: compact ? AppSpacing.xs - 1 : 8), // Spacer
+              ],
+            ),
+          ),
         ),
       ),
     );

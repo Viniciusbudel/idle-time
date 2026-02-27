@@ -112,7 +112,7 @@ Done when:
 ---
 
 ## STORY-6: Validate Prestige Percent Modifiers End-To-End
-status: todo
+status: done
 
 Description:
 Audit and verify that all prestige percent modifiers are applied once, in the correct order, and reflected correctly in UI text.
@@ -126,3 +126,11 @@ Acceptance:
 Done when:
 - End-to-end balance verification checklist is complete.
 - QA sign-off confirms expected outputs in live gameplay checks.
+
+Verification checklist (completed):
+- Production chain: `worker/station -> era mastery -> chrono mastery (+10% per level)`; chrono mastery multiplier is applied exactly once per worker production path.
+- Click chain: `base click from production/tech -> paradox click bonus (+10% per paradox step)`; paradox click multiplier is applied exactly once.
+- Expedition chain: `base success chance -> timekeeper's favor (+5% per level) -> clamp`; expedition prestige luck multiplier is applied exactly once.
+- Offline chain: `base efficiency + temporal memory (+10% per level) + tech + victorian mastery`; temporal memory contribution is applied exactly once.
+- UI now shows computed runtime values for prestige percent modifiers (production, click, expedition luck, offline).
+- Snapshot tests cover base and stacked prestige profiles and verify representative computed outputs.

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:time_factory/core/utils/app_log.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/presentation/state/artifact_drop_event_provider.dart';
@@ -23,7 +24,10 @@ class TimeFactoryGame extends FlameGame {
 
   final Map<String, WorkerAvatar> _workerComponents = {};
   final Set<String> _pendingWorkerIds = {};
+  final List<VoidCallback> _pendingGameMutations = [];
   bool _lowPerformanceMode = false;
+  bool _isApplyingMutations = false;
+  int _reactorSwapRequestId = 0;
 
   // Production tick system
   double _accumulator = 0.0;
@@ -54,9 +58,7 @@ class TimeFactoryGame extends FlameGame {
         await ReactorComponent.create(300, eraId: currentEraId),
       ); // Size 300x300
     } catch (e, stack) {
-      debugPrint('CRITICAL: Reactor failed to load!');
-      debugPrint('Error: $e');
-      debugPrint('Stack: $stack');
+      AppLog.debug('Reactor failed to load', error: e, stackTrace: stack);
       //add(await FallbackReactor.create(300));
     }
 
@@ -83,6 +85,7 @@ class TimeFactoryGame extends FlameGame {
     final warpedDt = dt * timeWarp;
 
     super.update(warpedDt);
+    _flushQueuedMutations();
 
     // Fixed timestep production tick
     _accumulator += warpedDt;
@@ -116,6 +119,57 @@ class TimeFactoryGame extends FlameGame {
     }
 
     _processAnomalySpawner(warpedDt);
+  }
+
+  @override
+  void updateTree(double dt) {
+    processLifecycleEvents();
+    if (parent != null) {
+      update(dt);
+    }
+
+    final snapshot = children.toList(growable: false);
+    for (final component in snapshot) {
+      try {
+        component.updateTree(dt);
+      } on ConcurrentModificationError catch (error, stackTrace) {
+        AppLog.debug(
+          'Concurrent modification in ${component.runtimeType}; '
+          'children=${component.children.length}',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        final childSnapshot = component.children.toList(growable: false);
+        for (final child in childSnapshot) {
+          AppLog.debug(
+            '  child=${child.runtimeType} '
+            'mounted=${child.isMounted} removing=${child.isRemoving}',
+          );
+        }
+        Error.throwWithStackTrace(error, stackTrace);
+      }
+    }
+  }
+
+  void _enqueueGameMutation(VoidCallback mutation) {
+    _pendingGameMutations.add(mutation);
+  }
+
+  void _flushQueuedMutations() {
+    if (_isApplyingMutations || _pendingGameMutations.isEmpty) return;
+
+    _isApplyingMutations = true;
+    try {
+      while (_pendingGameMutations.isNotEmpty) {
+        final mutations = List<VoidCallback>.from(_pendingGameMutations);
+        _pendingGameMutations.clear();
+        for (final mutation in mutations) {
+          mutation();
+        }
+      }
+    } finally {
+      _isApplyingMutations = false;
+    }
   }
 
   void _processAnomalySpawner(double dt) {
@@ -219,28 +273,36 @@ class TimeFactoryGame extends FlameGame {
   }
 
   void syncWorkers(List<Worker> activeWorkers, {bool animate = false}) {
-    _syncWorkers(activeWorkers, animate: animate);
+    final workersSnapshot = List<Worker>.from(activeWorkers);
+    _enqueueGameMutation(() {
+      if (!isMounted) return;
+      _syncWorkers(workersSnapshot, animate: animate);
+    });
   }
 
   void setLowPerformanceMode(bool enabled) {
     if (_lowPerformanceMode == enabled) return;
     _lowPerformanceMode = enabled;
 
-    if (!isMounted) return;
+    _enqueueGameMutation(() {
+      if (!isMounted) return;
 
-    for (final component in _workerComponents.values) {
-      component.removeFromParent();
-    }
-    _workerComponents.clear();
-    _pendingWorkerIds.clear();
+      for (final component in _workerComponents.values.toList(
+        growable: false,
+      )) {
+        component.removeFromParent();
+      }
+      _workerComponents.clear();
+      _pendingWorkerIds.clear();
 
-    final activeWorkers = ref
-        .read(gameStateProvider)
-        .workers
-        .values
-        .where((worker) => worker.isDeployed)
-        .toList();
-    _syncWorkers(activeWorkers, animate: false);
+      final activeWorkers = ref
+          .read(gameStateProvider)
+          .workers
+          .values
+          .where((worker) => worker.isDeployed)
+          .toList();
+      _syncWorkers(activeWorkers, animate: false);
+    });
   }
 
   void _syncWorkers(List<Worker> activeWorkers, {bool animate = false}) {
@@ -310,14 +372,26 @@ class TimeFactoryGame extends FlameGame {
 
   /// Change the reactor visual based on era
   Future<void> updateEra(String eraId) async {
-    // Remove old reactor
-    children.whereType<ReactorComponent>().forEach((c) => c.removeFromParent());
+    final requestId = ++_reactorSwapRequestId;
+    _enqueueGameMutation(() {
+      if (!isMounted || requestId != _reactorSwapRequestId) return;
+      final reactors = children.whereType<ReactorComponent>().toList(
+        growable: false,
+      );
+      for (final reactor in reactors) {
+        reactor.removeFromParent();
+      }
+    });
 
     // Add new reactor
     try {
-      add(await ReactorComponent.create(300, eraId: eraId));
+      final reactor = await ReactorComponent.create(300, eraId: eraId);
+      _enqueueGameMutation(() {
+        if (!isMounted || requestId != _reactorSwapRequestId) return;
+        add(reactor);
+      });
     } catch (e) {
-      debugPrint('Failed to load new era reactor: $e');
+      AppLog.debug('Failed to load new era reactor', error: e);
       // Fallback to default if needed, or retry logic
     }
   }

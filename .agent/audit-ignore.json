@@ -1,0 +1,17 @@
+{
+  "ignore": [
+    {
+      "rule_id": "ANDROID_EXPORTED",
+      "path": "android/app/src/main/AndroidManifest.xml"
+    },
+    {
+      "rule_id": "PKG_SHARED_PREFS",
+      "path": "pubspec.yaml"
+    },
+    {
+      "rule_id": "DART_PRINT_LOG",
+      "path": "test/**"
+    }
+  ]
+}
+

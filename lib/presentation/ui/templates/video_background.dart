@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:time_factory/core/utils/app_log.dart';
 import 'package:video_player/video_player.dart';
 
 /// A widget that plays a looping video background from assets.
@@ -40,8 +41,12 @@ class _VideoBackgroundState extends State<VideoBackground> {
           _initialized = true;
         });
       }
-    } catch (e) {
-      debugPrint('Error initializing video background: $e');
+    } catch (e, stackTrace) {
+      AppLog.debug(
+        'Error initializing video background',
+        error: e,
+        stackTrace: stackTrace,
+      );
       if (mounted) {
         setState(() {
           _error = true;

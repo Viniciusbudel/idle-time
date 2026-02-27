@@ -7,6 +7,7 @@ import 'package:time_factory/domain/entities/worker_artifact.dart';
 import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/usecases/prestige_usecase.dart';
+import 'package:time_factory/presentation/state/game_state_provider.dart';
 
 void main() {
   group('PrestigeUseCase', () {
@@ -275,6 +276,112 @@ void main() {
       final highParadox = base.copyWith(paradoxLevel: 0.95);
 
       expect(highParadox.productionPerSecond, base.productionPerSecond);
+    });
+
+    test('should match prestige percent modifier snapshot for base profile', () {
+      final state = GameState.initial().copyWith(paradoxLevel: 0.0);
+
+      expect(state.prestigePercentModifierSnapshot, {
+        'production': {
+          'chronoMasteryLevel': 0,
+          'chronoMasteryMultiplier': 1.0,
+          'chronoMasteryPercent': 0,
+        },
+        'click': {
+          'paradoxLevel': 0.0,
+          'paradoxSteps': 0,
+          'paradoxMultiplier': 1.0,
+          'paradoxPercent': 0,
+        },
+        'expeditionLuck': {
+          'timekeepersFavorLevel': 0,
+          'expeditionLuckMultiplier': 1.0,
+          'expeditionLuckPercent': 0,
+          'safeDeltaPercent': 0.0,
+          'riskyDeltaPercent': 0.0,
+          'volatileDeltaPercent': 0.0,
+        },
+        'offline': {
+          'temporalMemoryLevel': 0,
+          'temporalMemoryMultiplier': 1.0,
+          'temporalMemoryPercent': 0,
+        },
+      });
+    });
+
+    test('should match prestige percent modifier snapshot for stacked profile', () {
+      final state = GameState.initial().copyWith(
+        paradoxLevel: 0.36,
+        paradoxPointsSpent: {
+          PrestigeUpgradeType.chronoMastery.id: 3,
+          PrestigeUpgradeType.timekeepersFavor.id: 4,
+          PrestigeUpgradeType.temporalMemory.id: 2,
+        },
+      );
+
+      final snapshot = state.prestigePercentModifierSnapshot;
+      final production = snapshot['production']! as Map<String, Object>;
+      final click = snapshot['click']! as Map<String, Object>;
+      final expedition = snapshot['expeditionLuck']! as Map<String, Object>;
+      final offline = snapshot['offline']! as Map<String, Object>;
+
+      expect(production['chronoMasteryLevel'], 3);
+      expect(production['chronoMasteryMultiplier'], 1.3);
+      expect(production['chronoMasteryPercent'], 30);
+
+      expect(click['paradoxLevel'], 0.36);
+      expect(click['paradoxSteps'], 3);
+      expect(click['paradoxMultiplier'], 1.3);
+      expect(click['paradoxPercent'], 30);
+
+      expect(expedition['timekeepersFavorLevel'], 4);
+      expect(expedition['expeditionLuckMultiplier'], 1.2);
+      expect(expedition['expeditionLuckPercent'], 20);
+      expect(expedition['safeDeltaPercent'] as double, closeTo(14.4, 1e-9));
+      expect(expedition['riskyDeltaPercent'] as double, closeTo(11.6, 1e-9));
+      expect(
+        expedition['volatileDeltaPercent'] as double,
+        closeTo(8.4, 1e-9),
+      );
+
+      expect(offline['temporalMemoryLevel'], 2);
+      expect(offline['temporalMemoryMultiplier'], 1.2);
+      expect(offline['temporalMemoryPercent'], 20);
+    });
+
+    test('should apply prestige percent modifiers once in end-to-end flows', () {
+      final state = GameState.initial().copyWith(
+        paradoxLevel: 0.36,
+        paradoxPointsSpent: {
+          PrestigeUpgradeType.chronoMastery.id: 3,
+          PrestigeUpgradeType.timekeepersFavor.id: 4,
+          PrestigeUpgradeType.temporalMemory.id: 2,
+        },
+      );
+
+      final clickValue = GameStateNotifier.calculateManualClickValueForState(
+        state,
+      );
+      final baseState = state.copyWith(paradoxLevel: 0.0);
+      final baseClickValue = GameStateNotifier.calculateManualClickValueForState(
+        baseState,
+      );
+      expect(
+        clickValue,
+        BigInt.from((baseClickValue.toDouble() * 1.3).round()),
+      );
+
+      final baseRisky = GameState.baseExpeditionSuccessChanceForRisk(
+        ExpeditionRisk.risky,
+      );
+      final adjustedRisky = state.adjustedExpeditionSuccessProbability(
+        risk: ExpeditionRisk.risky,
+        baseSuccessProbability: baseRisky,
+      );
+      expect(adjustedRisky, closeTo(baseRisky * 1.2, 1e-9));
+
+      expect(state.chronoMasteryMultiplier, 1.3);
+      expect(state.temporalMemoryMultiplier, 1.2);
     });
 
     test('should apply prestige luck bonus to expedition success chance', () {

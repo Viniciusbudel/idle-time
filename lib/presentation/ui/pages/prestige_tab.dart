@@ -169,7 +169,7 @@ class PrestigeTab extends ConsumerWidget {
               icon: AppHugeIcons.bolt,
               label:
                   'Click +${gameState.paradoxClickBonusPercent}% from Paradox',
-              color: colors.warning,
+              color: colors.accent,
             ),
           ],
         ),
@@ -337,25 +337,35 @@ class PrestigeTab extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     switch (type) {
       case PrestigeUpgradeType.chronoMastery:
-        return l10n.chronoMasteryDescription;
+        final percent = gameState.chronoMasteryPercent;
+        final multiplier = gameState.chronoMasteryMultiplier.toStringAsFixed(2);
+        return 'Production +$percent% (x$multiplier total)';
       case PrestigeUpgradeType.eraInsight:
         return l10n.eraInsightDescription;
       case PrestigeUpgradeType.riftStability:
         return l10n.riftStabilityDescription;
       case PrestigeUpgradeType.timekeepersFavor:
-        final safe = (gameState.expeditionLuckDeltaForRisk(ExpeditionRisk.safe) *
-                100)
-            .toStringAsFixed(1);
+        final safe =
+            (gameState.expeditionLuckDeltaForRisk(ExpeditionRisk.safe) * 100)
+                .toStringAsFixed(1);
         final risky =
             (gameState.expeditionLuckDeltaForRisk(ExpeditionRisk.risky) * 100)
                 .toStringAsFixed(1);
-        final volatile = (gameState
-                    .expeditionLuckDeltaForRisk(ExpeditionRisk.volatile) *
-                100)
-            .toStringAsFixed(1);
-        return 'Expedition success boost: Safe +$safe%, Risky +$risky%, Volatile +$volatile%';
+        final volatile =
+            (gameState.expeditionLuckDeltaForRisk(ExpeditionRisk.volatile) *
+                    100)
+                .toStringAsFixed(1);
+        final percent = gameState.expeditionLuckPercent;
+        final multiplier = gameState.expeditionLuckMultiplier.toStringAsFixed(
+          2,
+        );
+        return 'Expedition luck +$percent% (x$multiplier): Safe +$safe%, Risky +$risky%, Volatile +$volatile%';
       case PrestigeUpgradeType.temporalMemory:
-        return l10n.offlineBonusDescription;
+        final percent = gameState.temporalMemoryPercent;
+        final multiplier = gameState.temporalMemoryMultiplier.toStringAsFixed(
+          2,
+        );
+        return 'Offline earnings +$percent% (x$multiplier from Temporal Memory)';
     }
   }
 }
