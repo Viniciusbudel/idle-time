@@ -436,6 +436,15 @@ class GameState {
   bool get canPrestige =>
       lifetimeChronoEnergy >= BigInt.from(GameConstants.prestigeMinimumCE);
 
+  /// Clear all technology progression and era completion flags.
+  GameState resetTechProgress() {
+    return copyWith(
+      techLevels: const {},
+      completedEras: const {},
+      currentEraId: WorkerEra.victorian.id,
+    );
+  }
+
   static double _log10BigInt(BigInt value) {
     if (value <= BigInt.zero) return 0.0;
 

@@ -150,6 +150,14 @@ class PrestigeTab extends ConsumerWidget {
                 height: 1.25,
               ),
             ),
+            const SizedBox(height: 4),
+            Text(
+              'All tech levels and era completion progress reset after timeline collapse.',
+              style: typography.bodySmall.copyWith(
+                color: Colors.white.withValues(alpha: 0.62),
+                height: 1.25,
+              ),
+            ),
             const SizedBox(height: 8),
             _InlineBadge(
               icon: AppHugeIcons.repeat,

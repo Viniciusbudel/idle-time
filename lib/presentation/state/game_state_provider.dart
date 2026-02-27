@@ -828,7 +828,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
   void prestige() {
     final beforePrestige = state;
     final afterPrestige = _prestigeUseCase.execute(beforePrestige);
-    state = afterPrestige.reconcileArtifactsAfterPrestige(beforePrestige);
+    state = afterPrestige
+        .reconcileArtifactsAfterPrestige(beforePrestige)
+        .resetTechProgress();
   }
 
   /// Spend paradox points on upgrade

@@ -94,7 +94,7 @@ Done when:
 ---
 
 ## STORY-5: Reset Tech Progress Correctly On Prestige
-status: todo
+status: done
 
 Description:
 Ensure prestige resets all technology progression that should be reset, including previously maxed tech state.

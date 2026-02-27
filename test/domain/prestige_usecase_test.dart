@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/prestige_upgrade.dart';
@@ -40,6 +41,9 @@ void main() {
           timeShards: 450,
           inventory: [dummyArtifact],
           eraMasteryXp: {'victorian': 123, 'atomic_age': 45},
+          techLevels: const {'steam_turbine': 2, 'assembly_line': 1},
+          completedEras: const {'victorian'},
+          currentEraId: 'roaring_20s',
           prestigeLevel: 1,
           availableParadoxPoints: 5,
           totalPrestiges: 1,
@@ -65,8 +69,43 @@ void main() {
         expect(result.inventory.first.id, dummyArtifact.id);
         expect(result.eraMasteryXp, {'victorian': 123, 'atomic_age': 45});
 
+        // Assert: Tech progression should reset completely
+        expect(result.techLevels, isEmpty);
+        expect(result.completedEras, isEmpty);
+        expect(result.currentEraId, 'victorian');
+
         // Assert: Eras should reset to only victorian (since no era_insight upgrade)
         expect(result.unlockedEras, {'victorian'});
+      },
+    );
+
+    test(
+      'should clear tech progression from a fully maxed tree on prestige',
+      () {
+        final fullyMaxedTechs = {
+          for (final tech in TechData.initialTechs) tech.id: tech.maxLevel,
+        };
+
+        final state = GameState.initial().copyWith(
+          lifetimeChronoEnergy: BigInt.from(1500000),
+          techLevels: fullyMaxedTechs,
+          completedEras: {
+            for (final era in WorkerEra.values) era.id,
+          },
+          currentEraId: WorkerEra.farFuture.id,
+          unlockedEras: {
+            for (final era in WorkerEra.values) era.id,
+          },
+        );
+
+        final result = useCase.execute(state);
+        final loaded = GameState.fromMap(result.toMap());
+
+        expect(result.techLevels, isEmpty);
+        expect(result.completedEras, isEmpty);
+        expect(result.currentEraId, WorkerEra.victorian.id);
+        expect(loaded.techLevels, isEmpty);
+        expect(loaded.completedEras, isEmpty);
       },
     );
 
