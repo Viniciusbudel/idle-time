@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:time_factory/core/constants/era_mastery_constants.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
-import 'package:time_factory/domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/tech_upgrade.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/tech_provider.dart';
-import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/presentation/ui/atoms/hud_segmented_progress_bar.dart';
 import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
@@ -61,23 +58,17 @@ class TechScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: ListView.builder(
                 padding: const EdgeInsets.only(bottom: 120),
-                itemCount: techs.length + 2,
+                itemCount: techs.length + 1,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: AppSpacing.md),
-                      child: _EraMasteryVisualizer(),
-                    );
-                  }
-                  if (index == techs.length + 1) {
+                  if (index == techs.length) {
                     return const _EraAdvancementPanel();
                   }
                   return Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                     child: _TechModuleCard(
-                      tech: techs[index - 1],
+                      tech: techs[index],
                       theme: theme,
-                      moduleIndex: index - 1,
+                      moduleIndex: index,
                     ),
                   );
                 },
@@ -833,330 +824,6 @@ class _NeonChip extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// EraMasteryVisualizer
-// ---------------------------------------------------------------------------
-class _EraMasteryVisualizer extends ConsumerWidget {
-  const _EraMasteryVisualizer();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = const NeonTheme();
-    final typography = theme.typography;
-    final gameState = ref.watch(gameStateProvider);
-
-    final currentEraId = gameState.currentEraId;
-    final currentEra = WorkerEra.values.firstWhere(
-      (era) => era.id == currentEraId,
-      orElse: () => WorkerEra.victorian,
-    );
-    final masteryXp = gameState.eraMasteryXp;
-    final masteryLevels = gameState.eraMasteryLevels;
-
-    final currentLevel = masteryLevels[currentEraId] ?? 0;
-    final currentXp = masteryXp[currentEraId] ?? 0;
-    final levelBaseXp = _masteryTotalXpForLevel(currentLevel);
-    final currentLevelCost = currentLevel >= EraMasteryConstants.maxLevel
-        ? 0
-        : EraMasteryConstants.xpRequiredForLevel(currentLevel + 1);
-    final xpIntoLevel = currentLevelCost == 0
-        ? 0
-        : (currentXp - levelBaseXp).clamp(0, currentLevelCost);
-    final levelProgress = currentLevelCost == 0
-        ? 1.0
-        : (xpIntoLevel / currentLevelCost).clamp(0.0, 1.0);
-    final remainingXp = currentLevelCost == 0
-        ? 0
-        : currentLevelCost - xpIntoLevel;
-
-    final trackedEras = WorkerEra.values.where((era) {
-      final level = masteryLevels[era.id] ?? 0;
-      return level > 0 ||
-          gameState.unlockedEras.contains(era.id) ||
-          era.id == currentEraId;
-    }).toList();
-
-    final currentProductionBonus =
-        (gameState.getEraMasteryProductionMultiplier(currentEraId) - 1.0) * 100;
-    final victorianLevel = masteryLevels[WorkerEra.victorian.id] ?? 0;
-    final atomicLevel = masteryLevels[WorkerEra.atomicAge.id] ?? 0;
-    final victorianOfflineBonus =
-        victorianLevel *
-        EraMasteryConstants.victorianOfflineBonusPerLevel *
-        100;
-    final atomicAutomationBonus =
-        atomicLevel * EraMasteryConstants.atomicAutomationBonusPerLevel * 100;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF050A10),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: currentEra.color.withValues(alpha: 0.42)),
-        boxShadow: [
-          BoxShadow(
-            color: currentEra.color.withValues(alpha: 0.16),
-            blurRadius: 8,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: _PanelAmbientBackground(accent: currentEra.color),
-            ),
-            Positioned.fill(child: _GridOverlay(color: currentEra.color)),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: currentEra.color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: currentEra.color.withValues(alpha: 0.44),
-                          ),
-                        ),
-                        child: AppIcon(
-                          AppHugeIcons.military_tech,
-                          color: currentEra.color,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'ERA MASTERY',
-                              style: typography.titleMedium.copyWith(
-                                color: Colors.white,
-                                fontSize: 15,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${trackedEras.length} TRACKS ONLINE',
-                              style: typography.bodyMedium.copyWith(
-                                fontSize: 10,
-                                color: currentEra.color.withValues(alpha: 0.78),
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: currentEra.color.withValues(alpha: 0.16),
-                          borderRadius: BorderRadius.circular(3),
-                          border: Border.all(
-                            color: currentEra.color.withValues(alpha: 0.44),
-                          ),
-                        ),
-                        child: Text(
-                          'LVL $currentLevel',
-                          style: typography.bodyMedium.copyWith(
-                            fontSize: 11,
-                            color: currentEra.color,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  _NeonChip(
-                    icon: AppHugeIcons.trending_up,
-                    label:
-                        '${currentEra.localizedName(context)} output +${currentProductionBonus.toStringAsFixed(0)}%',
-                    color: currentEra.color,
-                    theme: theme,
-                  ),
-                  const SizedBox(height: 6),
-                  if (victorianLevel > 0)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: _NeonChip(
-                        icon: AppHugeIcons.schedule,
-                        label:
-                            'Victorian offline +${victorianOfflineBonus.toStringAsFixed(0)}%',
-                        color: WorkerEra.victorian.color,
-                        theme: theme,
-                      ),
-                    ),
-                  if (atomicLevel > 0)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: _NeonChip(
-                        icon: AppHugeIcons.auto_awesome,
-                        label:
-                            'Atomic automation +${atomicAutomationBonus.toStringAsFixed(0)}%',
-                        color: WorkerEra.atomicAge.color,
-                        theme: theme,
-                      ),
-                    ),
-                  // HUD Segmented progress for mastery
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: currentEra.color.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: currentEra.color.withValues(alpha: 0.30),
-                      ),
-                    ),
-                    child: HudSegmentedProgressBar(
-                      value: levelProgress,
-                      color: currentEra.color,
-                      height: 6,
-                      segmentCount: 10,
-                      segmentGap: 2,
-                      label: currentLevelCost == 0
-                          ? 'MAX'
-                          : '${NumberFormatter.format(BigInt.from(remainingXp))} XP',
-                      labelStyle: typography.bodyMedium.copyWith(
-                        fontSize: 10,
-                        color: currentEra.color,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ...trackedEras.map(
-                    (era) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: _EraMasteryTrackRow(
-                        era: era,
-                        level: masteryLevels[era.id] ?? 0,
-                        xp: masteryXp[era.id] ?? 0,
-                        isCurrent: era.id == currentEraId,
-                        typography: typography,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EraMasteryTrackRow extends StatelessWidget {
-  final WorkerEra era;
-  final int level;
-  final int xp;
-  final bool isCurrent;
-  final ThemeTypography typography;
-
-  const _EraMasteryTrackRow({
-    required this.era,
-    required this.level,
-    required this.xp,
-    required this.isCurrent,
-    required this.typography,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final levelBaseXp = _masteryTotalXpForLevel(level);
-    final levelCost = level >= EraMasteryConstants.maxLevel
-        ? 0
-        : EraMasteryConstants.xpRequiredForLevel(level + 1);
-    final xpIntoLevel = levelCost == 0
-        ? 0
-        : (xp - levelBaseXp).clamp(0, levelCost);
-    final progress = levelCost == 0
-        ? 1.0
-        : (xpIntoLevel / levelCost).clamp(0.0, 1.0);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: era.color.withValues(alpha: isCurrent ? 0.16 : 0.08),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: era.color.withValues(alpha: isCurrent ? 0.55 : 0.30),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 9,
-            height: 9,
-            decoration: BoxDecoration(
-              color: era.color,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: era.color.withValues(alpha: 0.6),
-                  blurRadius: 6,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              era.localizedName(context).toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: typography.bodyMedium.copyWith(
-                fontSize: 10,
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 96,
-            child: HudSegmentedProgressBar(
-              value: progress,
-              color: era.color,
-              height: 5,
-              segmentCount: 8,
-              segmentGap: 1.5,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'L$level',
-            style: typography.bodyMedium.copyWith(
-              fontSize: 10,
-              color: era.color,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
 // EraAdvancementPanel
 // ---------------------------------------------------------------------------
 class _EraAdvancementPanel extends ConsumerWidget {
@@ -1379,9 +1046,6 @@ class _EraAdvancementPanel extends ConsumerWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// PanelAmbientBackground
-// ---------------------------------------------------------------------------
 class _PanelAmbientBackground extends StatelessWidget {
   final Color accent;
 
@@ -1468,14 +1132,6 @@ String _formatEraLabel(String eraId) {
       .where((part) => part.isNotEmpty)
       .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
       .join(' ');
-}
-
-int _masteryTotalXpForLevel(int level) {
-  var total = 0;
-  for (var current = 1; current <= level; current++) {
-    total += EraMasteryConstants.xpRequiredForLevel(current);
-  }
-  return total;
 }
 
 String _localizedEffect(BuildContext context, TechType type) {

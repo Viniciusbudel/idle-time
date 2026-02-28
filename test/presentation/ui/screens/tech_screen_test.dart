@@ -56,7 +56,7 @@ void main() {
 
     // Verify Header
     expect(find.text('TECH AUGMENTATION'), findsOneWidget);
-    expect(find.text('ERA MASTERY'), findsOneWidget);
+    expect(find.text('ERA MASTERY'), findsNothing);
 
     // Verify tech entry
     expect(find.text('QUANTUM MINING'), findsOneWidget);

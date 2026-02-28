@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:time_factory/core/constants/era_mastery_constants.dart';
 import 'package:time_factory/core/constants/game_constants.dart';
 import 'enums.dart';
 import 'worker.dart';
@@ -326,22 +325,6 @@ class GameState {
     },
   };
 
-  /// Derived mastery levels by era from cumulative XP.
-  Map<String, int> get eraMasteryLevels => {
-    for (final era in WorkerEra.values) era.id: getEraMasteryLevel(era.id),
-  };
-
-  int getEraMasteryLevel(String eraId) {
-    final xp = eraMasteryXp[eraId] ?? 0;
-    return EraMasteryConstants.levelFromXp(xp);
-  }
-
-  double getEraMasteryProductionMultiplier(String eraId) {
-    final level = getEraMasteryLevel(eraId);
-    if (level <= 0) return 1.0;
-    return 1.0 + (level * EraMasteryConstants.productionBonusPerLevel);
-  }
-
   /// Calculate total production per second
   BigInt get productionPerSecond {
     BigInt total = BigInt.zero;
@@ -355,11 +338,6 @@ class GameState {
           production *
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
-
-      production = _applyMultiplier(
-        production,
-        getEraMasteryProductionMultiplier(worker.era.id),
-      );
 
       if (chronoMasteryUpgradeLevel > 0) {
         production = _applyMultiplier(production, chronoMasteryMultiplier);
@@ -418,11 +396,6 @@ class GameState {
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
 
-      production = _applyMultiplier(
-        production,
-        getEraMasteryProductionMultiplier(worker.era.id),
-      );
-
       // Chrono Mastery
       if (chronoMasteryUpgradeLevel > 0) {
         production = _applyMultiplier(production, chronoMasteryMultiplier);
@@ -446,16 +419,11 @@ class GameState {
     final techMultiplier = TechData.calculateOfflineEfficiencyMultiplier(
       techLevels,
     );
-    final victorianMasteryLevel = getEraMasteryLevel(WorkerEra.victorian.id);
-    final victorianMasteryBonus =
-        victorianMasteryLevel *
-        EraMasteryConstants.victorianOfflineBonusPerLevel;
     // TechData returns 1.0 + bonus, subtract 1.0 to get just the bonus portion
     return base +
         (temporalMemoryUpgradeLevel *
             PrestigeUpgradeType.offlinePercentPerLevel) +
-        (techMultiplier - 1.0) +
-        victorianMasteryBonus;
+        (techMultiplier - 1.0);
   }
 
   /// Check if can afford purchase
