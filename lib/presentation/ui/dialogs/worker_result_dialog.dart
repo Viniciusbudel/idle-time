@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/neon_theme.dart';
 import '../../../../core/theme/game_theme.dart';
+import '../../../../core/constants/colors.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
 import '../../../../domain/entities/worker.dart';
 import '../../../../domain/entities/enums.dart';
 import '../../../../core/utils/worker_icon_helper.dart';
@@ -35,98 +37,211 @@ class WorkerResultDialog extends StatelessWidget {
 
     return Dialog(
       backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(16),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        width: double.infinity,
         decoration: BoxDecoration(
-          color: colors.background,
-          border: Border.all(color: rarityColor, width: 2),
-          borderRadius: BorderRadius.circular(16),
+          color: const Color(0xFF03070C), // Deep cyber black
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: rarityColor.withValues(alpha: 0.35)),
           boxShadow: [
             BoxShadow(
-              color: rarityColor.withOpacity(0.4),
-              blurRadius: 30,
-              spreadRadius: 2,
+              color: rarityColor.withValues(alpha: 0.1),
+              blurRadius: 12,
             ),
           ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              title ?? AppLocalizations.of(context)!.mergeSuccessful,
-              style: typography.titleLarge.copyWith(color: colors.accent),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            // Avatar
+            // Header
             Container(
-              width: 80,
-              height: 80,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: rarityColor.withOpacity(0.2),
-                border: Border.all(color: rarityColor, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: rarityColor.withOpacity(0.5),
-                    blurRadius: 20,
+                color: rarityColor.withValues(alpha: 0.1),
+                border: Border(
+                  bottom: BorderSide(color: rarityColor.withValues(alpha: 0.3)),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    title?.toUpperCase() ??
+                        AppLocalizations.of(
+                          context,
+                        )!.mergeSuccessful.toUpperCase(),
+                    style: TextStyle(
+                      fontFamily: 'Orbitron',
+                      color: rarityColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        '> NEW.ASSET',
+                        style: typography.bodyMedium.copyWith(
+                          color: rarityColor.withValues(alpha: 0.5),
+                          fontSize: 10,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      AppIcon(
+                        AppHugeIcons.person_add,
+                        color: rarityColor,
+                        size: 16,
+                      ),
+                    ],
                   ),
                 ],
               ),
-              child: ClipOval(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
-                ),
-              ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              worker.displayName.toUpperCase(),
-              style: typography.titleLarge.copyWith(color: rarityColor),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppLocalizations.of(
-                context,
-              )!.unit(worker.rarity.localizedName(context)),
-              style: typography.bodyMedium.copyWith(
-                color: colors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${AppLocalizations.of(context)!.production}: ${worker.currentProduction} CE/s',
-              style: typography.bodyMedium.copyWith(color: colors.textPrimary),
-            ),
-            const SizedBox(height: 24),
-            if (showShareCta && onSharePressed != null) ...[
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: rarityColor.withOpacity(0.8)),
-                    foregroundColor: rarityColor,
+
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Avatar
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: rarityColor.withValues(alpha: 0.1),
+                      border: Border.all(color: rarityColor, width: 1),
+                      borderRadius: BorderRadius.circular(4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: rarityColor.withValues(alpha: 0.2),
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: WorkerIconHelper.buildIcon(
+                        worker.era,
+                        worker.rarity,
+                      ),
+                    ),
                   ),
-                  onPressed: onSharePressed,
-                  icon: const AppIcon(AppHugeIcons.public, size: 16),
-                  label: const Text('SHARE PULL'),
-                ),
-              ),
-              const SizedBox(height: 10),
-            ],
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: rarityColor,
-                  foregroundColor: Colors.black, // Contrast
-                ),
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  buttonLabel ?? AppLocalizations.of(context)!.excellent,
-                ),
+                  const SizedBox(height: 16),
+                  Text(
+                    worker.displayName.toUpperCase(),
+                    style: TextStyle(
+                      fontFamily: 'Orbitron',
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: rarityColor.withValues(alpha: 0.1),
+                      border: Border.all(
+                        color: rarityColor.withValues(alpha: 0.5),
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!
+                          .unit(worker.rarity.localizedName(context))
+                          .toUpperCase(),
+                      style: typography.bodyMedium.copyWith(
+                        color: rarityColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${AppLocalizations.of(context)!.production.toUpperCase()}: ',
+                        style: typography.bodyMedium.copyWith(
+                          color: Colors.white54,
+                          fontSize: 10,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      Text(
+                        '${worker.currentProduction} CE/s',
+                        style: typography.bodyMedium.copyWith(
+                          color: TimeFactoryColors.electricCyan,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  if (showShareCta && onSharePressed != null) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: GestureDetector(
+                        onTap: onSharePressed,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            border: Border.all(
+                              color: rarityColor.withValues(alpha: 0.5),
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AppIcon(
+                                AppHugeIcons.public,
+                                color: rarityColor,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'SHARE LOG',
+                                style: typography.bodyMedium.copyWith(
+                                  color: rarityColor,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  GameActionButton(
+                    onTap: () => Navigator.pop(context),
+                    label:
+                        buttonLabel?.toUpperCase() ??
+                        AppLocalizations.of(context)!.excellent.toUpperCase(),
+                    icon: AppHugeIcons.check,
+                    color: rarityColor,
+                    height: 48,
+                  ),
+                ],
               ),
             ),
           ],
