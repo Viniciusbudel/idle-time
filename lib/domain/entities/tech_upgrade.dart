@@ -74,6 +74,8 @@ class TechUpgrade {
       case TechType.automation:
         final amount = id == 'neural_net'
             ? 12.0
+            : id == 'swarm_autonomy'
+            ? 18.0
             : id == 'transistors'
             ? 3.0
             : 0.5;
@@ -86,6 +88,8 @@ class TechUpgrade {
           pctChange = 22.0;
         } else if (id == 'cybernetics') {
           pctChange = 35.0;
+        } else if (id == 'neural_mesh') {
+          pctChange = 40.0;
         }
         final pct = level * pctChange;
         return 'Production: +${pct.toStringAsFixed(pct == pct.roundToDouble() ? 0 : 1)}%';
@@ -93,18 +97,24 @@ class TechUpgrade {
         double pctChange = 5.0;
         if (id == 'neon_overdrive') {
           pctChange = 10.0;
+        } else if (id == 'probability_compiler') {
+          pctChange = 14.0;
         }
         final pct = level * pctChange;
         return 'Game Speed: +${pct.toStringAsFixed(pct == pct.roundToDouble() ? 0 : 1)}%';
       case TechType.costReduction:
         final reduction = id == 'bessemer_process'
             ? level * 3
+            : id == 'nanoforge_cells'
+            ? level * 5
             : ((id == 'plastic_molding' || id == 'synth_alloys')
                   ? level * 4
                   : level * 5);
         return 'Upgrade Cost: −$reduction%';
       case TechType.offline:
-        final pct = id == 'arpanet' ? level * 4 : level * 5;
+        final pct = id == 'arpanet'
+            ? level * 4
+            : (id == 'quantum_hibernation' ? level * 6 : level * 5);
         return 'Offline Gains: +$pct%';
       case TechType.clickPower:
         return 'Click Power: +${level * 100}%';

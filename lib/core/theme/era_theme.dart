@@ -121,10 +121,10 @@ class EraTheme {
     animationType: EraAnimationType.cyberScan,
   );
 
-  /// 6. Post-Singularity (2400s)
+  /// 6. Singularity (2400s)
   static const postSingularity = EraTheme(
     id: 'post_singularity',
-    displayName: 'THE CLOUD (2400)',
+    displayName: 'SINGULARITY (2400)',
     primaryColor: Colors.white,
     secondaryColor: Color(0xFFB39DDB), // Deep Purple
     backgroundColor: Colors.black, // Void

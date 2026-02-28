@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/era_mastery_constants.dart';
 import 'package:time_factory/core/constants/spacing.dart';
@@ -13,9 +12,11 @@ import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/tech_provider.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
+import 'package:time_factory/presentation/ui/atoms/hud_segmented_progress_bar.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
-/// Tech screen aligned with Chambers neon visual language.
+/// Tech screen — Temporal System Upgrade Console.
 class TechScreen extends ConsumerWidget {
   const TechScreen({super.key});
 
@@ -44,10 +45,9 @@ class TechScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(
-            context,
-            colors,
-            typography,
+          _TechHudHeader(
+            colors: colors,
+            typography: typography,
             currentEraId: currentEraId,
             completedTechs: completedTechs,
             totalTechs: techs.length,
@@ -73,8 +73,12 @@ class TechScreen extends ConsumerWidget {
                     return const _EraAdvancementPanel();
                   }
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                    child: _NeonTechCard(tech: techs[index - 1], theme: theme),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: _TechModuleCard(
+                      tech: techs[index - 1],
+                      theme: theme,
+                      moduleIndex: index - 1,
+                    ),
                   );
                 },
               ),
@@ -102,29 +106,29 @@ class TechScreen extends ConsumerWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'RESEARCH NODES',
+              'SYSTEM MODULES',
               style: typography.bodyMedium.copyWith(
                 fontSize: 11,
                 color: colors.primary.withValues(alpha: 0.82),
                 fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
+                letterSpacing: 1.6,
               ),
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: colors.primary.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(3),
               border: Border.all(color: colors.primary.withValues(alpha: 0.35)),
             ),
             child: Text(
-              '$techCount',
+              '$techCount ACTIVE',
               style: typography.bodyMedium.copyWith(
-                fontSize: 11,
+                fontSize: 10,
                 color: colors.primary,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 0.6,
+                letterSpacing: 0.8,
               ),
             ),
           ),
@@ -132,19 +136,63 @@ class TechScreen extends ConsumerWidget {
       ),
     );
   }
+}
 
-  Widget _buildHeader(
-    BuildContext context,
-    ThemeColors colors,
-    ThemeTypography typography, {
-    required String currentEraId,
-    required int completedTechs,
-    required int totalTechs,
-    required double progress,
-  }) {
+// ---------------------------------------------------------------------------
+// TechHudHeader — HUD-style header with system info + segmented progress
+// ---------------------------------------------------------------------------
+class _TechHudHeader extends StatefulWidget {
+  final ThemeColors colors;
+  final ThemeTypography typography;
+  final String currentEraId;
+  final int completedTechs;
+  final int totalTechs;
+  final double progress;
+
+  const _TechHudHeader({
+    required this.colors,
+    required this.typography,
+    required this.currentEraId,
+    required this.completedTechs,
+    required this.totalTechs,
+    required this.progress,
+  });
+
+  @override
+  State<_TechHudHeader> createState() => _TechHudHeaderState();
+}
+
+class _TechHudHeaderState extends State<_TechHudHeader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.018).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final eraLabel = _formatEraLabel(currentEraId).toUpperCase();
-    final progressPct = (progress * 100).toStringAsFixed(0);
+    final colors = widget.colors;
+    final typography = widget.typography;
+    final eraLabel = _formatEraLabel(widget.currentEraId).toUpperCase();
+    final progressPct = (widget.progress * 100).toStringAsFixed(0);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -155,14 +203,8 @@ class TechScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                child: AppIcon(
-                  AppHugeIcons.memory,
-                  color: colors.primary,
-                  size: 28,
-                ),
-              ),
+              // Header icon with glow breathing
+              _GlowBreathingIcon(color: colors.primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -226,7 +268,7 @@ class TechScreen extends ConsumerWidget {
                       border: Border.all(
                         color: colors.primary.withValues(alpha: 0.50),
                       ),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(3),
                       boxShadow: [
                         BoxShadow(
                           color: colors.primary.withValues(alpha: 0.25),
@@ -244,7 +286,7 @@ class TechScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '$completedTechs/$totalTechs',
+                          '${widget.completedTechs}/${widget.totalTechs}',
                           style: typography.bodyMedium.copyWith(
                             fontSize: 12,
                             color: colors.primary,
@@ -269,33 +311,49 @@ class TechScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
+          // HUD segmented progress bar replaces LinearProgressIndicator
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: colors.primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: colors.primary.withValues(alpha: 0.30)),
+              color: colors.primary.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [
                 Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 6,
-                      color: colors.primary,
-                      backgroundColor: Colors.white10,
-                    ),
+                  child: HudSegmentedProgressBar(
+                    value: widget.progress,
+                    color: colors.primary,
+                    height: 7,
+                    segmentCount: 12,
+                    segmentGap: 2,
                   ),
                 ),
                 const SizedBox(width: 10),
-                Text(
-                  '$progressPct%',
-                  style: typography.bodyMedium.copyWith(
-                    fontSize: 12,
-                    color: colors.primary,
-                    fontWeight: FontWeight.bold,
+                // Pulsing percentage label
+                AnimatedBuilder(
+                  animation: _pulseAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _pulseAnimation.value,
+                      child: child,
+                    );
+                  },
+                  child: Text(
+                    '$progressPct%',
+                    style: typography.bodyMedium.copyWith(
+                      fontSize: 13,
+                      color: colors.primary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                      shadows: [
+                        Shadow(
+                          color: colors.primary.withValues(alpha: 0.5),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -307,11 +365,107 @@ class TechScreen extends ConsumerWidget {
   }
 }
 
-class _NeonTechCard extends ConsumerWidget {
+// ---------------------------------------------------------------------------
+// Glow Breathing Icon — Subtly pulsing header icon
+// ---------------------------------------------------------------------------
+class _GlowBreathingIcon extends StatefulWidget {
+  final Color color;
+  const _GlowBreathingIcon({required this.color});
+
+  @override
+  State<_GlowBreathingIcon> createState() => _GlowBreathingIconState();
+}
+
+class _GlowBreathingIconState extends State<_GlowBreathingIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    )..repeat(reverse: true);
+
+    _glowAnimation = Tween<double>(
+      begin: 0.50,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _glowAnimation,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(
+                  alpha: 0.3 * _glowAnimation.value,
+                ),
+                blurRadius: 12 * _glowAnimation.value,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: AppIcon(
+            AppHugeIcons.memory,
+            color: widget.color.withValues(
+              alpha: 0.7 + (0.3 * _glowAnimation.value),
+            ),
+            size: 28,
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// TechModuleCard — Module-style upgrade card with system ID, HUD progress
+// ---------------------------------------------------------------------------
+class _TechModuleCard extends ConsumerWidget {
   final TechUpgrade tech;
   final NeonTheme theme;
+  final int moduleIndex;
 
-  const _NeonTechCard({required this.tech, required this.theme});
+  const _TechModuleCard({
+    required this.tech,
+    required this.theme,
+    required this.moduleIndex,
+  });
+
+  String _moduleId(TechType type, int index) {
+    switch (type) {
+      case TechType.automation:
+        return 'AUT-${(index + 1).toString().padLeft(2, '0')}';
+      case TechType.efficiency:
+        return 'EFF-${(index + 1).toString().padLeft(2, '0')}';
+      case TechType.timeWarp:
+        return 'TWP-${(index + 1).toString().padLeft(2, '0')}';
+      case TechType.costReduction:
+        return 'CRD-${(index + 1).toString().padLeft(2, '0')}';
+      case TechType.offline:
+        return 'OFL-${(index + 1).toString().padLeft(2, '0')}';
+      case TechType.clickPower:
+        return 'CLK-${(index + 1).toString().padLeft(2, '0')}';
+      case TechType.eraUnlock:
+        return 'ERA-${(index + 1).toString().padLeft(2, '0')}';
+      case TechType.manhattan:
+        return 'MHT-${(index + 1).toString().padLeft(2, '0')}';
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -332,50 +486,79 @@ class _NeonTechCard extends ConsumerWidget {
     final progress = tech.maxLevel == 0
         ? 1.0
         : (tech.level / tech.maxLevel).clamp(0.0, 1.0);
-    final accent = _techAccent(theme, tech.type);
+    final accent = colors.primary;
     final costText = isMaxed ? l10n.max : NumberFormatter.formatCE(nextCost);
+
+    // Module state
+    final _ModuleState moduleState = isMaxed
+        ? _ModuleState.maxed
+        : (canAfford ? _ModuleState.upgradable : _ModuleState.locked);
+
+    final moduleBorderColor = switch (moduleState) {
+      _ModuleState.upgradable => accent.withValues(alpha: 0.50),
+      _ModuleState.maxed => colors.success.withValues(alpha: 0.40),
+      _ModuleState.locked => Colors.white.withValues(alpha: 0.15),
+    };
+
+    final moduleGlowColor = switch (moduleState) {
+      _ModuleState.upgradable => accent.withValues(alpha: 0.16),
+      _ModuleState.maxed => colors.success.withValues(alpha: 0.10),
+      _ModuleState.locked => Colors.transparent,
+    };
+
+    final stateLabel = switch (moduleState) {
+      _ModuleState.upgradable => 'READY',
+      _ModuleState.maxed => 'MAXED',
+      _ModuleState.locked => 'LOCKED',
+    };
+
+    final stateLabelColor = switch (moduleState) {
+      _ModuleState.upgradable => accent,
+      _ModuleState.maxed => colors.success,
+      _ModuleState.locked => Colors.white54,
+    };
 
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF050A10),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accent.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: moduleBorderColor),
         boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: 0.18),
-            blurRadius: 8,
-            spreadRadius: 1,
-          ),
+          BoxShadow(color: moduleGlowColor, blurRadius: 8, spreadRadius: 1),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         child: Stack(
           children: [
             Positioned.fill(child: _PanelAmbientBackground(accent: accent)),
+            // Grid overlay for depth
+            Positioned.fill(child: _GridOverlay(color: accent)),
             Padding(
               padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // --- Module Header Row ---
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Tech icon box
                       Container(
-                        width: 46,
-                        height: 46,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.black.withValues(alpha: 0.60),
+                          borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                            color: accent.withValues(alpha: 0.45),
+                            color: accent.withValues(alpha: 0.40),
                           ),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(9),
+                          padding: const EdgeInsets.all(8),
                           child: _TechIcon(
                             techId: tech.id,
-                            color: accent,
+                            color: stateLabelColor,
                             size: 24,
                           ),
                         ),
@@ -385,75 +568,130 @@ class _NeonTechCard extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              _localizedEffect(context, tech.type),
-                              style: typography.bodyMedium.copyWith(
-                                fontSize: 10,
-                                color: accent.withValues(alpha: 0.70),
-                                letterSpacing: 1.1,
-                              ),
+                            // Module ID + Category row
+                            Row(
+                              children: [
+                                Text(
+                                  _moduleId(tech.type, moduleIndex),
+                                  style: typography.bodyMedium.copyWith(
+                                    fontSize: 9,
+                                    color: accent.withValues(alpha: 0.55),
+                                    letterSpacing: 1.6,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  width: 3,
+                                  height: 3,
+                                  decoration: BoxDecoration(
+                                    color: accent.withValues(alpha: 0.40),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    _localizedEffect(context, tech.type),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: typography.bodyMedium.copyWith(
+                                      fontSize: 9,
+                                      color: accent.withValues(alpha: 0.60),
+                                      letterSpacing: 1.0,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 3),
+                            // Module Name (primary focus)
                             Text(
                               tech.name.toUpperCase(),
-                              maxLines: 2,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: typography.titleMedium.copyWith(
                                 color: Colors.white,
                                 fontSize: 14,
-                                letterSpacing: 0.6,
+                                letterSpacing: 0.8,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          border: Border.all(
-                            color: accent.withValues(alpha: 0.65),
+                      const SizedBox(width: 6),
+                      // Level + State badges
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              border: Border.all(
+                                color: accent.withValues(alpha: 0.55),
+                              ),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              'LVL ${tech.level}',
+                              style: typography.bodyMedium.copyWith(
+                                fontSize: 10,
+                                color: accent,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'LVL ${tech.level}',
-                          style: typography.bodyMedium.copyWith(
-                            fontSize: 11,
-                            color: accent,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.6,
+                          const SizedBox(height: 4),
+                          Text(
+                            stateLabel,
+                            style: typography.bodyMedium.copyWith(
+                              fontSize: 8,
+                              color: stateLabelColor.withValues(alpha: 0.80),
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.4,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
+                  // --- Description (one line) ---
                   Text(
                     tech.description,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: typography.bodySmall.copyWith(
                       fontSize: 10,
-                      color: Colors.white70,
+                      color: Colors.white60,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 5,
-                      color: accent,
-                      backgroundColor: Colors.white10,
+                  // --- HUD Segmented Progress Bar ---
+                  HudSegmentedProgressBar(
+                    value: progress,
+                    color: stateLabelColor,
+                    height: 5,
+                    segmentCount: tech.maxLevel.clamp(1, 20),
+                    segmentGap: 2,
+                    label: '${(progress * 100).toStringAsFixed(0)}%',
+                    labelStyle: typography.bodyMedium.copyWith(
+                      fontSize: 10,
+                      color: stateLabelColor,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Container(height: 1, color: accent.withValues(alpha: 0.20)),
+                  // --- Separator ---
+                  Container(height: 1, color: accent.withValues(alpha: 0.15)),
                   const SizedBox(height: 8),
+                  // --- Effect Chip ---
                   _NeonChip(
                     icon: AppHugeIcons.bolt,
                     label: tech.bonusDescription,
@@ -461,6 +699,7 @@ class _NeonTechCard extends ConsumerWidget {
                     theme: theme,
                   ),
                   const SizedBox(height: 6),
+                  // --- Cost + Action Button Row ---
                   Row(
                     children: [
                       Expanded(
@@ -476,13 +715,14 @@ class _NeonTechCard extends ConsumerWidget {
                       const SizedBox(width: 8),
                       ConstrainedBox(
                         constraints: const BoxConstraints(minWidth: 110),
-                        child: _buildUpgradeButton(
-                          context,
-                          ref,
-                          accent,
-                          canAfford: canAfford,
-                          isMaxed: isMaxed,
+                        child: GameActionButton(
                           label: isMaxed ? l10n.max : l10n.upgrade,
+                          icon: isMaxed
+                              ? AppHugeIcons.check_circle
+                              : AppHugeIcons.upgrade,
+                          color: accent,
+                          enabled: canAfford,
+                          isMaxed: isMaxed,
                           onTap: () => ref
                               .read(techProvider.notifier)
                               .purchaseUpgrade(tech.id),
@@ -498,66 +738,55 @@ class _NeonTechCard extends ConsumerWidget {
       ),
     );
   }
+}
 
-  Widget _buildUpgradeButton(
-    BuildContext context,
-    WidgetRef ref,
-    Color accent, {
-    required bool canAfford,
-    required bool isMaxed,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      height: 38,
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isMaxed
-              ? accent.withValues(alpha: 0.45)
-              : (canAfford ? accent.withValues(alpha: 0.70) : Colors.white24),
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(6),
-          onTap: (canAfford && !isMaxed)
-              ? () {
-                  HapticFeedback.lightImpact();
-                  onTap();
-                }
-              : null,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppIcon(
-                  isMaxed ? AppHugeIcons.check_circle : AppHugeIcons.upgrade,
-                  size: 16,
-                  color: (canAfford || isMaxed) ? accent : Colors.white38,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: theme.typography.bodyMedium.copyWith(
-                    fontSize: 11,
-                    color: (canAfford || isMaxed) ? accent : Colors.white38,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+enum _ModuleState { upgradable, maxed, locked }
+
+// ---------------------------------------------------------------------------
+// GridOverlay — Subtle grid lines for depth
+// ---------------------------------------------------------------------------
+class _GridOverlay extends StatelessWidget {
+  final Color color;
+  const _GridOverlay({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: CustomPaint(
+        painter: _GridPainter(color: color.withValues(alpha: 0.04)),
       ),
     );
   }
 }
 
+class _GridPainter extends CustomPainter {
+  final Color color;
+  _GridPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 0.5;
+
+    const spacing = 16.0;
+    // Horizontal lines
+    for (double y = 0; y < size.height; y += spacing) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+    // Vertical lines
+    for (double x = 0; x < size.width; x += spacing) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_GridPainter oldDelegate) => oldDelegate.color != color;
+}
+
+// ---------------------------------------------------------------------------
+// NeonChip — Info chip with icon + label
+// ---------------------------------------------------------------------------
 class _NeonChip extends StatelessWidget {
   final AppIconData icon;
   final String label;
@@ -574,15 +803,15 @@ class _NeonChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.40)),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: color.withValues(alpha: 0.30)),
       ),
       child: Row(
         children: [
-          AppIcon(icon, size: 14, color: color),
+          AppIcon(icon, size: 13, color: color),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
@@ -603,6 +832,9 @@ class _NeonChip extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// EraMasteryVisualizer
+// ---------------------------------------------------------------------------
 class _EraMasteryVisualizer extends ConsumerWidget {
   const _EraMasteryVisualizer();
 
@@ -657,7 +889,7 @@ class _EraMasteryVisualizer extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF050A10),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: currentEra.color.withValues(alpha: 0.42)),
         boxShadow: [
           BoxShadow(
@@ -668,12 +900,13 @@ class _EraMasteryVisualizer extends ConsumerWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         child: Stack(
           children: [
             Positioned.fill(
               child: _PanelAmbientBackground(accent: currentEra.color),
             ),
+            Positioned.fill(child: _GridOverlay(color: currentEra.color)),
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -685,7 +918,7 @@ class _EraMasteryVisualizer extends ConsumerWidget {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: currentEra.color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(4),
                           border: Border.all(
                             color: currentEra.color.withValues(alpha: 0.44),
                           ),
@@ -728,7 +961,7 @@ class _EraMasteryVisualizer extends ConsumerWidget {
                         ),
                         decoration: BoxDecoration(
                           color: currentEra.color.withValues(alpha: 0.16),
-                          borderRadius: BorderRadius.circular(999),
+                          borderRadius: BorderRadius.circular(3),
                           border: Border.all(
                             color: currentEra.color.withValues(alpha: 0.44),
                           ),
@@ -776,44 +1009,34 @@ class _EraMasteryVisualizer extends ConsumerWidget {
                         theme: theme,
                       ),
                     ),
+                  // HUD Segmented progress for mastery
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: currentEra.color.withValues(alpha: 0.11),
-                      borderRadius: BorderRadius.circular(8),
+                      color: currentEra.color.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(4),
                       border: Border.all(
-                        color: currentEra.color.withValues(alpha: 0.35),
+                        color: currentEra.color.withValues(alpha: 0.30),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: LinearProgressIndicator(
-                              value: levelProgress,
-                              minHeight: 6,
-                              color: currentEra.color,
-                              backgroundColor: Colors.white10,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          currentLevelCost == 0
-                              ? 'MAX'
-                              : '${NumberFormatter.format(BigInt.from(remainingXp))} XP',
-                          style: typography.bodyMedium.copyWith(
-                            fontSize: 10,
-                            color: currentEra.color,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
+                    child: HudSegmentedProgressBar(
+                      value: levelProgress,
+                      color: currentEra.color,
+                      height: 6,
+                      segmentCount: 10,
+                      segmentGap: 2,
+                      label: currentLevelCost == 0
+                          ? 'MAX'
+                          : '${NumberFormatter.format(BigInt.from(remainingXp))} XP',
+                      labelStyle: typography.bodyMedium.copyWith(
+                        fontSize: 10,
+                        color: currentEra.color,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -871,7 +1094,7 @@ class _EraMasteryTrackRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: era.color.withValues(alpha: isCurrent ? 0.16 : 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: era.color.withValues(alpha: isCurrent ? 0.55 : 0.30),
         ),
@@ -909,14 +1132,12 @@ class _EraMasteryTrackRow extends StatelessWidget {
           const SizedBox(width: 8),
           SizedBox(
             width: 96,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 5,
-                color: era.color,
-                backgroundColor: Colors.white10,
-              ),
+            child: HudSegmentedProgressBar(
+              value: progress,
+              color: era.color,
+              height: 5,
+              segmentCount: 8,
+              segmentGap: 1.5,
             ),
           ),
           const SizedBox(width: 8),
@@ -935,6 +1156,9 @@ class _EraMasteryTrackRow extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// EraAdvancementPanel
+// ---------------------------------------------------------------------------
 class _EraAdvancementPanel extends ConsumerWidget {
   const _EraAdvancementPanel();
 
@@ -969,7 +1193,7 @@ class _EraAdvancementPanel extends ConsumerWidget {
       margin: const EdgeInsets.only(top: 4),
       decoration: BoxDecoration(
         color: const Color(0xFF050A10),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: accent.withValues(alpha: 0.45)),
         boxShadow: [
           BoxShadow(
@@ -980,10 +1204,11 @@ class _EraAdvancementPanel extends ConsumerWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         child: Stack(
           children: [
             Positioned.fill(child: _PanelAmbientBackground(accent: accent)),
+            Positioned.fill(child: _GridOverlay(color: accent)),
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -993,17 +1218,17 @@ class _EraAdvancementPanel extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        width: 46,
-                        height: 46,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(4),
                           border: Border.all(
                             color: accent.withValues(alpha: 0.45),
                           ),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(9),
+                          padding: const EdgeInsets.all(8),
                           child: AppIcon(
                             isReady
                                 ? AppHugeIcons.emoji_events
@@ -1027,7 +1252,7 @@ class _EraAdvancementPanel extends ConsumerWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: accent.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(999),
+                                borderRadius: BorderRadius.circular(3),
                                 border: Border.all(
                                   color: accent.withValues(alpha: 0.45),
                                 ),
@@ -1088,7 +1313,7 @@ class _EraAdvancementPanel extends ConsumerWidget {
                     ),
                     decoration: BoxDecoration(
                       color: accent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(4),
                       border: Border.all(color: accent.withValues(alpha: 0.50)),
                     ),
                     child: Row(
@@ -1125,20 +1350,23 @@ class _EraAdvancementPanel extends ConsumerWidget {
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
-                    child: _buildAdvanceButton(
-                      isReady: isReady,
-                      accent: accent,
+                    child: GameActionButton(
                       label: isReady
                           ? advanceLabel
                           : (isComplete
                                 ? l10n.insufficientCE
                                 : l10n.researchIncomplete),
+                      icon: isReady
+                          ? AppHugeIcons.rocket_launch
+                          : AppHugeIcons.lock_outline,
+                      color: accent,
+                      enabled: isReady,
+                      height: 46,
                       onTap: () {
                         ref
                             .read(gameStateProvider.notifier)
                             .advanceEra(nextEraId, cost);
                       },
-                      theme: theme,
                     ),
                   ),
                 ],
@@ -1149,68 +1377,11 @@ class _EraAdvancementPanel extends ConsumerWidget {
       ),
     );
   }
-
-  Widget _buildAdvanceButton({
-    required bool isReady,
-    required Color accent,
-    required String label,
-    required VoidCallback onTap,
-    required NeonTheme theme,
-  }) {
-    return Container(
-      height: 46,
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isReady ? accent.withValues(alpha: 0.75) : Colors.white24,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(6),
-          onTap: isReady
-              ? () {
-                  HapticFeedback.heavyImpact();
-                  onTap();
-                }
-              : null,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AppIcon(
-                  isReady
-                      ? AppHugeIcons.rocket_launch
-                      : AppHugeIcons.lock_outline,
-                  size: 16,
-                  color: isReady ? accent : Colors.white38,
-                ),
-                const SizedBox(width: 7),
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.typography.buttonText.copyWith(
-                      color: isReady ? accent : Colors.white38,
-                      fontSize: 12,
-                      letterSpacing: 0.9,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
+// ---------------------------------------------------------------------------
+// PanelAmbientBackground
+// ---------------------------------------------------------------------------
 class _PanelAmbientBackground extends StatelessWidget {
   final Color accent;
 
@@ -1279,7 +1450,7 @@ class _PanelAmbientBackground extends StatelessWidget {
             right: 0,
             child: Container(
               height: 1,
-              color: Colors.white.withValues(alpha: 0.12),
+              color: Colors.white.withValues(alpha: 0.10),
             ),
           ),
         ],
@@ -1288,6 +1459,9 @@ class _PanelAmbientBackground extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Utility functions
+// ---------------------------------------------------------------------------
 String _formatEraLabel(String eraId) {
   final parts = eraId.split('_');
   return parts
@@ -1324,10 +1498,6 @@ String _localizedEffect(BuildContext context, TechType type) {
     case TechType.manhattan:
       return l10n.manhattanEffect;
   }
-}
-
-Color _techAccent(NeonTheme theme, TechType type) {
-  return theme.colors.primary;
 }
 
 class _TechIcon extends StatelessWidget {
@@ -1393,6 +1563,18 @@ AppIconData _techIconData(String techId) {
       return AppHugeIcons.flash_on;
     case 'virtual_reality':
       return AppHugeIcons.remove_red_eye;
+    case 'neural_mesh':
+      return AppHugeIcons.psychology;
+    case 'probability_compiler':
+      return AppHugeIcons.schedule;
+    case 'nanoforge_cells':
+      return AppHugeIcons.precision_manufacturing;
+    case 'swarm_autonomy':
+      return AppHugeIcons.hub;
+    case 'quantum_hibernation':
+      return AppHugeIcons.schedule;
+    case 'exo_mind_uplink':
+      return AppHugeIcons.psychology;
     default:
       return AppHugeIcons.science;
   }

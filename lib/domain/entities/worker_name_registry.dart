@@ -45,11 +45,11 @@ class WorkerNameRegistry {
       WorkerRarity.paradox: 'Ghost in the Shell',
     },
     WorkerEra.postSingularity: {
-      WorkerRarity.common: 'Code Fragment',
-      WorkerRarity.rare: 'Algorithmic Construct',
-      WorkerRarity.epic: 'Digital Consciousness',
-      WorkerRarity.legendary: 'AI Overlord',
-      WorkerRarity.paradox: 'Singularity Core',
+      WorkerRarity.common: 'Neural Drifter',
+      WorkerRarity.rare: 'Synapse Mechanic',
+      WorkerRarity.epic: 'Cortex Strategist',
+      WorkerRarity.legendary: 'Post-Human Architect',
+      WorkerRarity.paradox: 'Event Horizon Mind',
     },
     WorkerEra.ancientRome: {
       WorkerRarity.common: 'Aqueduct Laborer',

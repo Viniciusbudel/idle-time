@@ -41,7 +41,8 @@ class GameConstants {
     'atomic_age': '5000000000', // 5B CE
     'cyberpunk_80s': '1000000000000', // 1T CE
     'neo_tokyo': '100000000000000', // 100T CE
-    'post_singularity': '10000000000000000', // 10Qa CE
+    // Singularity (keeps `post_singularity` id for save compatibility)
+    'post_singularity': '6000000000000000', // 6Qa CE
     'ancient_rome': '1000000000000000000', // 1Qi CE
     'far_future': '100000000000000000000', // 100Qi CE
   };

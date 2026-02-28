@@ -252,11 +252,80 @@ class TechData {
     TechUpgrade(
       id: 'virtual_reality',
       name: 'Virtual Reality Matrix',
-      description: 'The ultimate escape to digital realms. Unlocks Neo-Tokyo.',
+      description:
+          'The ultimate escape to digital realms. Unlocks Singularity.',
       type: TechType.eraUnlock,
       baseCost: BigInt.from(600000000000000), // REBALANCED: 100T -> 600T
       costMultiplier: 3.9, // REBALANCED: 3.5 -> 3.9
       eraId: 'cyberpunk_80s',
+      maxLevel: 1,
+    ),
+
+    // ================= SINGULARITY (2400s) =================
+
+    // Tier 1
+    TechUpgrade(
+      id: 'neural_mesh',
+      name: 'Neural Mesh',
+      description: 'Distributed cognition links every worker into one mind.',
+      type: TechType.efficiency,
+      baseCost: BigInt.from(1500000000000000), // 1.5Qa
+      costMultiplier: 2.2,
+      eraId: 'post_singularity',
+      maxLevel: 6,
+    ),
+    TechUpgrade(
+      id: 'probability_compiler',
+      name: 'Probability Compiler',
+      description: 'Compiles future branches into deterministic throughput.',
+      type: TechType.timeWarp,
+      baseCost: BigInt.from(2200000000000000), // 2.2Qa
+      costMultiplier: 2.25,
+      eraId: 'post_singularity',
+      maxLevel: 5,
+    ),
+    // Tier 2
+    TechUpgrade(
+      id: 'nanoforge_cells',
+      name: 'Nanoforge Cells',
+      description: 'Self-assembling infrastructure slashes upgrade overhead.',
+      type: TechType.costReduction,
+      baseCost: BigInt.from(3000000000000000), // 3Qa
+      costMultiplier: 2.4,
+      eraId: 'post_singularity',
+      maxLevel: 4,
+    ),
+    TechUpgrade(
+      id: 'swarm_autonomy',
+      name: 'Swarm Autonomy',
+      description: 'Autonomous worker swarms maintain full-cycle operations.',
+      type: TechType.automation,
+      baseCost: BigInt.from(4200000000000000), // 4.2Qa
+      costMultiplier: 2.4,
+      eraId: 'post_singularity',
+      maxLevel: 4,
+    ),
+    // Tier 3
+    TechUpgrade(
+      id: 'quantum_hibernation',
+      name: 'Quantum Hibernation',
+      description:
+          'Workloads continue across suspended timelines while offline.',
+      type: TechType.offline,
+      baseCost: BigInt.from(3600000000000000), // 3.6Qa
+      costMultiplier: 2.35,
+      eraId: 'post_singularity',
+      maxLevel: 4,
+    ),
+    // Capstone
+    TechUpgrade(
+      id: 'exo_mind_uplink',
+      name: 'Exo-Mind Uplink',
+      description: 'Crown protocol of Singularity. Unlocks next era.',
+      type: TechType.eraUnlock,
+      baseCost: BigInt.from(22000000000000000), // 22Qa
+      costMultiplier: 3.6,
+      eraId: 'post_singularity',
       maxLevel: 1,
     ),
   ];
@@ -306,6 +375,16 @@ class TechData {
       multiplier *= 120.0;
     }
 
+    // SINGULARITY
+    // Neural Mesh: +40% per level
+    final neuralMeshLevel = techLevels['neural_mesh'] ?? 0;
+    multiplier += neuralMeshLevel * 0.40;
+
+    // Exo-Mind Uplink (x6 Global Multiplier)
+    if ((techLevels['exo_mind_uplink'] ?? 0) > 0) {
+      multiplier *= 6.0;
+    }
+
     return multiplier;
   }
 
@@ -318,6 +397,10 @@ class TechData {
     // Neon Overdrive - +10% per level
     final overdriveLevel = techLevels['neon_overdrive'] ?? 0;
     multiplier += overdriveLevel * 0.10;
+
+    // Probability Compiler - +14% per level
+    final probabilityCompilerLevel = techLevels['probability_compiler'] ?? 0;
+    multiplier += probabilityCompilerLevel * 0.14;
 
     return multiplier;
   }
@@ -343,7 +426,21 @@ class TechData {
     final synthLevel = techLevels['synth_alloys'] ?? 0;
     multiplier -= synthLevel * 0.04;
 
-    return multiplier.clamp(0.5, 1.0); // PHASE 2: Cap at 50% min (was 10%)
+    final nanoforgeLevel = techLevels['nanoforge_cells'] ?? 0;
+    final preSingularityMultiplier = multiplier.clamp(0.5, 1.0);
+
+    if (nanoforgeLevel <= 0) {
+      return preSingularityMultiplier;
+    }
+
+    // Singularity reduction applies after the base clamp so late-game cost
+    // tech still has impact without reopening early-game runaway.
+    final lateEraReductionMultiplier = (1.0 - (nanoforgeLevel * 0.05)).clamp(
+      0.8,
+      1.0,
+    );
+    final adjusted = preSingularityMultiplier * lateEraReductionMultiplier;
+    return adjusted.clamp(0.35, 1.0);
   }
 
   static double calculateOfflineEfficiencyMultiplier(
@@ -370,6 +467,11 @@ class TechData {
     final arpanetLevel = techLevels['arpanet'] ?? 0;
     multiplier += arpanetLevel * 0.04;
 
+    // SINGULARITY
+    // Quantum Hibernation: +6% per level
+    final quantumHibernationLevel = techLevels['quantum_hibernation'] ?? 0;
+    multiplier += quantumHibernationLevel * 0.06;
+
     return multiplier;
   }
 
@@ -391,7 +493,10 @@ class TechData {
     final neuralNet = techLevels['neural_net'] ?? 0;
     clicksPerSecond += neuralNet * 12.0;
 
-    // TODO: Add future automation techs here
+    // SINGULARITY
+    // Swarm Autonomy: +18.0 clicks/sec per level
+    final swarmAutonomy = techLevels['swarm_autonomy'] ?? 0;
+    clicksPerSecond += swarmAutonomy * 18.0;
 
     return clicksPerSecond;
   }

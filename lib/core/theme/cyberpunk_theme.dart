@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:time_factory/core/constants/game_assets.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 
@@ -86,8 +87,7 @@ class _CyberpunkAssets implements ThemeAssets {
   const _CyberpunkAssets();
 
   @override
-  String get mainBackground =>
-      'assets/images/backgrounds/era_cyberpunk_80s.png';
+  String get mainBackground => GameAssets.eraCyberpunk80s;
 
   @override
   String get iconChambers => 'assets/icons/icon_chambers_neon.png';

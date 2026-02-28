@@ -71,6 +71,8 @@ class Station {
         return 5.0 + (level - 1) * 0.25;
       case StationType.riftGenerator:
         return 8.0 + (level - 1) * 0.5; // Re-scaled to NeoTokyo
+      case StationType.quantumSpire:
+        return 10.0 + (level - 1) * 0.6;
     }
   }
 
@@ -147,6 +149,8 @@ class Station {
         return BigInt.from(500000);
       case StationType.riftGenerator:
         return BigInt.from(2000000);
+      case StationType.quantumSpire:
+        return BigInt.from(8000000);
     }
   }
 
@@ -162,6 +166,8 @@ class Station {
       case StationType.dataNode:
       case StationType.timeDistortion:
         return 0.001 * level;
+      case StationType.quantumSpire:
+        return 0.006 * level;
       default:
         return 0.0005 * level;
     }
@@ -215,6 +221,8 @@ class StationFactory {
         baseCost = BigInt.from(500000);
       case StationType.riftGenerator:
         baseCost = BigInt.from(2000000);
+      case StationType.quantumSpire:
+        baseCost = BigInt.from(8000000);
     }
 
     final multiplier = BigInt.from((1.8 * 100).toInt());

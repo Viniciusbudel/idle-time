@@ -36,7 +36,7 @@ class EraBackground extends ConsumerWidget {
         backgroundImage = GameAssets.eraNeoTokyo;
         break;
       case 'post_singularity':
-        backgroundImage = GameAssets.eraPostSingularity;
+        backgroundImage = GameAssets.eraSingularityWhitelabel;
         break;
       case 'ancient_rome':
         backgroundImage = GameAssets.eraAncientRome;

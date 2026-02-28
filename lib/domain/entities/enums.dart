@@ -5,7 +5,8 @@ enum WorkerEra {
   atomicAge('atomic_age', 'Atomic Age', 1950),
   cyberpunk80s('cyberpunk_80s', 'Cyberpunk 80s', 1980),
   neoTokyo('neo_tokyo', 'Neo-Tokyo', 2247),
-  postSingularity('post_singularity', 'Post-Singularity', 2400),
+  // Keep stable id for backward compatibility with existing saves.
+  postSingularity('post_singularity', 'Singularity', 2400),
   ancientRome('ancient_rome', 'Ancient Rome', -50),
   farFuture('far_future', 'Far Future', 8000);
 
@@ -98,7 +99,14 @@ enum StationType {
   dataNode('data_node', 'Data Node', 4, 10, WorkerEra.cyberpunk80s),
   synthLab('synth_lab', 'Synth Lab', 4, 12, WorkerEra.cyberpunk80s),
   neonCore('neon_core', 'Neon Core', 4, 15, WorkerEra.cyberpunk80s),
-  riftGenerator('rift_generator', 'Rift Generator', 3, 6, WorkerEra.neoTokyo);
+  riftGenerator('rift_generator', 'Rift Generator', 3, 6, WorkerEra.neoTokyo),
+  quantumSpire(
+    'quantum_spire',
+    'Quantum Spire',
+    4,
+    8,
+    WorkerEra.postSingularity,
+  );
 
   final String id;
   final String displayName;

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:time_factory/core/constants/game_assets.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 
 class AtomicTheme implements GameTheme {
+  const AtomicTheme();
+
   @override
   String get id => 'atomic_age';
 
@@ -75,8 +78,7 @@ class _AtomicAssets implements ThemeAssets {
   const _AtomicAssets();
 
   @override
-  String get mainBackground =>
-      'assets/images/backgrounds/atomic/atomic-age-background.png';
+  String get mainBackground => GameAssets.eraAtomicAge;
   @override
   // Fallback to default icons until Atomic specific ones are made
   String get iconChambers => 'assets/icons/steampunk/chambers.png';

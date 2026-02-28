@@ -47,4 +47,42 @@ void main() {
     expect(victorianPath.startsWith('/'), isFalse);
     expect(cyberpunkPath.startsWith('/'), isFalse);
   });
+
+  test('singularity era resolves new icon prefix for all rarities', () {
+    expect(
+      WorkerIconHelper.getIconPath(
+        WorkerEra.postSingularity,
+        WorkerRarity.common,
+      ),
+      'assets/images/icons/singularity-icon-commum.png',
+    );
+    expect(
+      WorkerIconHelper.getIconPath(
+        WorkerEra.postSingularity,
+        WorkerRarity.rare,
+      ),
+      'assets/images/icons/singularity-icon-rare.png',
+    );
+    expect(
+      WorkerIconHelper.getIconPath(
+        WorkerEra.postSingularity,
+        WorkerRarity.epic,
+      ),
+      'assets/images/icons/singularity-icon-epic.png',
+    );
+    expect(
+      WorkerIconHelper.getIconPath(
+        WorkerEra.postSingularity,
+        WorkerRarity.legendary,
+      ),
+      'assets/images/icons/singularity-icon-legendary.png',
+    );
+    expect(
+      WorkerIconHelper.getIconPath(
+        WorkerEra.postSingularity,
+        WorkerRarity.paradox,
+      ),
+      'assets/images/icons/singularity-icon-paradox.png',
+    );
+  });
 }

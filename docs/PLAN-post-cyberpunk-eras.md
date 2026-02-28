@@ -263,7 +263,7 @@ Done when:
 ---
 
 ## STORY-1: Definir estrategia canonica de ID/ordem da era Singularidade
-status: todo
+status: done
 
 Descricao:
 Fechar decisao tecnica sobre como Singularidade entra na progressao sem quebrar saves existentes.
@@ -278,10 +278,16 @@ Aceite:
 Done when:
 - Decisao aprovada e registrada neste arquivo.
 
+Decisao aplicada (2026-02-27):
+- Opcao escolhida: **reaproveitar `post_singularity` como ID canonico da era Singularity**.
+- Motivo: preservar compatibilidade de save e evitar migracao destrutiva nesta fase.
+- UX/narrativa: o nome exposto ao jogador passa a ser **Singularity/Singularidade**.
+- Compatibilidade: saves antigos continuam validos porque o ID persistido nao muda.
+
 ---
 
 ## STORY-2: Integrar era no core de progressao
-status: todo
+status: done
 
 Descricao:
 Aplicar a definicao da Story-1 nas constantes centrais de progressao/economia.
@@ -299,10 +305,15 @@ Aceite:
 Done when:
 - Build inicia com save novo e save legado sem erro.
 
+Implementado (2026-02-27):
+- `WorkerEra.postSingularity` manteve ID `post_singularity` e passou a exibir nome canonico `Singularity`.
+- `GameConstants.eraUnlockThresholds['post_singularity']` ajustado de `10Qa` para `6Qa` para reduzir salto pos-Cyberpunk.
+- `localization_extensions` atualizado para expor `Singularity`/`Singularidade` na camada de UI sem alterar o ID tecnico.
+
 ---
 
 ## STORY-3: Criar chamber da Singularidade
-status: todo
+status: done
 
 Descricao:
 Adicionar uma chamber dedicada da era Singularidade e plugar no fluxo single-chamber.
@@ -323,10 +334,19 @@ Aceite:
 Done when:
 - Teste manual confirma troca de era + chamber sem perda de workers validos.
 
+Implementado (2026-02-27):
+- Nova chamber adicionada em `StationType`: `quantum_spire` (era `post_singularity`).
+- Economia da chamber configurada em `station.dart`:
+  - bonus de producao acima de `rift_generator`
+  - custo base dedicado
+  - taxa de paradoxo dedicada
+- Fluxo single-chamber pluga automaticamente via `_stationTypeForEra` (agora encontra era com tipo proprio).
+- Nome localizado na camada de UI: `Quantum Spire` / `Torre Quantica`.
+
 ---
 
 ## STORY-4: Criar workers da Singularidade
-status: todo
+status: done
 
 Descricao:
 Adicionar nomes de workers por raridade e garantir renderizacao de icones white-label.
@@ -344,10 +364,25 @@ Aceite:
 Done when:
 - Gacha/hire da era mostra nome e icone corretamente.
 
+Implementado (2026-02-27):
+- `WorkerNameRegistry` da era `post_singularity` atualizado para os novos nomes:
+  - Common: `Neural Drifter`
+  - Rare: `Synapse Mechanic`
+  - Epic: `Cortex Strategist`
+  - Legendary: `Post-Human Architect`
+  - Paradox: `Event Horizon Mind`
+- `WorkerIconHelper` ajustado para mapear `post_singularity` -> prefixo `singularity`,
+  compatibilizando os placeholders:
+  - `singularity-icon-commum.png`
+  - `singularity-icon-rare.png`
+  - `singularity-icon-epic.png`
+  - `singularity-icon-legendary.png`
+  - `singularity-icon-paradox.png`
+
 ---
 
 ## STORY-5: Criar techs da Singularidade
-status: todo
+status: done
 
 Descricao:
 Expandir `TechData.initialTechs` com o pacote da era Singularidade e integrar efeitos nos calculos.
@@ -370,10 +405,27 @@ Aceite:
 Done when:
 - Upgrade de tech altera producao/automacao/offline conforme esperado.
 
+Implementado (2026-02-27):
+- Pacote de techs da era `post_singularity` adicionado em `TechData.initialTechs`:
+  - `neural_mesh` (efficiency)
+  - `probability_compiler` (timeWarp)
+  - `nanoforge_cells` (costReduction)
+  - `swarm_autonomy` (automation)
+  - `quantum_hibernation` (offline)
+  - `exo_mind_uplink` (capstone eraUnlock)
+- Formulas integradas em:
+  - `calculateEfficiencyMultiplier`
+  - `calculateTimeWarpMultiplier`
+  - `calculateCostReductionMultiplier`
+  - `calculateOfflineEfficiencyMultiplier`
+  - `calculateAutomationLevel`
+- `TechUpgrade.bonusDescription` atualizado para refletir escalas corretas dos novos IDs.
+- `tech_screen` recebeu mapeamento de icones para as novas techs.
+
 ---
 
 ## STORY-6: Criar expedicao da Singularidade
-status: todo
+status: done
 
 Descricao:
 Adicionar/ajustar slot de expedicao especifico da era Singularidade.
@@ -393,10 +445,17 @@ Aceite:
 Done when:
 - Fluxo iniciar -> resolver -> coletar expedicao funciona sem regressao.
 
+Implementado (2026-02-27):
+- Slot de expedicao da era `post_singularity` recebeu identidade Singularity:
+  - `name`: `Convergence Breach`
+  - `headline`: nova descricao de reconstrucao de memoria quantica
+  - `layoutPreset`: `singularity_whitelabel`
+- `slotId` foi mantido como `void_cloud_harvest` para compatibilidade com saves.
+
 ---
 
 ## STORY-7: White-label visual (background + iconografia da era)
-status: todo
+status: done
 
 Descricao:
 Entrar com assets temporarios neutros ate chegada da arte final.
@@ -415,10 +474,19 @@ Aceite:
 Done when:
 - Era renderiza com identidade minima e sem quebrar UX.
 
+Implementado (2026-02-27):
+- Background white-label de Singularity integrado via:
+  - `GameAssets.eraSingularityWhitelabel`
+  - `EraBackground` para `post_singularity`
+  - `EraUnlockDialog` para preview da era
+- Tema da era atualizado para nomenclatura de UX:
+  - `displayName`: `SINGULARITY (2400)`
+- Placeholders de iconografia ja conectados via `WorkerIconHelper` (`prefix: singularity`).
+
 ---
 
 ## STORY-8: Estudo e implementacao de balanceamento
-status: todo
+status: done
 
 Descricao:
 Executar estudo numerico e tuning iterativo para garantir progressao justa, sem spike abrupto.
@@ -436,6 +504,25 @@ Aceite:
 
 Done when:
 - Numeros finais aprovados e documentados.
+
+Implementado (2026-02-27):
+- Estudo numerico realizado comparando o custo total para fechar a arvore da era `cyberpunk_80s` versus `post_singularity`.
+- Baseline antes do tuning (primeira versao da era Singularity):
+  - Custo total techs Singularity: `2,295,816,880,000,000,000` CE
+  - Custo total techs Cyberpunk 80s: `9,325,322,796,292,657` CE
+  - Razao Singularity/Cyberpunk: `246.19x`
+  - Multiplicador de custo com `nanoforge_cells` max: `0.50 -> 0.50` (sem efeito pratico por clamp)
+- Tuning aplicado:
+  - Rebalance de `baseCost`, `costMultiplier` e `maxLevel` das techs de Singularity.
+  - Reducao do capstone global de `x8` para `x6` em `exo_mind_uplink`.
+  - Rework da formula de `calculateCostReductionMultiplier` para aplicar `nanoforge_cells` apos o clamp pre-Singularity, mantendo seguranca de early-game.
+- Resultado apos tuning:
+  - Custo total techs Singularity: `506,351,498,750,000,000` CE
+  - Razao Singularity/Cyberpunk: `54.30x`
+  - Multiplicador de custo com `nanoforge_cells` max: `0.50 -> 0.40`
+- Validacao tecnica:
+  - `flutter analyze --no-fatal-infos`: passou (apenas infos legadas)
+  - `flutter test`: passou (suite completa verde)
 
 ---
 
@@ -458,3 +545,37 @@ Aceite:
 
 Done when:
 - Checklist fechado e status final do plano atualizado.
+
+---
+
+## STORY-10: Testes de cobertura das alteracoes + audits de qualidade
+status: todo
+
+Descricao:
+Criar e/ou expandir testes para todos os arquivos e comportamentos alterados neste ciclo de Singularidade, e executar auditorias de qualidade para fechar o pacote com seguranca de regressao.
+
+Escopo alvo:
+- Cobertura de dominio para:
+  - `WorkerEra.post_singularity` (nome de exibicao e compatibilidade de id)
+  - `StationType.quantumSpire` (metadados e formulas principais)
+  - Registro de workers de Singularity (`WorkerNameRegistry`)
+  - Techs novas e formulas (`TechData`, `TechUpgrade`)
+  - Identidade de expedicao de Singularity (`Expedition`)
+- Cobertura de apresentacao para:
+  - Mapeamentos de localizacao (PT/EN) da era/chamber
+  - Resolvedor de icones (`WorkerIconHelper`)
+  - Caminhos de background white-label de Singularity (`GameAssets`, `EraBackground`, `EraUnlockDialog`)
+
+Checklist de execucao:
+- `flutter test`
+- `flutter analyze --no-fatal-infos`
+- `python .agent/scripts/flutter-quality-audit.py`
+- `python .agent/scripts/audit-app.py`
+
+Aceite:
+- Testes novos cobrindo os fluxos alterados adicionados e verdes.
+- Nenhum erro bloqueante nas auditorias; warnings documentados com acao.
+- Relatorio final com mapeamento `arquivo alterado -> teste correspondente`.
+
+Done when:
+- Suite de testes + audits executadas e anexadas com resultado no plano/PR.

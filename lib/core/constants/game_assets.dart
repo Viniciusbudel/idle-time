@@ -40,17 +40,19 @@ class GameAssets {
 
   // Era Backgrounds
   static const String eraVictorian =
-      '$_imagesPath/backgrounds/era_victorian.png';
+      '$_imagesPath/backgrounds/victorian/steampunk-background.png';
   static const String eraRoaring20s =
-      '$_imagesPath/backgrounds/20s/roarings-20s-bg.png';
+      '$_imagesPath/backgrounds/20s/20s-background.png';
   static const String eraAtomicAge =
-      '$_imagesPath/backgrounds/era_atomic_age.png';
+      '$_imagesPath/backgrounds/atomic/atomic-background.png';
   static const String eraCyberpunk80s =
-      '$_imagesPath/backgrounds/era_cyberpunk_80s.png';
+      '$_imagesPath/backgrounds/cyberpunk/cyberpunk-background.png';
   static const String eraNeoTokyo =
       '$_imagesPath/backgrounds/era_neo_tokyo.png';
+  static const String eraSingularityWhitelabel =
+      '$_imagesPath/backgrounds/singularity/singularity-background.png';
   static const String eraPostSingularity =
-      '$_imagesPath/backgrounds/era_post_singularity.png';
+      '$_imagesPath/backgrounds/singularity/singularity-background.png';
   static const String eraAncientRome =
       '$_imagesPath/backgrounds/era_ancient_rome.png';
   static const String eraFarFuture =
