@@ -53,25 +53,16 @@ class AssignWorkerDialog extends StatelessWidget {
         maxHeight: MediaQuery.of(context).size.height * 0.6,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A1520),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: const Color(0xFF03070C),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
         border: Border.all(
-          color: TimeFactoryColors.electricCyan.withOpacity(0.3),
+          color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle bar
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(top: 12),
-            decoration: BoxDecoration(
-              color: Colors.white24,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
+          // Removed handle bar for neon UI
 
           // Header
           Padding(
@@ -89,10 +80,15 @@ class AssignWorkerDialog extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        AppLocalizations.of(context)!.assignWorker,
-                        style: TimeFactoryTextStyles.header.copyWith(
-                          fontSize: 16,
-                          color: Colors.white,
+                        AppLocalizations.of(
+                          context,
+                        )!.assignWorker.toUpperCase(),
+                        style: TextStyle(
+                          fontFamily: 'Orbitron',
+                          fontSize: 14,
+                          color: TimeFactoryColors.electricCyan,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
                         ),
                       ),
                       Text(
@@ -195,10 +191,10 @@ class AssignWorkerDialog extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: TimeFactoryColors.electricCyan.withOpacity(0.2),
+            color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
@@ -213,13 +209,13 @@ class AssignWorkerDialog extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    TimeFactoryColors.deepPurple.withOpacity(0.5),
-                    const Color(0xFF0A1520),
+                    TimeFactoryColors.deepPurple.withValues(alpha: 0.5),
+                    const Color(0xFF03070C),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(4),
                 border: Border.all(
-                  color: TimeFactoryColors.electricCyan.withOpacity(0.3),
+                  color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
                 ),
               ),
               child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
@@ -234,10 +230,12 @@ class AssignWorkerDialog extends StatelessWidget {
                 children: [
                   Text(
                     worker.displayName.toUpperCase(),
-                    style: TimeFactoryTextStyles.body.copyWith(
+                    style: TextStyle(
+                      fontFamily: 'Orbitron',
                       fontSize: 14,
                       color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -263,8 +261,8 @@ class AssignWorkerDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: TimeFactoryColors.electricCyan.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
+                color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(4),
               ),
               child: const AppIcon(
                 AppHugeIcons.arrow_forward,
@@ -282,8 +280,9 @@ class AssignWorkerDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(4),
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         text,

@@ -9,6 +9,7 @@ import 'package:time_factory/domain/usecases/fit_worker_to_era_usecase.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
 
 class FitWorkerDialog extends ConsumerWidget {
   final Worker worker;
@@ -35,12 +36,12 @@ class FitWorkerDialog extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF0A1520),
+          color: const Color(0xFF03070C),
           border: Border.all(color: TimeFactoryColors.voltageYellow, width: 2),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(4),
           boxShadow: [
             BoxShadow(
-              color: TimeFactoryColors.voltageYellow.withOpacity(0.3),
+              color: TimeFactoryColors.voltageYellow.withValues(alpha: 0.3),
               blurRadius: 20,
             ),
           ],
@@ -49,10 +50,13 @@ class FitWorkerDialog extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              l10n.retrofitProtocol,
-              style: TimeFactoryTextStyles.header.copyWith(
+              l10n.retrofitProtocol.toUpperCase(),
+              style: TextStyle(
+                fontFamily: 'Orbitron',
                 color: TimeFactoryColors.voltageYellow,
                 fontSize: 20,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
               ),
             ),
             const SizedBox(height: 16),
@@ -97,34 +101,34 @@ class FitWorkerDialog extends ConsumerWidget {
             const SizedBox(height: 16),
 
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    l10n.cancel,
-                    style: TextStyle(color: Colors.white54),
+                Expanded(
+                  child: GameActionButton(
+                    onTap: () => Navigator.pop(context),
+                    label: l10n.cancel.toUpperCase(),
+                    color: Colors.white54,
+                    icon: AppHugeIcons.close,
+                    height: 48,
                   ),
                 ),
                 const SizedBox(width: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: TimeFactoryColors.voltageYellow,
-                    foregroundColor: Colors.black,
+                Expanded(
+                  child: GameActionButton(
+                    onTap: canAfford
+                        ? () {
+                            ref
+                                .read(gameStateProvider.notifier)
+                                .fitWorkerToEra(worker.id);
+                            Navigator.pop(context);
+                          }
+                        : null,
+                    label: AppLocalizations.of(
+                      context,
+                    )!.confirmUpgrade.toUpperCase(),
+                    color: TimeFactoryColors.voltageYellow,
+                    icon: AppHugeIcons.check_circle,
+                    height: 48,
                   ),
-                  onPressed: canAfford
-                      ? () {
-                          // Execute fitting
-                          // We need a provider method exposed or logic injected
-                          // For now, let's assume we add a method to GameStateNotifier
-                          // or handle it here via state update if possible (but we need notifier access)
-                          ref
-                              .read(gameStateProvider.notifier)
-                              .fitWorkerToEra(worker.id);
-                          Navigator.pop(context);
-                        }
-                      : null,
-                  child: Text(AppLocalizations.of(context)!.confirmUpgrade),
                 ),
               ],
             ),

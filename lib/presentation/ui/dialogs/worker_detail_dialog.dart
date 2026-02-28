@@ -510,7 +510,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
           color: _flashingSlotIndex == index
               ? TimeFactoryColors.acidGreen.withValues(alpha: 0.3)
               : Colors.black12,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
           border: Border.all(
             color: _flashingSlotIndex == index
                 ? TimeFactoryColors.acidGreen
@@ -554,37 +554,69 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
         HapticFeedback.lightImpact();
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: TimeFactoryColors.voidBlack,
-            title: Text(
-              'UNEQUIP ARTIFACT?',
-              style: TimeFactoryTextStyles.header.copyWith(color: Colors.white),
-            ),
-            content: Text(
-              'Remove ${artifact.name} from ${worker.displayName}?\nIt will be returned to your inventory.',
-              style: TimeFactoryTextStyles.body.copyWith(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'CANCEL',
-                  style: TextStyle(color: Colors.white54),
-                ),
+          builder: (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF03070C),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: rarityColor, width: 2),
               ),
-              TextButton(
-                onPressed: () {
-                  ref
-                      .read(gameStateProvider.notifier)
-                      .unequipArtifact(worker.id, artifact.id);
-                  Navigator.pop(context);
-                },
-                child: const Text(
-                  'UNEQUIP',
-                  style: TextStyle(color: TimeFactoryColors.electricCyan),
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'UNEQUIP ARTIFACT?',
+                    style: TextStyle(
+                      fontFamily: 'Orbitron',
+                      color: rarityColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Remove ${artifact.name} from ${worker.displayName}?\nIt will be returned to your inventory.',
+                    style: TimeFactoryTextStyles.body.copyWith(
+                      color: Colors.white70,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GameActionButton(
+                          onTap: () => Navigator.pop(context),
+                          label: 'CANCEL',
+                          color: Colors.white54,
+                          icon: AppHugeIcons.close,
+                          height: 48,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: GameActionButton(
+                          onTap: () {
+                            ref
+                                .read(gameStateProvider.notifier)
+                                .unequipArtifact(worker.id, artifact.id);
+                            Navigator.pop(context);
+                          },
+                          label: 'UNEQUIP',
+                          color: TimeFactoryColors.electricCyan,
+                          icon: AppHugeIcons.logout,
+                          height: 48,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -595,7 +627,7 @@ class _WorkerDetailDialogState extends ConsumerState<WorkerDetailDialog> {
           color: isFlashing
               ? TimeFactoryColors.acidGreen.withValues(alpha: 0.3)
               : rarityColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
           border: Border.all(
             color: isFlashing ? TimeFactoryColors.acidGreen : rarityColor,
             width: isFlashing ? 2 : 1.5,

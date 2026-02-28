@@ -4,6 +4,8 @@ import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/utils/expedition_utils.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 import 'package:time_factory/domain/entities/expedition.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 
@@ -51,15 +53,8 @@ class _ExpeditionRewardDialogState extends State<ExpeditionRewardDialog>
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: <Color>[
-              TimeFactoryColors.surface,
-              TimeFactoryColors.background,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(14),
+          color: const Color(0xFF03070C),
+          borderRadius: BorderRadius.circular(4),
           border: Border.all(color: accent, width: 1.2),
           boxShadow: <BoxShadow>[
             BoxShadow(
@@ -137,10 +132,12 @@ class _ExpeditionRewardDialogState extends State<ExpeditionRewardDialog>
             const SizedBox(height: AppSpacing.xxs),
             Text(
               widget.slotName.toUpperCase(),
-              style: TimeFactoryTextStyles.header.copyWith(
+              style: TextStyle(
+                fontFamily: 'Orbitron',
                 color: Colors.white,
                 fontSize: 16,
-                letterSpacing: 1.2,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
               ),
             ),
             const SizedBox(height: AppSpacing.sm + 2),
@@ -149,7 +146,7 @@ class _ExpeditionRewardDialogState extends State<ExpeditionRewardDialog>
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: Colors.white24),
               ),
               child: Column(
@@ -172,17 +169,12 @@ class _ExpeditionRewardDialogState extends State<ExpeditionRewardDialog>
             const SizedBox(height: AppSpacing.sm + 2),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: accent,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(AppLocalizations.of(context)!.awesome),
+              child: GameActionButton(
+                onTap: () => Navigator.pop(context),
+                label: AppLocalizations.of(context)!.awesome.toUpperCase(),
+                icon: AppHugeIcons.check_circle,
+                color: accent,
+                height: 48,
               ),
             ),
           ],

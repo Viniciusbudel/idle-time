@@ -8,6 +8,7 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
 
 /// Dialog to deploy a worker to a station
 class DeployWorkerDialog extends ConsumerWidget {
@@ -43,28 +44,19 @@ class DeployWorkerDialog extends ConsumerWidget {
         maxHeight: MediaQuery.of(context).size.height * 0.6,
       ),
       decoration: BoxDecoration(
-        color: TimeFactoryColors.voidBlack,
+        color: const Color(0xFF03070C),
         border: Border(
           top: BorderSide(
             color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
             width: 2,
           ),
         ),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.white24,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
+          // Removed handle bar for neon UI
 
           // Header
           Padding(
@@ -76,7 +68,7 @@ class DeployWorkerDialog extends ConsumerWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     color: worker.era.color.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(4),
                     border: Border.all(color: worker.era.color, width: 1),
                   ),
                   child: AppIcon(AppHugeIcons.person, color: worker.era.color),
@@ -87,10 +79,13 @@ class DeployWorkerDialog extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        worker.displayName,
-                        style: TimeFactoryTextStyles.header.copyWith(
+                        worker.displayName.toUpperCase(),
+                        style: TextStyle(
+                          fontFamily: 'Orbitron',
                           fontSize: 16,
                           color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
                         ),
                       ),
                       Text(
@@ -136,16 +131,8 @@ class DeployWorkerDialog extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: TimeFactoryColors.hotMagenta.withValues(
-                      alpha: 0.2,
-                    ),
-                    foregroundColor: TimeFactoryColors.hotMagenta,
-                    side: const BorderSide(color: TimeFactoryColors.hotMagenta),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  onPressed: () {
+                child: GameActionButton(
+                  onTap: () {
                     final bool success = ref
                         .read(gameStateProvider.notifier)
                         .undeployWorker(worker.id);
@@ -160,10 +147,12 @@ class DeployWorkerDialog extends ConsumerWidget {
                       );
                     }
                   },
-                  child: Text(
-                    AppLocalizations.of(context)!.recallWorker,
-                    style: TimeFactoryTextStyles.button,
-                  ),
+                  label: AppLocalizations.of(
+                    context,
+                  )!.recallWorker.toUpperCase(),
+                  color: TimeFactoryColors.hotMagenta,
+                  icon: AppHugeIcons.person_off,
+                  height: 48,
                 ),
               ),
             ),
@@ -235,12 +224,12 @@ class DeployWorkerDialog extends ConsumerWidget {
       decoration: BoxDecoration(
         color: isCurrentStation
             ? TimeFactoryColors.acidGreen.withValues(alpha: 0.1)
-            : TimeFactoryColors.surfaceDark,
-        borderRadius: BorderRadius.circular(8),
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: isCurrentStation
               ? TimeFactoryColors.acidGreen
-              : Colors.white12,
+              : TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
         ),
       ),
       child: ListTile(
@@ -250,7 +239,7 @@ class DeployWorkerDialog extends ConsumerWidget {
           height: 40,
           decoration: BoxDecoration(
             color: TimeFactoryColors.electricCyan.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: const AppIcon(
             AppHugeIcons.settings_input_component,
@@ -258,10 +247,13 @@ class DeployWorkerDialog extends ConsumerWidget {
           ),
         ),
         title: Text(
-          station.name,
-          style: TimeFactoryTextStyles.body.copyWith(
+          station.name.toUpperCase(),
+          style: TextStyle(
+            fontFamily: 'Orbitron',
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
             color: Colors.white,
-            fontWeight: FontWeight.w600,
+            letterSpacing: 1.5,
           ),
         ),
         subtitle: Text(
@@ -277,21 +269,40 @@ class DeployWorkerDialog extends ConsumerWidget {
                 color: TimeFactoryColors.acidGreen,
               )
             : canDeploy
-            ? ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: TimeFactoryColors.electricCyan.withValues(
-                    alpha: 0.2,
-                  ),
-                  foregroundColor: TimeFactoryColors.electricCyan,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                onPressed: () {
+            ? GestureDetector(
+                onTap: () {
                   ref
                       .read(gameStateProvider.notifier)
                       .deployWorker(worker.id, station.id);
                   Navigator.of(context).pop();
                 },
-                child: Text(AppLocalizations.of(context)!.deploy),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: TimeFactoryColors.electricCyan.withValues(
+                      alpha: 0.2,
+                    ),
+                    border: Border.all(
+                      color: TimeFactoryColors.electricCyan.withValues(
+                        alpha: 0.5,
+                      ),
+                    ),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context)!.deploy.toUpperCase(),
+                    style: TextStyle(
+                      fontFamily: 'Orbitron',
+                      color: TimeFactoryColors.electricCyan,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
               )
             : Text(
                 AppLocalizations.of(context)!.full,

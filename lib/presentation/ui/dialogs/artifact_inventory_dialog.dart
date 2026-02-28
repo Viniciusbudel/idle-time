@@ -10,6 +10,7 @@ import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
 
 /// Filter states for the artifact inventory
 enum _RarityFilter { all, common, rare, epic, legendary, paradox }
@@ -87,8 +88,8 @@ class _ArtifactInventoryDialogState
       ),
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A1520),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: const Color(0xFF03070C),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
         border: Border.all(
           color: TimeFactoryColors.electricCyan.withValues(alpha: 0.3),
         ),
@@ -96,16 +97,7 @@ class _ArtifactInventoryDialogState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle bar
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white24,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
+          // Removed handle bar for neon UI
 
           // Header
           Padding(
@@ -118,9 +110,11 @@ class _ArtifactInventoryDialogState
                   children: [
                     Text(
                       'ARTIFACT INVENTORY',
-                      style: TimeFactoryTextStyles.header.copyWith(
+                      style: TextStyle(
+                        fontFamily: 'Orbitron',
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                         letterSpacing: 2,
                       ),
                     ),
@@ -274,7 +268,7 @@ class _ArtifactInventoryDialogState
                         color: isSelected
                             ? chipColor.withValues(alpha: 0.25)
                             : Colors.black26,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(4),
                         border: Border.all(
                           color: isSelected ? chipColor : Colors.white24,
                           width: isSelected ? 1.5 : 1,
@@ -500,41 +494,43 @@ class _ArtifactInventoryDialogState
                 ),
               ],
               const Spacer(),
-              ElevatedButton(
-                onPressed: canCraft
-                    ? () {
-                        final result = notifier.craftArtifact(
-                          minimumRarity: _selectedCraftRarity,
-                          targetEra: selectedCraftEra,
-                        );
-                        if (result == null) {
+              Expanded(
+                child: GameActionButton(
+                  onTap: canCraft
+                      ? () {
+                          final result = notifier.craftArtifact(
+                            minimumRarity: _selectedCraftRarity,
+                            targetEra: selectedCraftEra,
+                          );
+                          if (result == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.craftFailedDustOrInventory,
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+                          final pityText = result.pityTriggered
+                              ? ' [PITY]'
+                              : '';
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                AppLocalizations.of(
-                                  context,
-                                )!.craftFailedDustOrInventory,
+                                'Crafted ${result.artifact.rarity.displayName} artifact$pityText (${selectedCraftEra.displayName}): ${result.artifact.name}',
                               ),
                             ),
                           );
-                          return;
                         }
-                        final pityText = result.pityTriggered ? ' [PITY]' : '';
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Crafted ${result.artifact.rarity.displayName} artifact$pityText (${selectedCraftEra.displayName}): ${result.artifact.name}',
-                            ),
-                          ),
-                        );
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: TimeFactoryColors.hotMagenta,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.white12,
+                      : null,
+                  label: AppLocalizations.of(context)!.craft.toUpperCase(),
+                  color: TimeFactoryColors.hotMagenta,
+                  icon: AppHugeIcons.auto_awesome,
+                  height: 36,
                 ),
-                child: Text(AppLocalizations.of(context)!.craft),
               ),
             ],
           ),
@@ -556,9 +552,12 @@ class _ArtifactInventoryDialogState
           const SizedBox(height: AppSpacing.md),
           Text(
             'INVENTORY EMPTY',
-            style: TimeFactoryTextStyles.header.copyWith(
+            style: TextStyle(
+              fontFamily: 'Orbitron',
               color: Colors.white54,
               fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -604,7 +603,7 @@ class _ArtifactInventoryDialogState
       child: Container(
         decoration: BoxDecoration(
           color: rarityColor.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(4),
           border: Border.all(
             color: rarityColor.withValues(alpha: isFull ? 0.15 : 0.3),
           ),
@@ -658,7 +657,7 @@ class _ArtifactInventoryDialogState
                     decoration: BoxDecoration(
                       color: Colors.black26,
                       borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(11),
+                        bottom: Radius.circular(3),
                       ),
                       border: Border(
                         top: BorderSide(
@@ -723,7 +722,7 @@ class _ArtifactInventoryDialogState
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(11),
+                    borderRadius: BorderRadius.circular(3),
                   ),
                 ),
               ),
@@ -751,8 +750,8 @@ class _ArtifactInventoryDialogState
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF0A1520),
-            borderRadius: BorderRadius.circular(16),
+            color: const Color(0xFF03070C),
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(color: rarityColor.withValues(alpha: 0.6)),
             boxShadow: [
               BoxShadow(

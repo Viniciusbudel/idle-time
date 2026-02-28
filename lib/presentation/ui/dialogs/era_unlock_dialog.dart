@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:time_factory/core/constants/colors.dart';
+
 import 'package:time_factory/core/constants/game_assets.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/theme/era_theme.dart';
-import 'package:time_factory/presentation/ui/molecules/glass_card.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class EraUnlockDialog extends StatelessWidget {
   final EraTheme eraTheme;
@@ -51,10 +52,20 @@ class EraUnlockDialog extends StatelessWidget {
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      child: GlassCard(
-        borderColor: eraTheme.primaryColor,
-        borderGlow: true,
-        padding: EdgeInsets.zero,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF03070C),
+          border: Border.all(color: eraTheme.primaryColor),
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: eraTheme.primaryColor.withValues(alpha: 0.3),
+              blurRadius: 16,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -67,13 +78,13 @@ class EraUnlockDialog extends StatelessWidget {
                   height: 150,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
+                      top: Radius.circular(4),
                     ),
                     image: DecorationImage(
                       image: AssetImage(imagePath),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
-                        Colors.black.withOpacity(0.3),
+                        Colors.black.withValues(alpha: 0.3),
                         BlendMode.darken,
                       ),
                       onError:
@@ -89,15 +100,12 @@ class EraUnlockDialog extends StatelessWidget {
                   child: Container(
                     decoration: const BoxDecoration(
                       borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(12),
+                        top: Radius.circular(4),
                       ),
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          TimeFactoryColors.surfaceGlass,
-                        ],
+                        colors: [Colors.transparent, Color(0xFF03070C)],
                       ),
                     ),
                   ),
@@ -107,8 +115,11 @@ class EraUnlockDialog extends StatelessWidget {
                   bottom: AppSpacing.md,
                   child: Text(
                     'TIMELINE UNLOCKED',
-                    style: TimeFactoryTextStyles.headerSmall.copyWith(
+                    style: TextStyle(
+                      fontFamily: 'Orbitron',
+                      fontSize: 14,
                       color: Colors.white,
+                      fontWeight: FontWeight.bold,
                       letterSpacing: 4,
                       shadows: [
                         const Shadow(color: Colors.black, blurRadius: 4),
@@ -124,11 +135,14 @@ class EraUnlockDialog extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    eraTheme.displayName,
+                    eraTheme.displayName.toUpperCase(),
                     textAlign: TextAlign.center,
-                    style: TimeFactoryTextStyles.headerLarge.copyWith(
+                    style: TextStyle(
+                      fontFamily: 'Orbitron',
                       color: eraTheme.primaryColor,
                       fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -141,38 +155,15 @@ class EraUnlockDialog extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.xl),
 
-                  // Travel Button
-                  GestureDetector(
+                  GameActionButton(
                     onTap: () {
                       onTravel();
                       Navigator.of(context).pop();
                     },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.md,
-                      ),
-                      decoration: BoxDecoration(
-                        color: eraTheme.primaryColor.withOpacity(0.2),
-                        border: Border.all(color: eraTheme.primaryColor),
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: eraTheme.primaryColor.withOpacity(0.3),
-                            blurRadius: 16,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          'TRAVEL TO ERA',
-                          style: TimeFactoryTextStyles.button.copyWith(
-                            color: eraTheme.primaryColor,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
+                    label: 'TRAVEL TO ERA',
+                    icon: AppHugeIcons.arrow_forward,
+                    color: eraTheme.primaryColor,
+                    height: 48,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   TextButton(

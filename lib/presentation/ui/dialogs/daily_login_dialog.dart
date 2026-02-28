@@ -281,7 +281,7 @@ class _DayCard extends StatelessWidget {
           color: borderColor,
           width: state == _DayState.ready ? 2 : 1,
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4),
         boxShadow: state == _DayState.ready
             ? [BoxShadow(color: borderColor.withAlpha(100), blurRadius: 8)]
             : null,

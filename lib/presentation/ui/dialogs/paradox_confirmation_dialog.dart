@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
 class ParadoxConfirmationDialog extends StatefulWidget {
@@ -95,19 +96,19 @@ class _ParadoxConfirmationDialogState extends State<ParadoxConfirmationDialog>
             child: Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: Colors.black,
+                color: const Color(0xFF03070C),
                 border: Border.all(
                   color: _isCollapsing
                       ? Colors.white
-                      : TimeFactoryColors.hotMagenta,
+                      : TimeFactoryColors.hotMagenta.withValues(alpha: 0.5),
                   width: _isCollapsing ? 4 : 2,
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(4),
                 boxShadow: [
                   BoxShadow(
                     color: _isCollapsing
-                        ? Colors.white.withOpacity(0.8)
-                        : TimeFactoryColors.hotMagenta.withOpacity(0.4),
+                        ? Colors.white.withValues(alpha: 0.8)
+                        : TimeFactoryColors.hotMagenta.withValues(alpha: 0.4),
                     blurRadius: _isCollapsing ? 40 : 20,
                     spreadRadius: _isCollapsing ? 10 : 0,
                   ),
@@ -127,17 +128,19 @@ class _ParadoxConfirmationDialogState extends State<ParadoxConfirmationDialog>
                   Text(
                     'WARNING: TIMELINE COLLAPSE',
                     textAlign: TextAlign.center,
-                    style: TimeFactoryTextStyles.header.copyWith(
+                    style: TextStyle(
+                      fontFamily: 'Orbitron',
                       color: _isCollapsing
                           ? Colors.white
                           : TimeFactoryColors.hotMagenta,
-                      fontSize: 24,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                       letterSpacing: 2,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Initiating a Paradox will destroy your current timeline.\\nAll Era progress, active workers, and stations will be lost.\\n\\nYou will retain Time Shards, Artifacts, and Paradox Points.',
+                    'Initiating a Paradox will destroy your current timeline.\nAll Era progress, active workers, and stations will be lost.\n\nYou will retain Time Shards, Artifacts, and Paradox Points.',
                     textAlign: TextAlign.center,
                     style: TimeFactoryTextStyles.body.copyWith(
                       color: Colors.white70,
@@ -150,39 +153,38 @@ class _ParadoxConfirmationDialogState extends State<ParadoxConfirmationDialog>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text(
-                            'ABORT',
-                            style: TimeFactoryTextStyles.body.copyWith(
-                              color: Colors.white54,
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Navigator.of(context).pop(),
+                            child: Container(
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'ABORT',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                        GestureDetector(
-                          onTap: _triggerCollapse,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: TimeFactoryColors.hotMagenta,
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: TimeFactoryColors.hotMagenta,
-                                  blurRadius: 10,
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              'COLLAPSE',
-                              style: TimeFactoryTextStyles.body.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 2,
+                          child: GameActionButton(
+                            onTap: _triggerCollapse,
+                            label: 'COLLAPSE',
+                            icon: AppHugeIcons.warning_amber_rounded,
+                            color: TimeFactoryColors.hotMagenta,
+                            height: 48,
                           ),
                         ),
                       ],
