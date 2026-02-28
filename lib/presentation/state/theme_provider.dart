@@ -4,6 +4,7 @@ import 'package:time_factory/core/theme/steampunk_theme.dart';
 import 'package:time_factory/core/theme/roaring_twenties_theme.dart';
 import 'package:time_factory/core/theme/atomic_theme.dart';
 import 'package:time_factory/core/theme/cyberpunk_theme.dart';
+import 'package:time_factory/core/theme/singularity_theme.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 
 /// Provider for the current active theme
@@ -14,7 +15,8 @@ final themeProvider = StateNotifierProvider<ThemeNotifier, GameTheme>((ref) {
 class ThemeNotifier extends StateNotifier<GameTheme> {
   final Ref ref;
 
-  ThemeNotifier(this.ref) : super(SteampunkTheme()) {
+  ThemeNotifier(this.ref) : super(const SteampunkTheme()) {
+    state = _getThemeForEra(ref.read(gameStateProvider).currentEraId);
     _listenToEraChanges();
   }
 
@@ -32,15 +34,17 @@ class ThemeNotifier extends StateNotifier<GameTheme> {
   GameTheme _getThemeForEra(String eraId) {
     switch (eraId) {
       case 'victorian':
-        return SteampunkTheme();
+        return const SteampunkTheme();
       case 'roaring_20s':
-        return RoaringTwentiesTheme();
+        return const RoaringTwentiesTheme();
       case 'atomic_age':
-        return AtomicTheme();
+        return const AtomicTheme();
       case 'cyberpunk_80s':
-        return CyberpunkTheme();
+        return const CyberpunkTheme();
+      case 'post_singularity':
+        return const SingularityTheme();
       default:
-        return SteampunkTheme();
+        return const SteampunkTheme();
     }
   }
 }

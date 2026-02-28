@@ -4,6 +4,8 @@ import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/core/constants/game_assets.dart';
 
 class RoaringTwentiesTheme implements GameTheme {
+  const RoaringTwentiesTheme();
+
   @override
   String get id => 'roaring_20s';
 

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:time_factory/core/constants/game_assets.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 
 class SteampunkTheme implements GameTheme {
+  const SteampunkTheme();
+
   @override
   String get id => 'victorian';
 
@@ -73,8 +76,7 @@ class _SteampunkAssets implements ThemeAssets {
   const _SteampunkAssets();
 
   @override
-  String get mainBackground =>
-      'assets/images/backgrounds/victorian_factory.png';
+  String get mainBackground => GameAssets.eraVictorian;
   @override
   String get iconChambers => 'assets/icons/steampunk/chambers.png';
   @override
