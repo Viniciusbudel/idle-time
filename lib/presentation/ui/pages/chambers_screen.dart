@@ -3,329 +3,381 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
-import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/presentation/ui/pages/loop_chambers_tab.dart';
 import 'package:time_factory/presentation/ui/pages/expeditions_screen.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
-/// Chambers Screen - Steampunk Themed
-class ChambersScreen extends ConsumerStatefulWidget {
+class ChambersScreen extends ConsumerWidget {
   const ChambersScreen({super.key});
 
   @override
-  ConsumerState<ChambersScreen> createState() => _ChambersScreenState();
-}
-
-class _ChambersScreenState extends ConsumerState<ChambersScreen> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameStateProvider);
-    // Use Neon Theme explicitly
-    final theme = const NeonTheme();
 
     final allWorkers = gameState.workers.values.toList();
     final idleCount = allWorkers.where((w) => !w.isDeployed).length;
-    final activeExpeditions = gameState.expeditions
-        .where((expedition) => !expedition.resolved)
-        .length;
+    final activeOps = allWorkers.where((w) => w.isDeployed).length;
+
+    // Logic for expeditions count
+    final now = DateTime.now();
     final readyExpeditions = gameState.expeditions
-        .where((expedition) => expedition.resolved)
+        .where((e) => e.endTime.isBefore(now) && !e.resolved)
         .length;
 
+    return Column(
+      children: [
+        _ChamberHudHeader(
+          idleUnits: idleCount,
+          activeOps: activeOps,
+          readyExpeditions: readyExpeditions,
+          onExpeditionsTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ExpeditionsScreen(),
+              ),
+            );
+          },
+        ),
+        const Expanded(child: LoopChambersTab()),
+      ],
+    );
+  }
+}
+
+class _ChamberHudHeader extends StatefulWidget {
+  final int idleUnits;
+  final int activeOps;
+  final int readyExpeditions;
+  final VoidCallback onExpeditionsTap;
+
+  const _ChamberHudHeader({
+    required this.idleUnits,
+    required this.activeOps,
+    required this.readyExpeditions,
+    required this.onExpeditionsTap,
+  });
+
+  @override
+  State<_ChamberHudHeader> createState() => _ChamberHudHeaderState();
+}
+
+class _ChamberHudHeaderState extends State<_ChamberHudHeader>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const theme = NeonTheme();
+    final colors = theme.colors;
+    final typography = theme.typography;
+
     return Container(
-      color: Colors.transparent,
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        MediaQuery.of(context).padding.top + AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.4),
+        border: Border(
+          bottom: BorderSide(
+            color: colors.primary.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          _buildHeader(
-            context,
-            idleCount,
-            theme,
-            activeExpeditions,
-            readyExpeditions,
+          // Line 1: Identity & Ops
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  _GlowBreathingIcon(
+                    icon: AppHugeIcons.grid_view,
+                    color: colors.primary,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'SYSTEM.CORE',
+                        style: typography.bodyMedium.copyWith(
+                          fontSize: 10,
+                          color: colors.primary.withValues(alpha: 0.6),
+                          letterSpacing: 2.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'CHAMBERS',
+                        style: typography.titleLarge.copyWith(
+                          fontSize: 22,
+                          color: colors.primary,
+                          letterSpacing: 1.5,
+                          height: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              // External Ops Chip (Expeditions)
+              _HudLaunchButton(
+                label: 'EXTERNAL OPS',
+                count: widget.readyExpeditions,
+                onTap: widget.onExpeditionsTap,
+                color: colors.secondary,
+              ),
+            ],
           ),
-
           const SizedBox(height: AppSpacing.md),
 
-          // Station list (High-Fidelity Steampunk UI)
-          const Expanded(child: LoopChambersTab()),
+          // Line 2: Telemetry Stats
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: colors.primary.withValues(alpha: 0.1)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _TelemetryBlock(
+                  label: 'IDLE UNITS',
+                  value: widget.idleUnits.toString(),
+                  color: widget.idleUnits > 0 ? colors.primary : Colors.white24,
+                ),
+                const _VerticalDivider(),
+                _TelemetryBlock(
+                  label: 'ACTIVE OPS',
+                  value: widget.activeOps.toString(),
+                  color: widget.activeOps > 0 ? colors.success : Colors.white24,
+                ),
+                const _VerticalDivider(),
+                _TelemetryBlock(
+                  label: 'SYS.STATUS',
+                  value: 'NOMINAL',
+                  color: colors.success,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // Line 3: System Indicators
+          Row(
+            children: [
+              _SystemIndicator(label: 'LOCAL.HUB', color: colors.primary),
+              const SizedBox(width: 8),
+              _SystemIndicator(label: 'CHB.01', color: colors.primary),
+              const Spacer(),
+              Text(
+                'STB.98.4%',
+                style: TextStyle(
+                  fontFamily: 'Share Tech Mono',
+                  fontSize: 10,
+                  color: colors.success.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildHeader(
-    BuildContext context,
-    int idleCount,
-    NeonTheme theme,
-    int activeExpeditions,
-    int readyExpeditions,
-  ) {
-    final colors = theme.colors;
-    final typography = theme.typography;
+class _GlowBreathingIcon extends StatelessWidget {
+  final AppIconData icon;
+  final Color color;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
+  const _GlowBreathingIcon({required this.icon, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.2),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ],
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final bool compact = constraints.maxWidth < 620;
-
-          return Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.primary.withValues(alpha: 0.28)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (compact) ...[
-                  _buildTitleBlock(theme),
-                  const SizedBox(height: AppSpacing.sm),
-                  _buildExpeditionAction(
-                    context,
-                    theme,
-                    activeExpeditions,
-                    readyExpeditions,
-                    expanded: true,
-                  ),
-                ] else
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _buildTitleBlock(theme)),
-                      const SizedBox(width: AppSpacing.sm),
-                      _buildExpeditionAction(
-                        context,
-                        theme,
-                        activeExpeditions,
-                        readyExpeditions,
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.xs,
-                  runSpacing: AppSpacing.xs,
-                  children: [
-                    _buildStatusChip(
-                      icon: AppHugeIcons.person,
-                      label: '$idleCount IDLE',
-                      color: colors.primary,
-                      typography: typography,
-                    ),
-                    _buildStatusChip(
-                      icon: AppHugeIcons.rocket_launch,
-                      label: '$activeExpeditions ACTIVE',
-                      color: colors.secondary,
-                      typography: typography,
-                    ),
-                    if (readyExpeditions > 0)
-                      _buildStatusChip(
-                        icon: AppHugeIcons.check_circle,
-                        label: '$readyExpeditions READY',
-                        color: colors.success,
-                        typography: typography,
-                      ),
-                    _buildStatusChip(
-                      icon: AppHugeIcons.shield,
-                      label: 'SYS.LC1',
-                      color: colors.accent,
-                      typography: typography,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+      child: Center(child: AppIcon(icon, color: color, size: 18)),
     );
   }
+}
 
-  Widget _buildTitleBlock(NeonTheme theme) {
-    final colors = theme.colors;
-    final typography = theme.typography;
+class _TelemetryBlock extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
 
-    return Row(
+  const _TelemetryBlock({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const theme = NeonTheme();
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.xs),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: colors.primary.withValues(alpha: 0.24)),
-            color: colors.primary.withValues(alpha: 0.08),
-          ),
-          child: AppIcon(
-            AppHugeIcons.grid_view,
-            color: colors.primary,
-            size: 22,
+        Text(
+          label,
+          style: theme.typography.bodyMedium.copyWith(
+            fontSize: 8,
+            color: color.withValues(alpha: 0.6),
+            letterSpacing: 1.0,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(width: AppSpacing.xs),
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'LOOP',
-                style: typography.bodyMedium.copyWith(
-                  fontSize: 11,
-                  color: colors.primary.withValues(alpha: 0.75),
-                  letterSpacing: 2.2,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                'CHAMBER',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: typography.titleLarge.copyWith(
-                  height: 1.0,
-                  fontSize: 24,
-                  color: colors.primary,
-                  letterSpacing: 1.8,
-                  shadows: [
-                    Shadow(
-                      color: colors.primary.withValues(alpha: 0.55),
-                      blurRadius: 6,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: theme.typography.bodyMedium.copyWith(
+            fontSize: 18,
+            color: color,
+            fontFamily: 'Share Tech Mono',
+            fontWeight: FontWeight.bold,
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildExpeditionAction(
-    BuildContext context,
-    NeonTheme theme,
-    int activeExpeditions,
-    int readyExpeditions, {
-    bool expanded = false,
-  }) {
-    final colors = theme.colors;
-    final typography = theme.typography;
+class _VerticalDivider extends StatelessWidget {
+  const _VerticalDivider();
 
-    final Widget button = SizedBox(
-      width: expanded ? double.infinity : null,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(48, 48),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: AppSpacing.xs,
-          ),
-          side: BorderSide(
-            color: readyExpeditions > 0
-                ? colors.success
-                : colors.secondary.withValues(alpha: 0.72),
-          ),
-          backgroundColor: colors.secondary.withValues(alpha: 0.12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  @override
+  Widget build(BuildContext context) {
+    return Container(width: 1, height: 20, color: Colors.white10);
+  }
+}
+
+class _SystemIndicator extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _SystemIndicator({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: 'Share Tech Mono',
+          fontSize: 9,
+          color: color.withValues(alpha: 0.7),
         ),
-        onPressed: () {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const ExpeditionsScreen()));
-        },
+      ),
+    );
+  }
+}
+
+class _HudLaunchButton extends StatelessWidget {
+  final String label;
+  final int count;
+  final VoidCallback onTap;
+  final Color color;
+
+  const _HudLaunchButton({
+    required this.label,
+    required this.count,
+    required this.onTap,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final active = count > 0;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: active ? 0.2 : 0.05),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: color.withValues(alpha: active ? 0.6 : 0.2),
+            width: 1.5,
+          ),
+          boxShadow: active
+              ? [BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 8)]
+              : null,
+        ),
         child: Row(
-          mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            AppIcon(
-              AppHugeIcons.rocket_launch,
-              color: colors.secondary,
-              size: 16,
-            ),
-            const SizedBox(width: AppSpacing.xs),
             Text(
-              'EXPEDITIONS',
-              style: typography.bodyMedium.copyWith(
-                fontSize: 11,
-                color: colors.secondary,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.1,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            Text(
-              '$activeExpeditions ACTIVE',
-              style: typography.bodyMedium.copyWith(
+              label,
+              style: TextStyle(
+                fontFamily: 'Orbitron',
                 fontSize: 10,
-                color: Colors.white70,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.6,
+                color: active ? Colors.white : Colors.white38,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
               ),
             ),
-            if (readyExpeditions > 0) ...[
-              const SizedBox(width: AppSpacing.xs),
+            if (active) ...[
+              const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: colors.success.withValues(alpha: 0.20),
-                  borderRadius: BorderRadius.circular(99),
-                  border: Border.all(color: colors.success),
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
                 ),
                 child: Text(
-                  '$readyExpeditions READY',
-                  style: typography.bodyMedium.copyWith(
-                    fontSize: 9,
-                    color: colors.success,
+                  count.toString(),
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
+                    height: 1,
                   ),
                 ),
               ),
             ],
           ],
         ),
-      ),
-    );
-
-    return Semantics(button: true, label: 'Open expeditions', child: button);
-  }
-
-  Widget _buildStatusChip({
-    required AppIconData icon,
-    required String label,
-    required Color color,
-    required ThemeTypography typography,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xs,
-        vertical: 6,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.40)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppIcon(icon, color: color, size: 12),
-          const SizedBox(width: AppSpacing.xxs),
-          Text(
-            label,
-            style: typography.bodyMedium.copyWith(
-              fontSize: 10,
-              color: color,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -3,21 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:time_factory/core/constants/spacing.dart';
-import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/core/constants/tech_data.dart';
-import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/core/utils/number_formatter.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
-import 'package:time_factory/l10n/app_localizations.dart';
-import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/ui/dialogs/upgrade_confirmation_dialog.dart';
 import 'package:time_factory/presentation/ui/dialogs/worker_detail_dialog.dart';
 import 'package:time_factory/presentation/ui/organisms/worker_management_sheet.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
+import 'package:time_factory/presentation/utils/worker_era_extensions.dart';
 
 class MegaChamberCard extends ConsumerStatefulWidget {
   final Station station;
@@ -46,112 +44,67 @@ class MegaChamberCard extends ConsumerStatefulWidget {
 class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
   @override
   Widget build(BuildContext context) {
-    // Force Neon Theme
-    // Force Neon Theme
     const theme = NeonTheme();
-    final colors = theme.colors;
-    final typography = theme.typography;
-
-    // dynamically derive card UI accent from its specific era
-    final neonCyan = widget.station.type.era.color;
-    final cyberDark = const Color(0xFF050A10);
+    final accentColor = widget.station.type.era.color;
 
     return Container(
-      margin: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: cyberDark,
-        borderRadius: BorderRadius.circular(16),
-        // Double border effect
-        border: Border.all(color: neonCyan.withOpacity(0.3), width: 1.0),
+        color: Colors.black.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: accentColor.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: neonCyan.withOpacity(0.2),
+            color: accentColor.withValues(alpha: 0.1),
             blurRadius: 10,
             spreadRadius: 1,
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(4),
         child: Stack(
           children: [
-            // Static Background Grid
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _CyberGridPainter(
-                  color: neonCyan.withOpacity(0.15),
-                  offset: 0,
-                ),
-              ),
-            ),
-
-            // Corner Accents
-            Positioned.fill(
-              child: CustomPaint(painter: _TechCornerPainter(color: neonCyan)),
-            ),
+            // Background Grid Overlay for technical feel
+            _GridOverlay(color: accentColor),
 
             Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(AppSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 1. Header
-                  _buildHeader(context, theme, colors, typography),
-
-                  const SizedBox(height: 20),
-
-                  // 2. Visual Monitor
-                  _buildVisualArea(colors, typography),
-
-                  const SizedBox(height: 20),
-
-                  // 3. Stats Grid (HUD Style)
-                  _buildStatsHUD(colors, typography),
-
-                  const SizedBox(height: 24),
-
-                  // 4. Active Workforce
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.workerProtocols,
-                        style: typography.bodyMedium.copyWith(
-                          fontSize: 10.0,
-                          color: neonCyan.withOpacity(0.5),
-                          letterSpacing: 2.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: neonCyan.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: neonCyan.withOpacity(0.5)),
-                        ),
-                        child: Text(
-                          '${widget.assignedWorkers.length} / ${widget.station.maxWorkerSlots} ${AppLocalizations.of(context)!.online}',
-                          style: typography.bodyMedium.copyWith(
-                            fontSize: 10,
-                            color: neonCyan,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                      ),
-                    ],
+                  _ChamberHeader(
+                    station: widget.station,
+                    assignedCount: widget.assignedWorkers.length,
+                    maxSlots: widget.station.maxWorkerSlots,
                   ),
-                  const SizedBox(height: 12),
-                  _buildWorkerGrid(theme),
-
-                  const SizedBox(height: 24),
-
-                  // 5. Expand Button
-                  _buildUpgradeButton(context, ref, theme, colors, typography),
+                  const SizedBox(height: AppSpacing.md),
+                  _ChamberVisualArea(
+                    production: widget.production,
+                    accentColor: accentColor,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _ChamberTelemetryHUD(
+                    station: widget.station,
+                    accentColor: accentColor,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _WorkforceSection(
+                    assigned: widget.assignedWorkers,
+                    maxSlots: widget.station.maxWorkerSlots,
+                    onAssign: widget.onAssignSlot,
+                    highlightFirst: widget.highlightFirstEmptySlot,
+                    color: accentColor,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _UpgradeAction(
+                    station: widget.station,
+                    onUpgrade: widget.onUpgrade,
+                    accentColor: accentColor,
+                  ),
                 ],
               ),
             ),
@@ -160,211 +113,259 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
       ),
     );
   }
+}
 
-  Widget _buildHeader(
-    BuildContext context,
-    NeonTheme theme,
-    ThemeColors colors,
-    ThemeTypography typography,
-  ) {
+class _ChamberHeader extends StatelessWidget {
+  final Station station;
+  final int assignedCount;
+  final int maxSlots;
+
+  const _ChamberHeader({
+    required this.station,
+    required this.assignedCount,
+    required this.maxSlots,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const theme = NeonTheme();
+    final typography = theme.typography;
+    final accentColor = station.type.era.color;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title Section
+        _ModuleIdBadge(
+          id: 'CHB-${station.id.split('_').last.padLeft(2, '0')}',
+          color: accentColor,
+        ),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.station.type.era.localizedName(context).toUpperCase(),
+                'PRODUCTION CORE',
                 style: typography.bodyMedium.copyWith(
-                  fontSize: 10,
-                  color: colors.primary.withOpacity(0.5),
-                  letterSpacing: 3.0,
-                  shadows: [
-                    Shadow(
-                      color: colors.primary.withOpacity(0.5),
-                      blurRadius: 4,
-                    ),
-                  ],
+                  fontSize: 9,
+                  color: accentColor.withValues(alpha: 0.6),
+                  letterSpacing: 1.5,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 4),
-              ShaderMask(
-                shaderCallback: (bounds) => LinearGradient(
-                  colors: [Colors.white, colors.primary],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ).createShader(bounds),
-                child: Text(
-                  widget.station.name.toUpperCase().replaceAll(' ', '\n'),
-                  style: typography.titleLarge.copyWith(
-                    fontFamily: 'Orbitron',
-                    fontSize: 26,
-                    height: 1.0,
-                    color: Colors.white, // Required for shader
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.5,
-                  ),
+              Text(
+                station.name.toUpperCase(),
+                style: typography.titleMedium.copyWith(
+                  fontSize: 18,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
           ),
         ),
-
-        // Level & Manage Section
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // Level Badge (Power Cell Style)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                border: Border.all(color: colors.primary),
-                borderRadius: BorderRadius.circular(4),
-                boxShadow: [
-                  BoxShadow(
-                    color: colors.primary.withOpacity(0.5),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppIcon(AppHugeIcons.bolt, color: colors.primary, size: 14),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${AppLocalizations.of(context)!.lvl} ${widget.station.level}',
-                    style: typography.bodyMedium.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: colors.primary,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _LevelBadge(level: station.level, color: accentColor),
             const SizedBox(height: 8),
-
-            // Manage Button (Hollow)
-            GestureDetector(
+            _ManageUnitsChip(
               onTap: () {
                 showModalBottomSheet(
-                  context: context, // Context is available in State
+                  context: context,
                   backgroundColor: Colors.transparent,
                   isScrollControlled: true,
                   builder: (context) => const WorkerManagementSheet(),
                 );
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: colors.secondary.withOpacity(0.5)),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  AppLocalizations.of(context)!.manageUnits,
-                  style: typography.buttonText.copyWith(
-                    fontSize: 10,
-                    color: colors.secondary,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ),
+              color: accentColor,
             ),
           ],
         ),
       ],
     );
   }
+}
 
-  Widget _buildVisualArea(ThemeColors colors, ThemeTypography typography) {
+class _ModuleIdBadge extends StatelessWidget {
+  final String id;
+  final Color color;
+
+  const _ModuleIdBadge({required this.id, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      height: 160, // Slightly taller
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Text(
+        id,
+        style: const TextStyle(
+          fontFamily: 'Share Tech Mono',
+          fontSize: 10,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+class _LevelBadge extends StatelessWidget {
+  final int level;
+  final Color color;
+
+  const _LevelBadge({required this.level, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: Colors.black,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colors.primary.withOpacity(0.5)),
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(4),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10),
+          BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 4),
         ],
+      ),
+      child: Text(
+        'LVL $level',
+        style: TextStyle(
+          fontFamily: 'Orbitron',
+          fontSize: 11,
+          color: color,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+class _ManageUnitsChip extends StatelessWidget {
+  final VoidCallback onTap;
+  final Color color;
+
+  const _ManageUnitsChip({required this.onTap, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            border: Border.all(color: color.withValues(alpha: 0.4)),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppIcon(AppHugeIcons.person, color: color, size: 10),
+              const SizedBox(width: 4),
+              const Text(
+                'MANAGE',
+                style: TextStyle(
+                  fontFamily: 'Orbitron',
+                  fontSize: 9,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChamberVisualArea extends StatelessWidget {
+  final BigInt production;
+  final Color accentColor;
+
+  const _ChamberVisualArea({
+    required this.production,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const theme = NeonTheme();
+    final typography = theme.typography;
+
+    return Container(
+      height: 140,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: accentColor.withValues(alpha: 0.2)),
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 1. Grid Floor
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 100,
-            child: Opacity(
-              opacity: 0.3,
-              child: Image.asset(
-                'assets/images/bg_neon.png', // Fallback
-                fit: BoxFit.cover,
-                errorBuilder: (c, o, s) => const SizedBox(),
+          // Hologram Glow Effect
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    accentColor.withValues(alpha: 0.1),
+                    Colors.transparent,
+                  ],
+                ),
               ),
             ),
           ),
 
-          // 2. Central Hologram Icon (Faded)
-          Opacity(
-            opacity: 0.15, // Reduced opacity for cleaner look
-            child: AppIcon(
-              AppHugeIcons.precision_manufacturing,
-              size: 80,
-              color: colors.primary,
-            ),
-          ),
-
-          // 4. BIG OUTPUT DISPLAY (Hero Stat)
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                AppLocalizations.of(context)!.currentOutput,
+                'CURRENT OUTPUT',
                 style: typography.bodyMedium.copyWith(
                   fontSize: 10,
-                  color: colors.success.withOpacity(0.5),
+                  color: accentColor.withValues(alpha: 0.5),
                   letterSpacing: 2.0,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  AppIcon(AppHugeIcons.bolt, color: colors.success, size: 24),
-                  const SizedBox(width: 4),
+                  AppIcon(AppHugeIcons.bolt, color: accentColor, size: 24),
+                  const SizedBox(width: 8),
                   Text(
-                    NumberFormatter.format(widget.production),
+                    NumberFormatter.format(production),
                     style: typography.titleLarge.copyWith(
-                      fontFamily: 'Orbitron',
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: colors.success,
+                      fontFamily: 'Share Tech Mono',
+                      fontSize: 40,
+                      color: Colors.white,
                       shadows: [
                         Shadow(
-                          color: colors.success.withOpacity(0.5),
+                          color: accentColor.withValues(alpha: 0.6),
                           blurRadius: 10,
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 6),
                   Text(
-                    AppLocalizations.of(context)!.perSecond,
+                    'CE/S',
                     style: typography.bodyMedium.copyWith(
                       fontSize: 12,
-                      color: colors.success.withOpacity(0.5),
+                      color: accentColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -373,350 +374,414 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
             ],
           ),
 
-          // 5. System Status Badge
-          Positioned(
-            bottom: 8,
-            right: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: colors.primary.withOpacity(0.5)),
-              ),
-              child: Text(
-                AppLocalizations.of(context)!.sysOnline,
-                style: TextStyle(
-                  fontFamily: 'Orbitron',
-                  color: colors.primary,
-                  fontSize: 8,
-                  letterSpacing: 1.0,
-                ),
-              ),
-            ),
-          ),
+          // Technical corner marks
+          ..._buildCornerMarks(accentColor.withValues(alpha: 0.4)),
         ],
       ),
     );
   }
 
-  Widget _buildStatsHUD(ThemeColors colors, ThemeTypography typography) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: colors.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colors.primary.withOpacity(0.3)),
+  List<Widget> _buildCornerMarks(Color color) {
+    return [
+      Positioned(
+        top: 8,
+        left: 8,
+        child: _CornerMark(color: color, quadrant: 0),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Efficiency
-          _buildWideStat(
-            AppLocalizations.of(context)!.efficiency,
-            '${(widget.station.productionBonus * 100).toInt()}%',
-            colors.primary,
-            AppHugeIcons.speed,
-            typography,
-          ),
-
-          Container(
-            width: 1,
-            height: 30,
-            color: colors.primary.withOpacity(0.5),
-          ),
-
-          _buildWideStat(
-            AppLocalizations.of(context)!.stability,
-            '99.9%', // Placeholder
-            colors.secondary,
-            AppHugeIcons.shield,
-            typography,
-          ),
-        ],
+      Positioned(
+        top: 8,
+        right: 8,
+        child: _CornerMark(color: color, quadrant: 1),
       ),
+      Positioned(
+        bottom: 8,
+        left: 8,
+        child: _CornerMark(color: color, quadrant: 2),
+      ),
+      Positioned(
+        bottom: 8,
+        right: 8,
+        child: _CornerMark(color: color, quadrant: 3),
+      ),
+    ];
+  }
+}
+
+class _CornerMark extends StatelessWidget {
+  final Color color;
+  final int quadrant;
+
+  const _CornerMark({required this.color, required this.quadrant});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(12, 12),
+      painter: _CornerPainter(color: color, quadrant: quadrant),
     );
   }
+}
 
-  Widget _buildWideStat(
-    String label,
-    String value,
-    Color color,
-    AppIconData icon,
-    ThemeTypography typography,
-  ) {
+class _CornerPainter extends CustomPainter {
+  final Color color;
+  final int quadrant;
+
+  _CornerPainter({required this.color, required this.quadrant});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+    if (quadrant == 0) {
+      path.moveTo(0, size.height);
+      path.lineTo(0, 0);
+      path.lineTo(size.width, 0);
+    } else if (quadrant == 1) {
+      path.moveTo(0, 0);
+      path.lineTo(size.width, 0);
+      path.lineTo(size.width, size.height);
+    } else if (quadrant == 2) {
+      path.moveTo(0, 0);
+      path.lineTo(0, size.height);
+      path.lineTo(size.width, size.height);
+    } else {
+      path.moveTo(size.width, 0);
+      path.lineTo(size.width, size.height);
+      path.lineTo(0, size.height);
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _ChamberTelemetryHUD extends StatelessWidget {
+  final Station station;
+  final Color accentColor;
+
+  const _ChamberTelemetryHUD({
+    required this.station,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final efficiency = (station.productionBonus * 100).round();
+    final stability = 98.4 + (station.level * 0.1);
+
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
-            shape: BoxShape.circle,
+        Expanded(
+          child: _TelemetryItem(
+            label: 'EFFICIENCY',
+            value: '$efficiency%',
+            color: accentColor,
+            icon: AppHugeIcons.speed,
           ),
-          child: AppIcon(icon, size: 16, color: color),
         ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: typography.bodyMedium.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontFamily: 'monospace',
-              ),
-            ),
-            Text(
-              label,
-              style: typography.bodyMedium.copyWith(
-                fontSize: 9,
-                color: Colors.grey[400],
-                letterSpacing: 1.0,
-              ),
-            ),
-          ],
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: _TelemetryItem(
+            label: 'STABILITY',
+            value: '${stability.toStringAsFixed(1)}%',
+            color: const Color(0xFF00FF9F), // Success Bio-Green
+            icon: AppHugeIcons.shield,
+          ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildWorkerGrid(NeonTheme theme) {
-    final colors = theme.colors;
-    final totalSlots = widget.station.maxWorkerSlots;
+class _TelemetryItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final AppIconData icon;
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      alignment: WrapAlignment.start,
-      children: List.generate(totalSlots, (index) {
-        if (index < widget.assignedWorkers.length) {
-          return _buildHoloWorker(widget.assignedWorkers[index], colors);
-        }
-        final isFirstEmpty =
-            widget.highlightFirstEmptySlot &&
-            index == widget.assignedWorkers.length;
-        return _buildEmptySocket(index, colors, isFirstEmpty: isFirstEmpty);
-      }),
+  const _TelemetryItem({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const theme = NeonTheme();
+    final typography = theme.typography;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              AppIcon(icon, color: color, size: 12),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: typography.bodyMedium.copyWith(
+                  fontSize: 8,
+                  color: color.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'Share Tech Mono',
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
 
-  Widget _buildHoloWorker(Worker worker, ThemeColors colors) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        WorkerDetailDialog.show(context, worker);
-      },
-      child: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
-          border: Border.all(color: colors.primary.withOpacity(0.3)),
-          borderRadius: BorderRadius.circular(8),
+class _WorkforceSection extends StatelessWidget {
+  final List<Worker> assigned;
+  final int maxSlots;
+  final void Function(int slotIndex)? onAssign;
+  final bool highlightFirst;
+  final Color color;
+
+  const _WorkforceSection({
+    required this.assigned,
+    required this.maxSlots,
+    this.onAssign,
+    required this.highlightFirst,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const theme = NeonTheme();
+    final typography = theme.typography;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'WORKFORCE PROTOCOL',
+              style: typography.bodyMedium.copyWith(
+                fontSize: 10,
+                color: Colors.white54,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+              ),
+            ),
+            Text(
+              '${assigned.length} / $maxSlots UNITS LOADED',
+              style: const TextStyle(
+                fontFamily: 'Share Tech Mono',
+                fontSize: 10,
+                color: Colors.white70,
+              ),
+            ),
+          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: List.generate(maxSlots, (index) {
+            if (index < assigned.length) {
+              return _WorkerSlot(worker: assigned[index], color: color);
+            } else {
+              final isHighlighted =
+                  highlightFirst && (index == assigned.length);
+              return _EmptySlot(
+                onTap: () => onAssign?.call(index),
+                isHighlighted: isHighlighted,
+                color: color,
+              );
+            }
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+class _WorkerSlot extends StatelessWidget {
+  final Worker worker;
+  final Color color;
+
+  const _WorkerSlot({required this.worker, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => WorkerDetailDialog.show(context, worker),
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.6),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        padding: const EdgeInsets.all(8),
+        child: Center(
+          child: WorkerIconHelper.buildIcon(
+            worker.era,
+            worker.rarity,
+            width: 32,
+            height: 32,
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildEmptySocket(
-    int index,
-    ThemeColors colors, {
-    bool isFirstEmpty = false,
-  }) {
+class _EmptySlot extends StatelessWidget {
+  final VoidCallback onTap;
+  final bool isHighlighted;
+  final Color color;
+
+  const _EmptySlot({
+    required this.onTap,
+    required this.isHighlighted,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      key: isFirstEmpty ? TutorialKeys.chamberSlot : null,
-      onTap: () {
-        HapticFeedback.lightImpact();
-        widget.onAssignSlot?.call(index);
-      },
+      onTap: onTap,
       child: Container(
-        width: 50,
-        height: 50,
+        width: 52,
+        height: 52,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
+          color: color.withValues(alpha: isHighlighted ? 0.1 : 0.05),
           border: Border.all(
-            color: colors.primary.withOpacity(0.5),
+            color: color.withValues(alpha: isHighlighted ? 0.8 : 0.2),
             style: BorderStyle.solid,
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Center(
           child: AppIcon(
             AppHugeIcons.add,
-            color: colors.primary.withOpacity(0.5),
+            color: color.withAlpha(isHighlighted ? 255 : 76),
             size: 20,
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildUpgradeButton(
-    BuildContext context,
-    WidgetRef ref,
-    NeonTheme theme,
-    ThemeColors colors,
-    ThemeTypography typography,
-  ) {
+class _UpgradeAction extends ConsumerWidget {
+  final Station station;
+  final VoidCallback? onUpgrade;
+  final Color accentColor;
+
+  const _UpgradeAction({
+    required this.station,
+    this.onUpgrade,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameStateProvider);
     final discount = TechData.calculateCostReductionMultiplier(
       gameState.techLevels,
     );
-    final cost = widget.station.getUpgradeCost(discountMultiplier: discount);
+    final cost = station.getUpgradeCost(discountMultiplier: discount);
+    final canAfford = gameState.chronoEnergy >= cost;
 
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: colors.primary.withOpacity(0.2),
-        border: Border.all(color: colors.primary.withOpacity(0.5)),
-        borderRadius: BorderRadius.circular(4),
-        boxShadow: [
-          BoxShadow(color: colors.primary.withOpacity(0.1), blurRadius: 4),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.mediumImpact();
-            if (widget.onUpgrade != null) {
+    return GameActionButton(
+      label: 'INITIALIZE UPGRADE [${NumberFormatter.formatCE(cost)}]',
+      icon: AppHugeIcons.upgrade,
+      color: accentColor,
+      onTap: onUpgrade != null
+          ? () {
+              if (!canAfford) {
+                HapticFeedback.heavyImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('INSUFFICIENT CURRENCY ENERGY')),
+                );
+                return;
+              }
               showDialog(
                 context: context,
                 builder: (context) => UpgradeConfirmationDialog(
-                  station: widget.station,
-                  onConfirm: widget.onUpgrade!,
-                  title: AppLocalizations.of(context)!.systemUpgrade,
+                  station: station,
+                  onConfirm: onUpgrade!,
+                  title: 'SYSTEM UPGRADE',
                   message:
-                      '${AppLocalizations.of(context)!.initializeExpansion}\n\n${AppLocalizations.of(context)!.cost}: ${NumberFormatter.formatCE(cost)} CE',
+                      'CONFIRM CHAMBER EXPANSION\n\nCOST: ${NumberFormatter.formatCE(cost)} CE',
                   costOverride: cost,
                 ),
               );
             }
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                AppIcon(AppHugeIcons.upgrade, color: colors.primary),
-                const SizedBox(width: 12),
-                Text(
-                  AppLocalizations.of(context)!.initUpgrade,
-                  style: typography.buttonText.copyWith(
-                    color: colors.primary,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '[ ${NumberFormatter.formatCE(cost)} ]',
-                  style: typography.bodyMedium.copyWith(
-                    color: colors.primary,
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              ],
-            ),
-          ),
+          : null,
+      enabled: onUpgrade != null,
+      isMaxed: false, // Potentially add max level logic
+    );
+  }
+}
+
+class _GridOverlay extends StatelessWidget {
+  final Color color;
+  const _GridOverlay({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: CustomPaint(
+          painter: _GridPainter(color: color.withValues(alpha: 0.05)),
         ),
       ),
     );
   }
 }
 
-// --- Custom Painters ---
-
-class _CyberGridPainter extends CustomPainter {
+class _GridPainter extends CustomPainter {
   final Color color;
-  final double offset;
-
-  _CyberGridPainter({required this.color, required this.offset});
+  _GridPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 0.5;
 
-    const gridSize = 30.0;
-
-    // Vertical lines
-    for (double x = 0; x < size.width; x += gridSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    const spacing = 20.0;
+    for (double i = 0; i < size.width; i += spacing) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
     }
-
-    // Horizontal lines (moving)
-    for (
-      double y = (offset % gridSize) - gridSize;
-      y < size.height;
-      y += gridSize
-    ) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    for (double i = 0; i < size.height; i += spacing) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
     }
   }
 
   @override
-  bool shouldRepaint(_CyberGridPainter oldDelegate) =>
-      offset != oldDelegate.offset || color != oldDelegate.color;
-}
-
-class _TechCornerPainter extends CustomPainter {
-  final Color color;
-
-  _TechCornerPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
-    const cornerSize = 15.0;
-
-    // Top Left
-    canvas.drawPath(
-      Path()
-        ..moveTo(0, cornerSize)
-        ..lineTo(0, 0)
-        ..lineTo(cornerSize, 0),
-      paint,
-    );
-
-    // Top Right
-    canvas.drawPath(
-      Path()
-        ..moveTo(size.width - cornerSize, 0)
-        ..lineTo(size.width, 0)
-        ..lineTo(size.width, cornerSize),
-      paint,
-    );
-
-    // Bottom Right
-    canvas.drawPath(
-      Path()
-        ..moveTo(size.width, size.height - cornerSize)
-        ..lineTo(size.width, size.height)
-        ..lineTo(size.width - cornerSize, size.height),
-      paint,
-    );
-
-    // Bottom Left
-    canvas.drawPath(
-      Path()
-        ..moveTo(cornerSize, size.height)
-        ..lineTo(0, size.height)
-        ..lineTo(0, size.height - cornerSize),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_TechCornerPainter oldDelegate) =>
-      color != oldDelegate.color;
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
