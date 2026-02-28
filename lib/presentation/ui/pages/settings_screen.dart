@@ -8,6 +8,7 @@ import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/state/performance_mode_provider.dart';
 import 'package:time_factory/presentation/ui/pages/achievements_screen.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -259,51 +260,85 @@ class SettingsScreen extends ConsumerWidget {
     HapticFeedback.heavyImpact();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0A0E17),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.red.withOpacity(0.5)),
-        ),
-        title: Row(
-          children: [
-            const AppIcon(AppHugeIcons.warning, color: Colors.red, size: 24),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                AppLocalizations.of(context)!.settingsResetConfirmTitle,
-                style: TimeFactoryTextStyles.header.copyWith(
-                  color: Colors.red,
-                  fontSize: 16,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF03070C),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: Colors.red, width: 2),
+            boxShadow: [
+              BoxShadow(color: Colors.red.withOpacity(0.3), blurRadius: 20),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const AppIcon(
+                    AppHugeIcons.warning_amber_rounded,
+                    color: Colors.red,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(
+                        context,
+                      )!.settingsResetConfirmTitle.toUpperCase(),
+                      style: TextStyle(
+                        fontFamily: 'Orbitron',
+                        color: Colors.red,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context)!.settingsResetConfirmBody,
+                style: TimeFactoryTextStyles.body.copyWith(
+                  color: Colors.white70,
                 ),
               ),
-            ),
-          ],
-        ),
-        content: Text(
-          AppLocalizations.of(context)!.settingsResetConfirmBody,
-          style: TimeFactoryTextStyles.body.copyWith(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(
-              AppLocalizations.of(context)!.cancel,
-              style: const TextStyle(color: Colors.white54),
-            ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: GameActionButton(
+                      onTap: () => Navigator.of(ctx).pop(),
+                      label: AppLocalizations.of(context)!.cancel.toUpperCase(),
+                      color: Colors.white54,
+                      icon: AppHugeIcons.close,
+                      height: 48,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: GameActionButton(
+                      onTap: () {
+                        ref.read(gameStateProvider.notifier).reset();
+                        Navigator.of(ctx).pop();
+                        Navigator.of(context).pop();
+                      },
+                      label: AppLocalizations.of(
+                        context,
+                      )!.settingsReset.toUpperCase(),
+                      color: Colors.red,
+                      icon: AppHugeIcons.warning_amber_rounded,
+                      height: 48,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              ref.read(gameStateProvider.notifier).reset();
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pop();
-            },
-            child: Text(
-              AppLocalizations.of(context)!.settingsReset,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
