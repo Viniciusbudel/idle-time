@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/presentation/ui/pages/loop_chambers_tab.dart';
+import 'package:time_factory/presentation/ui/pages/expeditions_screen.dart';
+import 'package:time_factory/presentation/ui/organisms/worker_management_sheet.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
+import 'package:time_factory/l10n/app_localizations.dart';
 
 /// Chambers Screen — Temporal Production Console.
 class ChambersScreen extends ConsumerStatefulWidget {
@@ -43,9 +47,19 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
             activeExpeditions: activeExpeditions,
           ),
 
-          const SizedBox(height: AppSpacing.sm),
+          // Command Hub — below app bar
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: 6,
+            ),
+            child: _CommandHub(
+              colors: theme.colors,
+              typography: theme.typography,
+            ),
+          ),
 
-          // 2–6. Chamber Hero Module + Sub-sections via LoopChambersTab
+          // Chamber Hero Module + Sub-sections via LoopChambersTab
           const Expanded(child: LoopChambersTab()),
         ],
       ),
@@ -441,6 +455,130 @@ class _GlowBreathingIconState extends State<_GlowBreathingIcon>
           ),
         );
       },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// _CommandHub — Dual-button panel: Manage Units + Expeditions
+// ---------------------------------------------------------------------------
+class _CommandHub extends StatefulWidget {
+  final ThemeColors colors;
+  final ThemeTypography typography;
+
+  const _CommandHub({required this.colors, required this.typography});
+
+  @override
+  State<_CommandHub> createState() => _CommandHubState();
+}
+
+class _CommandHubState extends State<_CommandHub> {
+  int _pressedIndex = -1;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = widget.colors;
+
+    return Row(
+      children: [
+        // Manage Units button
+        Expanded(
+          child: _buildHubButton(
+            index: 0,
+            icon: AppHugeIcons.person,
+            label: AppLocalizations.of(context)!.manageUnits,
+            color: colors.secondary,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (ctx) => const WorkerManagementSheet(),
+              );
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+        // Expeditions button
+        Expanded(
+          child: _buildHubButton(
+            index: 1,
+            icon: AppHugeIcons.rocket_launch,
+            label: 'EXPEDITIONS',
+            color: colors.accent,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ExpeditionsScreen()),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHubButton({
+    required int index,
+    required AppIconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final isPressed = _pressedIndex == index;
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressedIndex = index),
+      onTapUp: (_) {
+        setState(() => _pressedIndex = -1);
+        onTap();
+      },
+      onTapCancel: () => setState(() => _pressedIndex = -1),
+      child: AnimatedScale(
+        scale: isPressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 80),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: isPressed ? 0.22 : 0.12),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: color.withValues(alpha: isPressed ? 0.65 : 0.40),
+              width: 1.0,
+            ),
+            boxShadow: isPressed
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.20),
+                      blurRadius: 6,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AppIcon(icon, color: color, size: 14),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontFamily: 'Orbitron',
+                    fontSize: 10,
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
