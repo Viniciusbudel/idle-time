@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/constants/tutorial_keys.dart';
 import 'package:time_factory/core/constants/tech_data.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
@@ -14,11 +13,14 @@ import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/presentation/utils/localization_extensions.dart';
 import 'package:time_factory/presentation/state/game_state_provider.dart';
+import 'package:time_factory/presentation/ui/atoms/hud_segmented_progress_bar.dart';
+import 'package:time_factory/presentation/ui/atoms/game_action_button.dart';
 import 'package:time_factory/presentation/ui/dialogs/upgrade_confirmation_dialog.dart';
 import 'package:time_factory/presentation/ui/dialogs/worker_detail_dialog.dart';
-import 'package:time_factory/presentation/ui/organisms/worker_management_sheet.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
+/// Mega Chamber Card — core production module with HUD aesthetic.
+/// "Manage Units" has been extracted to a separate UnitControlPanel.
 class MegaChamberCard extends ConsumerStatefulWidget {
   final Station station;
   final List<Worker> assignedWorkers;
@@ -43,43 +45,63 @@ class MegaChamberCard extends ConsumerStatefulWidget {
   ConsumerState<MegaChamberCard> createState() => _MegaChamberCardState();
 }
 
-class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
+class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _prodPulseController;
+  late final Animation<double> _prodPulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    // Production value pulse: scale 1.0 → 1.02 → 1.0 over 2.5s
+    _prodPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    )..repeat(reverse: true);
+
+    _prodPulseAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
+      CurvedAnimation(parent: _prodPulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _prodPulseController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Force Neon Theme
-    // Force Neon Theme
     const theme = NeonTheme();
     final colors = theme.colors;
     final typography = theme.typography;
 
-    // dynamically derive card UI accent from its specific era
-    final neonCyan = widget.station.type.era.color;
+    // Era-based accent color
+    final eraColor = widget.station.type.era.color;
     final cyberDark = const Color(0xFF050A10);
 
     return Container(
-      margin: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: cyberDark,
-        borderRadius: BorderRadius.circular(16),
-        // Double border effect
-        border: Border.all(color: neonCyan.withValues(alpha: 0.3), width: 1.0),
+        borderRadius: BorderRadius.circular(4), // Crisp edges per PRD
+        border: Border.all(color: eraColor.withValues(alpha: 0.30), width: 1.0),
         boxShadow: [
           BoxShadow(
-            color: neonCyan.withValues(alpha: 0.2),
-            blurRadius: 10,
+            color: eraColor.withValues(alpha: 0.15),
+            blurRadius: 8,
             spreadRadius: 1,
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(4),
         child: Stack(
           children: [
             // Static Background Grid
             Positioned.fill(
               child: CustomPaint(
                 painter: _CyberGridPainter(
-                  color: neonCyan.withValues(alpha: 0.15),
+                  color: eraColor.withValues(alpha: 0.08),
                   offset: 0,
                 ),
               ),
@@ -87,71 +109,38 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
 
             // Corner Accents
             Positioned.fill(
-              child: CustomPaint(painter: _TechCornerPainter(color: neonCyan)),
+              child: CustomPaint(painter: _TechCornerPainter(color: eraColor)),
             ),
 
             Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 1. Header
-                  _buildHeader(context, theme, colors, typography),
+                  // 1. Module Header
+                  _buildModuleHeader(context, colors, typography, eraColor),
+
+                  const SizedBox(height: 16),
+
+                  // 2. Production Monitor (Hero Element)
+                  _buildProductionMonitor(colors, typography),
+
+                  const SizedBox(height: 16),
+
+                  // 3. Telemetry Stats Bars
+                  _buildTelemetryBars(colors, typography),
 
                   const SizedBox(height: 20),
 
-                  // 2. Visual Monitor
-                  _buildVisualArea(colors, typography),
+                  // 4. Protocol Matrix (Worker Grid)
+                  _buildProtocolMatrixHeader(eraColor, typography),
+                  const SizedBox(height: 10),
+                  _buildWorkerGrid(colors),
 
                   const SizedBox(height: 20),
 
-                  // 3. Stats Grid (HUD Style)
-                  _buildStatsHUD(colors, typography),
-
-                  const SizedBox(height: 24),
-
-                  // 4. Active Workforce
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.workerProtocols,
-                        style: typography.bodyMedium.copyWith(
-                          fontSize: 10.0,
-                          color: neonCyan.withValues(alpha: 0.5),
-                          letterSpacing: 2.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: neonCyan.withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: neonCyan.withValues(alpha: 0.5)),
-                        ),
-                        child: Text(
-                          '${widget.assignedWorkers.length} / ${widget.station.maxWorkerSlots} ${AppLocalizations.of(context)!.online}',
-                          style: typography.bodyMedium.copyWith(
-                            fontSize: 10,
-                            color: neonCyan,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildWorkerGrid(theme),
-
-                  const SizedBox(height: 24),
-
-                  // 5. Expand Button
-                  _buildUpgradeButton(context, ref, theme, colors, typography),
+                  // 5. Upgrade Button (GameActionButton)
+                  _buildUpgradeAction(context, ref, colors, typography),
                 ],
               ),
             ),
@@ -161,12 +150,18 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
     );
   }
 
-  Widget _buildHeader(
+  // ---------------------------------------------------------------------------
+  // 1. Module Header — ID, Category, Name, Level Badge
+  // ---------------------------------------------------------------------------
+  Widget _buildModuleHeader(
     BuildContext context,
-    NeonTheme theme,
     ThemeColors colors,
     ThemeTypography typography,
+    Color eraColor,
   ) {
+    final stationIndex = widget.station.type.index;
+    final moduleId = 'CHB-${(stationIndex + 1).toString().padLeft(2, '0')}';
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -175,222 +170,221 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.station.type.era.localizedName(context).toUpperCase(),
-                style: typography.bodyMedium.copyWith(
-                  fontSize: 10,
-                  color: colors.primary.withValues(alpha: 0.5),
-                  letterSpacing: 3.0,
-                  shadows: [
-                    Shadow(
-                      color: colors.primary.withValues(alpha: 0.5),
-                      blurRadius: 4,
+              // Module ID + Category
+              Row(
+                children: [
+                  Text(
+                    moduleId,
+                    style: typography.bodyMedium.copyWith(
+                      fontSize: 9,
+                      color: colors.primary.withValues(alpha: 0.55),
+                      letterSpacing: 2.0,
+                      fontWeight: FontWeight.w700,
                     ),
-                  ],
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(2),
+                      border: Border.all(
+                        color: colors.primary.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Text(
+                      'PRODUCTION',
+                      style: typography.bodyMedium.copyWith(
+                        fontSize: 7,
+                        color: colors.primary.withValues(alpha: 0.65),
+                        letterSpacing: 1.4,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 4),
+
+              // Era subtitle
+              Text(
+                'ERA: ${widget.station.type.era.localizedName(context).toUpperCase()}',
+                style: typography.bodyMedium.copyWith(
+                  fontSize: 9,
+                  color: eraColor.withValues(alpha: 0.60),
+                  letterSpacing: 2.0,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 4),
-              ShaderMask(
-                shaderCallback: (bounds) => LinearGradient(
-                  colors: [Colors.white, colors.primary],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ).createShader(bounds),
-                child: Text(
-                  widget.station.name.toUpperCase().replaceAll(' ', '\n'),
-                  style: typography.titleLarge.copyWith(
-                    fontFamily: 'Orbitron',
-                    fontSize: 26,
-                    height: 1.0,
-                    color: Colors.white, // Required for shader
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.5,
-                  ),
+
+              const SizedBox(height: 2),
+
+              // Station Name
+              Text(
+                widget.station.name.toUpperCase(),
+                style: typography.titleLarge.copyWith(
+                  fontFamily: 'Orbitron',
+                  fontSize: 18,
+                  height: 1.1,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
           ),
         ),
 
-        // Level & Manage Section
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            // Level Badge (Power Cell Style)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                border: Border.all(color: colors.primary),
-                borderRadius: BorderRadius.circular(4),
-                boxShadow: [
-                  BoxShadow(
-                    color: colors.primary.withValues(alpha: 0.5),
-                    blurRadius: 8,
-                  ),
-                ],
+        // Level Badge (Power Cell Style)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.black,
+            border: Border.all(color: colors.primary),
+            borderRadius: BorderRadius.circular(3),
+            boxShadow: [
+              BoxShadow(
+                color: colors.primary.withValues(alpha: 0.40),
+                blurRadius: 6,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppIcon(AppHugeIcons.bolt, color: colors.primary, size: 14),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${AppLocalizations.of(context)!.lvl} ${widget.station.level}',
-                    style: typography.bodyMedium.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: colors.primary,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // Manage Button (Hollow)
-            GestureDetector(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context, // Context is available in State
-                  backgroundColor: Colors.transparent,
-                  isScrollControlled: true,
-                  builder: (context) => const WorkerManagementSheet(),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: colors.secondary.withValues(alpha: 0.5)),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  AppLocalizations.of(context)!.manageUnits,
-                  style: typography.buttonText.copyWith(
-                    fontSize: 10,
-                    color: colors.secondary,
-                    letterSpacing: 1.0,
-                  ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppIcon(AppHugeIcons.bolt, color: colors.primary, size: 13),
+              const SizedBox(width: 4),
+              Text(
+                '${AppLocalizations.of(context)!.lvl} ${widget.station.level}',
+                style: typography.bodyMedium.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: colors.primary,
+                  letterSpacing: 1.0,
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildVisualArea(ThemeColors colors, ThemeTypography typography) {
+  // ---------------------------------------------------------------------------
+  // 2. Production Monitor — Hero output display with pulse animation
+  // ---------------------------------------------------------------------------
+  Widget _buildProductionMonitor(
+    ThemeColors colors,
+    ThemeTypography typography,
+  ) {
     return Container(
-      height: 160, // Slightly taller
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.black,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.35)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 10),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.50), blurRadius: 8),
         ],
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 1. Grid Floor
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 100,
-            child: Opacity(
-              opacity: 0.3,
-              child: Image.asset(
-                'assets/images/bg_neon.png', // Fallback
-                fit: BoxFit.cover,
-                errorBuilder: (c, o, s) => const SizedBox(),
-              ),
-            ),
-          ),
-
-          // 2. Central Hologram Icon (Faded)
+          // Faint hologram icon behind
           Opacity(
-            opacity: 0.15, // Reduced opacity for cleaner look
+            opacity: 0.08,
             child: AppIcon(
               AppHugeIcons.precision_manufacturing,
-              size: 80,
+              size: 70,
               color: colors.primary,
             ),
           ),
 
-          // 4. BIG OUTPUT DISPLAY (Hero Stat)
+          // Production readout
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 AppLocalizations.of(context)!.currentOutput,
                 style: typography.bodyMedium.copyWith(
-                  fontSize: 10,
-                  color: colors.success.withValues(alpha: 0.5),
-                  letterSpacing: 2.0,
+                  fontSize: 9,
+                  color: colors.success.withValues(alpha: 0.55),
+                  letterSpacing: 2.5,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  AppIcon(AppHugeIcons.bolt, color: colors.success, size: 24),
-                  const SizedBox(width: 4),
-                  Text(
-                    NumberFormatter.format(widget.production),
-                    style: typography.titleLarge.copyWith(
-                      fontFamily: 'Orbitron',
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: colors.success,
-                      shadows: [
-                        Shadow(
-                          color: colors.success.withValues(alpha: 0.5),
-                          blurRadius: 10,
-                        ),
-                      ],
+              const SizedBox(height: 6),
+
+              // Pulsing production value (hero element)
+              AnimatedBuilder(
+                animation: _prodPulseAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _prodPulseAnimation.value,
+                    child: child,
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    AppIcon(AppHugeIcons.bolt, color: colors.success, size: 22),
+                    const SizedBox(width: 4),
+                    Text(
+                      NumberFormatter.format(widget.production),
+                      style: typography.titleLarge.copyWith(
+                        fontFamily: 'Orbitron',
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: colors.success,
+                        shadows: [
+                          Shadow(
+                            color: colors.success.withValues(alpha: 0.50),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    AppLocalizations.of(context)!.perSecond,
-                    style: typography.bodyMedium.copyWith(
-                      fontSize: 12,
-                      color: colors.success.withValues(alpha: 0.5),
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(width: 6),
+                    Text(
+                      AppLocalizations.of(context)!.perSecond,
+                      style: typography.bodyMedium.copyWith(
+                        fontSize: 12,
+                        color: colors.success.withValues(alpha: 0.55),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
 
-          // 5. System Status Badge
+          // System status badge
           Positioned(
-            bottom: 8,
-            right: 8,
+            bottom: 0,
+            right: 0,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: colors.primary.withValues(alpha: 0.5)),
+                color: Colors.black.withValues(alpha: 0.60),
+                borderRadius: BorderRadius.circular(2),
+                border: Border.all(
+                  color: colors.primary.withValues(alpha: 0.40),
+                ),
               ),
               child: Text(
                 AppLocalizations.of(context)!.sysOnline,
                 style: TextStyle(
                   fontFamily: 'Orbitron',
                   color: colors.primary,
-                  fontSize: 8,
-                  letterSpacing: 1.0,
+                  fontSize: 7,
+                  letterSpacing: 1.2,
                 ),
               ),
             ),
@@ -400,131 +394,184 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
     );
   }
 
-  Widget _buildStatsHUD(ThemeColors colors, ThemeTypography typography) {
+  // ---------------------------------------------------------------------------
+  // 3. Telemetry Stats — Segmented bars (Efficiency / Stability)
+  // ---------------------------------------------------------------------------
+  Widget _buildTelemetryBars(ThemeColors colors, ThemeTypography typography) {
+    final efficiencyPercent = (widget.station.productionBonus * 100).toInt();
+    final efficiencyValue = (efficiencyPercent / 200).clamp(0.0, 1.0);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+        color: colors.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.15)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          // Efficiency
-          _buildWideStat(
-            AppLocalizations.of(context)!.efficiency,
-            '${(widget.station.productionBonus * 100).toInt()}%',
-            colors.primary,
-            AppHugeIcons.speed,
-            typography,
+          // Efficiency bar
+          _buildTelemetryRow(
+            icon: AppHugeIcons.speed,
+            label: AppLocalizations.of(context)!.efficiency,
+            value: efficiencyValue,
+            valueText: '$efficiencyPercent%',
+            color: colors.primary,
+            typography: typography,
           ),
-
-          Container(
-            width: 1,
-            height: 30,
-            color: colors.primary.withValues(alpha: 0.5),
-          ),
-
-          _buildWideStat(
-            AppLocalizations.of(context)!.stability,
-            '99.9%', // Placeholder
-            colors.secondary,
-            AppHugeIcons.shield,
-            typography,
+          const SizedBox(height: 10),
+          // Stability bar
+          _buildTelemetryRow(
+            icon: AppHugeIcons.shield,
+            label: AppLocalizations.of(context)!.stability,
+            value: 0.999,
+            valueText: '99.9%',
+            color: colors.secondary,
+            typography: typography,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWideStat(
-    String label,
-    String value,
-    Color color,
-    AppIconData icon,
-    ThemeTypography typography,
-  ) {
+  Widget _buildTelemetryRow({
+    required AppIconData icon,
+    required String label,
+    required double value,
+    required String valueText,
+    required Color color,
+    required ThemeTypography typography,
+  }) {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
+        AppIcon(icon, color: color, size: 14),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 70,
+          child: Text(
+            label,
+            style: typography.bodyMedium.copyWith(
+              fontSize: 9,
+              color: color.withValues(alpha: 0.70),
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          child: AppIcon(icon, size: 16, color: color),
         ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: typography.bodyMedium.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontFamily: 'monospace',
-              ),
-            ),
-            Text(
-              label,
-              style: typography.bodyMedium.copyWith(
-                fontSize: 9,
-                color: Colors.grey[400],
-                letterSpacing: 1.0,
-              ),
-            ),
-          ],
+        Expanded(
+          child: HudSegmentedProgressBar(
+            value: value,
+            color: color,
+            height: 6,
+            segmentCount: 10,
+            segmentGap: 2,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          valueText,
+          style: typography.bodyMedium.copyWith(
+            fontSize: 11,
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Orbitron',
+            letterSpacing: 0.5,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildWorkerGrid(NeonTheme theme) {
-    final colors = theme.colors;
+  // ---------------------------------------------------------------------------
+  // 4. Protocol Matrix — Worker grid with telemetry badge
+  // ---------------------------------------------------------------------------
+  Widget _buildProtocolMatrixHeader(
+    Color eraColor,
+    ThemeTypography typography,
+  ) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'PROTOCOL MATRIX',
+              style: typography.bodyMedium.copyWith(
+                fontSize: 10,
+                color: eraColor.withValues(alpha: 0.55),
+                letterSpacing: 2.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            // Telemetry-style badge (not a pill button)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: eraColor.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(2),
+                border: Border.all(color: eraColor.withValues(alpha: 0.35)),
+              ),
+              child: Text(
+                '${widget.assignedWorkers.length}/${widget.station.maxWorkerSlots} ${AppLocalizations.of(context)!.active}',
+                style: typography.bodyMedium.copyWith(
+                  fontSize: 9,
+                  color: eraColor,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        // Thin divider
+        Container(height: 1, color: eraColor.withValues(alpha: 0.15)),
+      ],
+    );
+  }
+
+  Widget _buildWorkerGrid(ThemeColors colors) {
     final totalSlots = widget.station.maxWorkerSlots;
 
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 10,
+      runSpacing: 10,
       alignment: WrapAlignment.start,
       children: List.generate(totalSlots, (index) {
         if (index < widget.assignedWorkers.length) {
-          return _buildHoloWorker(widget.assignedWorkers[index], colors);
+          return _buildWorkerSlot(widget.assignedWorkers[index], colors);
         }
         final isFirstEmpty =
             widget.highlightFirstEmptySlot &&
             index == widget.assignedWorkers.length;
-        return _buildEmptySocket(index, colors, isFirstEmpty: isFirstEmpty);
+        return _buildEmptySlot(index, colors, isFirstEmpty: isFirstEmpty);
       }),
     );
   }
 
-  Widget _buildHoloWorker(Worker worker, ThemeColors colors) {
+  Widget _buildWorkerSlot(Worker worker, ThemeColors colors) {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
         WorkerDetailDialog.show(context, worker);
       },
       child: Container(
-        width: 50,
-        height: 50,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.6),
-          border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.black.withValues(alpha: 0.55),
+          border: Border.all(color: colors.primary.withValues(alpha: 0.30)),
+          borderRadius: BorderRadius.circular(4), // Sharp per PRD
         ),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(6.0),
           child: WorkerIconHelper.buildIcon(worker.era, worker.rarity),
         ),
       ),
     );
   }
 
-  Widget _buildEmptySocket(
+  Widget _buildEmptySlot(
     int index,
     ThemeColors colors, {
     bool isFirstEmpty = false,
@@ -536,31 +583,33 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
         widget.onAssignSlot?.call(index);
       },
       child: Container(
-        width: 50,
-        height: 50,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.5),
+          color: Colors.black.withValues(alpha: 0.40),
           border: Border.all(
-            color: colors.primary.withValues(alpha: 0.5),
+            color: colors.primary.withValues(alpha: 0.20),
             style: BorderStyle.solid,
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Center(
           child: AppIcon(
             AppHugeIcons.add,
-            color: colors.primary.withValues(alpha: 0.5),
-            size: 20,
+            color: colors.primary.withValues(alpha: 0.35),
+            size: 18,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildUpgradeButton(
+  // ---------------------------------------------------------------------------
+  // 5. Upgrade Action — GameActionButton atom
+  // ---------------------------------------------------------------------------
+  Widget _buildUpgradeAction(
     BuildContext context,
     WidgetRef ref,
-    NeonTheme theme,
     ThemeColors colors,
     ThemeTypography typography,
   ) {
@@ -569,62 +618,31 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard> {
       gameState.techLevels,
     );
     final cost = widget.station.getUpgradeCost(discountMultiplier: discount);
+    final canAfford = gameState.chronoEnergy >= cost;
 
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.2),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.5)),
-        borderRadius: BorderRadius.circular(4),
-        boxShadow: [
-          BoxShadow(color: colors.primary.withValues(alpha: 0.1), blurRadius: 4),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.mediumImpact();
-            if (widget.onUpgrade != null) {
-              showDialog(
-                context: context,
-                builder: (context) => UpgradeConfirmationDialog(
-                  station: widget.station,
-                  onConfirm: widget.onUpgrade!,
-                  title: AppLocalizations.of(context)!.systemUpgrade,
-                  message:
-                      '${AppLocalizations.of(context)!.initializeExpansion}\n\n${AppLocalizations.of(context)!.cost}: ${NumberFormatter.formatCE(cost)} CE',
-                  costOverride: cost,
-                ),
-              );
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                AppIcon(AppHugeIcons.upgrade, color: colors.primary),
-                const SizedBox(width: 12),
-                Text(
-                  AppLocalizations.of(context)!.initUpgrade,
-                  style: typography.buttonText.copyWith(
-                    color: colors.primary,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '[ ${NumberFormatter.formatCE(cost)} ]',
-                  style: typography.bodyMedium.copyWith(
-                    color: colors.primary,
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              ],
+    return GameActionButton(
+      label:
+          '${AppLocalizations.of(context)!.initUpgrade}  [ ${NumberFormatter.formatCE(cost)} ]',
+      icon: AppHugeIcons.upgrade,
+      color: colors.primary,
+      enabled: canAfford,
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        if (widget.onUpgrade != null) {
+          showDialog(
+            context: context,
+            builder: (ctx) => UpgradeConfirmationDialog(
+              station: widget.station,
+              onConfirm: widget.onUpgrade!,
+              title: AppLocalizations.of(ctx)!.systemUpgrade,
+              message:
+                  '${AppLocalizations.of(ctx)!.initializeExpansion}\n\n${AppLocalizations.of(ctx)!.cost}: ${NumberFormatter.formatCE(cost)} CE',
+              costOverride: cost,
             ),
-          ),
-        ),
-      ),
+          );
+        }
+      },
+      height: 44,
     );
   }
 }
@@ -641,16 +659,14 @@ class _CyberGridPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 0.5;
 
-    const gridSize = 30.0;
+    const gridSize = 28.0;
 
-    // Vertical lines
     for (double x = 0; x < size.width; x += gridSize) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 
-    // Horizontal lines (moving)
     for (
       double y = (offset % gridSize) - gridSize;
       y < size.height;
@@ -674,10 +690,10 @@ class _TechCornerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 2.0
+      ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
-    const cornerSize = 15.0;
+    const cornerSize = 12.0;
 
     // Top Left
     canvas.drawPath(

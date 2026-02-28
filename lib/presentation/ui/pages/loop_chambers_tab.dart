@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:time_factory/core/constants/spacing.dart';
+import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/domain/entities/game_state.dart';
 import 'package:time_factory/domain/entities/station.dart';
 import 'package:time_factory/domain/entities/worker.dart';
@@ -8,7 +10,9 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/presentation/ui/dialogs/assign_worker_dialog.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/presentation/ui/organisms/mega_chamber_card.dart';
+import 'package:time_factory/presentation/ui/organisms/worker_management_sheet.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
+import 'package:time_factory/core/ui/app_icons.dart';
 
 class LoopChambersTab extends ConsumerWidget {
   const LoopChambersTab({super.key});
@@ -16,8 +20,7 @@ class LoopChambersTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameStateProvider);
-    // Force Neon Theme for this tab
-    final theme = const NeonTheme();
+    const theme = NeonTheme();
     final stations = gameState.stations.values.toList(growable: false);
     if (stations.isEmpty) {
       return Center(
@@ -32,7 +35,7 @@ class LoopChambersTab extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: AppSpacing.md,
+        vertical: AppSpacing.sm,
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: AppSpacing.bottomSafe),
@@ -41,6 +44,8 @@ class LoopChambersTab extends ConsumerWidget {
           children: [
             if (stations.length > 1)
               _buildMigrationNotice(context, theme, stations.length),
+
+            // 2. Chamber Hero Module
             _buildMegaChamber(
               context,
               ref,
@@ -48,6 +53,14 @@ class LoopChambersTab extends ConsumerWidget {
               activeStation,
               gameState,
               isFirstCard: true,
+            ),
+
+            const SizedBox(height: 12),
+
+            // 4. Unit Control Panel (Manage Units — extracted)
+            _UnitControlPanel(
+              colors: theme.colors,
+              typography: theme.typography,
             ),
           ],
         ),
@@ -73,12 +86,12 @@ class LoopChambersTab extends ConsumerWidget {
     final typography = theme.typography;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: colors.accent.withValues(alpha: 0.10),
         border: Border.all(color: colors.accent.withValues(alpha: 0.45)),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         'Single chamber mode active. Consolidated from $stationCount chambers.',
@@ -194,6 +207,120 @@ class LoopChambersTab extends ConsumerWidget {
           BigInt.from((station.productionBonus * 100).toInt()) ~/
           BigInt.from(100);
     }
-    return production; // Per second
+    return production;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Unit Control Panel — Extracted "Manage Units" into its own game-style panel
+// ---------------------------------------------------------------------------
+class _UnitControlPanel extends StatefulWidget {
+  final ThemeColors colors;
+  final ThemeTypography typography;
+
+  const _UnitControlPanel({required this.colors, required this.typography});
+
+  @override
+  State<_UnitControlPanel> createState() => _UnitControlPanelState();
+}
+
+class _UnitControlPanelState extends State<_UnitControlPanel> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = widget.colors;
+    final typography = widget.typography;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF050A10),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: colors.secondary.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section title
+          Text(
+            'UNIT CONTROL',
+            style: typography.bodyMedium.copyWith(
+              fontSize: 9,
+              color: colors.secondary.withValues(alpha: 0.55),
+              letterSpacing: 2.4,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(height: 1, color: colors.secondary.withValues(alpha: 0.12)),
+          const SizedBox(height: 10),
+
+          // Game-style action button with press feedback
+          GestureDetector(
+            onTapDown: (_) => setState(() => _isPressed = true),
+            onTapUp: (_) {
+              setState(() => _isPressed = false);
+              HapticFeedback.lightImpact();
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (ctx) => const WorkerManagementSheet(),
+              );
+            },
+            onTapCancel: () => setState(() => _isPressed = false),
+            child: AnimatedScale(
+              scale: _isPressed ? 0.96 : 1.0,
+              duration: const Duration(milliseconds: 80),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.secondary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: colors.secondary.withValues(alpha: 0.50),
+                    width: 1.5,
+                  ),
+                  boxShadow: _isPressed
+                      ? [
+                          BoxShadow(
+                            color: colors.secondary.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AppIcon(
+                      AppHugeIcons.person,
+                      color: colors.secondary,
+                      size: 15,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      AppLocalizations.of(context)!.manageUnits,
+                      style: TextStyle(
+                        fontFamily: 'Orbitron',
+                        fontSize: 11,
+                        color: colors.secondary,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

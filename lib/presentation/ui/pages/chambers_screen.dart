@@ -9,7 +9,7 @@ import 'package:time_factory/presentation/ui/pages/expeditions_screen.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
-/// Chambers Screen - Steampunk Themed
+/// Chambers Screen — Temporal Production Console.
 class ChambersScreen extends ConsumerStatefulWidget {
   const ChambersScreen({super.key});
 
@@ -21,11 +21,11 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameStateProvider);
-    // Use Neon Theme explicitly
-    final theme = const NeonTheme();
+    const theme = NeonTheme();
 
     final allWorkers = gameState.workers.values.toList();
     final idleCount = allWorkers.where((w) => !w.isDeployed).length;
+    final deployedCount = allWorkers.where((w) => w.isDeployed).length;
     final activeExpeditions = gameState.expeditions
         .where((expedition) => !expedition.resolved)
         .length;
@@ -38,165 +38,153 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          _buildHeader(
-            context,
-            idleCount,
-            theme,
-            activeExpeditions,
-            readyExpeditions,
+          // 1. System HUD Header (3-line structure)
+          _ChamberHudHeader(
+            colors: theme.colors,
+            typography: theme.typography,
+            idleCount: idleCount,
+            deployedCount: deployedCount,
+            activeExpeditions: activeExpeditions,
+            readyExpeditions: readyExpeditions,
           ),
 
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
 
-          // Station list (High-Fidelity Steampunk UI)
+          // 2–6. Chamber Hero Module + Sub-sections via LoopChambersTab
           const Expanded(child: LoopChambersTab()),
         ],
       ),
     );
   }
+}
 
-  Widget _buildHeader(
-    BuildContext context,
-    int idleCount,
-    NeonTheme theme,
-    int activeExpeditions,
-    int readyExpeditions,
-  ) {
-    final colors = theme.colors;
-    final typography = theme.typography;
+// ---------------------------------------------------------------------------
+// _ChamberHudHeader — System HUD with 3-line telemetry structure
+// ---------------------------------------------------------------------------
+class _ChamberHudHeader extends StatefulWidget {
+  final ThemeColors colors;
+  final ThemeTypography typography;
+  final int idleCount;
+  final int deployedCount;
+  final int activeExpeditions;
+  final int readyExpeditions;
+
+  const _ChamberHudHeader({
+    required this.colors,
+    required this.typography,
+    required this.idleCount,
+    required this.deployedCount,
+    required this.activeExpeditions,
+    required this.readyExpeditions,
+  });
+
+  @override
+  State<_ChamberHudHeader> createState() => _ChamberHudHeaderState();
+}
+
+class _ChamberHudHeaderState extends State<_ChamberHudHeader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = widget.colors;
+    final typography = widget.typography;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
+        vertical: 8,
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final bool compact = constraints.maxWidth < 620;
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.40),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: colors.primary.withValues(alpha: 0.30)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // LINE 1 — System Identity
+            _buildLine1(colors, typography),
 
-          return Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.primary.withValues(alpha: 0.28)),
+            // Thin divider
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Container(
+                height: 1,
+                color: colors.primary.withValues(alpha: 0.15),
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (compact) ...[
-                  _buildTitleBlock(theme),
-                  const SizedBox(height: AppSpacing.sm),
-                  _buildExpeditionAction(
-                    context,
-                    theme,
-                    activeExpeditions,
-                    readyExpeditions,
-                    expanded: true,
-                  ),
-                ] else
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _buildTitleBlock(theme)),
-                      const SizedBox(width: AppSpacing.sm),
-                      _buildExpeditionAction(
-                        context,
-                        theme,
-                        activeExpeditions,
-                        readyExpeditions,
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.xs,
-                  runSpacing: AppSpacing.xs,
-                  children: [
-                    _buildStatusChip(
-                      icon: AppHugeIcons.person,
-                      label: '$idleCount IDLE',
-                      color: colors.primary,
-                      typography: typography,
-                    ),
-                    _buildStatusChip(
-                      icon: AppHugeIcons.rocket_launch,
-                      label: '$activeExpeditions ACTIVE',
-                      color: colors.secondary,
-                      typography: typography,
-                    ),
-                    if (readyExpeditions > 0)
-                      _buildStatusChip(
-                        icon: AppHugeIcons.check_circle,
-                        label: '$readyExpeditions READY',
-                        color: colors.success,
-                        typography: typography,
-                      ),
-                    _buildStatusChip(
-                      icon: AppHugeIcons.shield,
-                      label: 'SYS.LC1',
-                      color: colors.accent,
-                      typography: typography,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
+
+            // LINE 2 — Telemetry Row
+            _buildLine2(context, colors, typography),
+
+            const SizedBox(height: 8),
+
+            // LINE 3 — Operational Chips
+            _buildLine3(colors, typography),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTitleBlock(NeonTheme theme) {
-    final colors = theme.colors;
-    final typography = theme.typography;
-
+  /// Line 1 — System Identity: icon + title + system ID
+  Widget _buildLine1(ThemeColors colors, ThemeTypography typography) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.xs),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: colors.primary.withValues(alpha: 0.24)),
-            color: colors.primary.withValues(alpha: 0.08),
-          ),
-          child: AppIcon(
-            AppHugeIcons.grid_view,
-            color: colors.primary,
-            size: 22,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Flexible(
+        // Breathing glow icon
+        _GlowBreathingIcon(color: colors.primary),
+        const SizedBox(width: 8),
+
+        // Title block
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'LOOP',
+                'LOOP SYSTEM',
                 style: typography.bodyMedium.copyWith(
-                  fontSize: 11,
-                  color: colors.primary.withValues(alpha: 0.75),
-                  letterSpacing: 2.2,
+                  fontSize: 9,
+                  color: colors.primary.withValues(alpha: 0.60),
+                  letterSpacing: 2.4,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               Text(
                 'CHAMBER',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: typography.titleLarge.copyWith(
                   height: 1.0,
-                  fontSize: 24,
+                  fontSize: 22,
                   color: colors.primary,
                   letterSpacing: 1.8,
                   shadows: [
                     Shadow(
-                      color: colors.primary.withValues(alpha: 0.55),
-                      blurRadius: 6,
+                      color: colors.primary.withValues(alpha: 0.60),
+                      blurRadius: 8,
                     ),
                   ],
                 ),
@@ -204,83 +192,80 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
             ],
           ),
         ),
+
+        // System ID badge
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            _buildExpeditionAccess(context, colors, typography),
+            const SizedBox(height: 4),
+            Text(
+              'SYS.LC1',
+              style: typography.bodyMedium.copyWith(
+                fontSize: 10,
+                color: colors.primary.withValues(alpha: 0.55),
+                letterSpacing: 2.0,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildExpeditionAction(
+  /// Expedition access — "EXTERNAL OPS" styled link
+  Widget _buildExpeditionAccess(
     BuildContext context,
-    NeonTheme theme,
-    int activeExpeditions,
-    int readyExpeditions, {
-    bool expanded = false,
-  }) {
-    final colors = theme.colors;
-    final typography = theme.typography;
-
-    final Widget button = SizedBox(
-      width: expanded ? double.infinity : null,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(48, 48),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: AppSpacing.xs,
-          ),
-          side: BorderSide(
-            color: readyExpeditions > 0
+    ThemeColors colors,
+    ThemeTypography typography,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const ExpeditionsScreen()));
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: colors.secondary.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(
+            color: widget.readyExpeditions > 0
                 ? colors.success
-                : colors.secondary.withValues(alpha: 0.72),
+                : colors.secondary.withValues(alpha: 0.50),
           ),
-          backgroundColor: colors.secondary.withValues(alpha: 0.12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        onPressed: () {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const ExpeditionsScreen()));
-        },
         child: Row(
-          mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
             AppIcon(
               AppHugeIcons.rocket_launch,
               color: colors.secondary,
-              size: 16,
+              size: 12,
             ),
-            const SizedBox(width: AppSpacing.xs),
+            const SizedBox(width: 4),
             Text(
-              'EXPEDITIONS',
+              'EXT OPS',
               style: typography.bodyMedium.copyWith(
-                fontSize: 11,
+                fontSize: 9,
                 color: colors.secondary,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 1.1,
+                letterSpacing: 1.0,
               ),
             ),
-            const SizedBox(width: AppSpacing.xs),
-            Text(
-              '$activeExpeditions ACTIVE',
-              style: typography.bodyMedium.copyWith(
-                fontSize: 10,
-                color: Colors.white70,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.6,
-              ),
-            ),
-            if (readyExpeditions > 0) ...[
-              const SizedBox(width: AppSpacing.xs),
+            if (widget.readyExpeditions > 0) ...[
+              const SizedBox(width: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                 decoration: BoxDecoration(
-                  color: colors.success.withValues(alpha: 0.20),
-                  borderRadius: BorderRadius.circular(99),
-                  border: Border.all(color: colors.success),
+                  color: colors.success.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(2),
                 ),
                 child: Text(
-                  '$readyExpeditions READY',
+                  '${widget.readyExpeditions}',
                   style: typography.bodyMedium.copyWith(
-                    fontSize: 9,
+                    fontSize: 8,
                     color: colors.success,
                     fontWeight: FontWeight.bold,
                   ),
@@ -291,35 +276,141 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
         ),
       ),
     );
-
-    return Semantics(button: true, label: 'Open expeditions', child: button);
   }
 
-  Widget _buildStatusChip({
-    required AppIconData icon,
+  /// Line 2 — Telemetry: Expeditions + System Status
+  Widget _buildLine2(
+    BuildContext context,
+    ThemeColors colors,
+    ThemeTypography typography,
+  ) {
+    return Row(
+      children: [
+        // Expedition status
+        Text(
+          'EXPEDITIONS: ${widget.activeExpeditions} ACTIVE',
+          style: typography.bodyMedium.copyWith(
+            fontSize: 10,
+            color: colors.secondary.withValues(alpha: 0.80),
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.8,
+          ),
+        ),
+        const Spacer(),
+
+        // System status with animated online dot
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'SYS STATUS:',
+              style: typography.bodyMedium.copyWith(
+                fontSize: 10,
+                color: Colors.white.withValues(alpha: 0.50),
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'ONLINE',
+              style: typography.bodyMedium.copyWith(
+                fontSize: 10,
+                color: colors.success,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.6,
+              ),
+            ),
+            const SizedBox(width: 4),
+            // Pulsing online dot
+            AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: colors.success.withValues(
+                      alpha: _pulseAnimation.value,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: colors.success.withValues(
+                          alpha: 0.4 * _pulseAnimation.value,
+                        ),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Line 3 — Operational Chips
+  Widget _buildLine3(ThemeColors colors, ThemeTypography typography) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        _buildSystemChip(
+          label: '${widget.idleCount} IDLE',
+          color: colors.primary,
+          icon: AppHugeIcons.person,
+          typography: typography,
+        ),
+        _buildSystemChip(
+          label: '${widget.deployedCount} DEPLOYED',
+          color: colors.accent,
+          icon: AppHugeIcons.bolt,
+          typography: typography,
+        ),
+        _buildSystemChip(
+          label: '${widget.activeExpeditions} ACTIVE',
+          color: colors.secondary,
+          icon: AppHugeIcons.rocket_launch,
+          typography: typography,
+        ),
+        if (widget.readyExpeditions > 0)
+          _buildSystemChip(
+            label: '${widget.readyExpeditions} READY',
+            color: colors.success,
+            icon: AppHugeIcons.check_circle,
+            typography: typography,
+          ),
+      ],
+    );
+  }
+
+  /// System chip — hard-edged, technical, NOT a filter button
+  Widget _buildSystemChip({
     required String label,
     required Color color,
+    required AppIconData icon,
     required ThemeTypography typography,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xs,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.40)),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppIcon(icon, color: color, size: 12),
-          const SizedBox(width: AppSpacing.xxs),
+          AppIcon(icon, color: color, size: 10),
+          const SizedBox(width: 4),
           Text(
             label,
             style: typography.bodyMedium.copyWith(
-              fontSize: 10,
+              fontSize: 9,
               color: color,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.8,
@@ -327,6 +418,79 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// _GlowBreathingIcon — Subtle breathing glow on header icon
+// ---------------------------------------------------------------------------
+class _GlowBreathingIcon extends StatefulWidget {
+  final Color color;
+  const _GlowBreathingIcon({required this.color});
+
+  @override
+  State<_GlowBreathingIcon> createState() => _GlowBreathingIconState();
+}
+
+class _GlowBreathingIconState extends State<_GlowBreathingIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    )..repeat(reverse: true);
+
+    _glowAnimation = Tween<double>(
+      begin: 0.50,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _glowAnimation,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: widget.color.withValues(
+                alpha: 0.2 + (0.15 * _glowAnimation.value),
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(
+                  alpha: 0.15 * _glowAnimation.value,
+                ),
+                blurRadius: 8 * _glowAnimation.value,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: AppIcon(
+            AppHugeIcons.grid_view,
+            color: widget.color.withValues(
+              alpha: 0.6 + (0.4 * _glowAnimation.value),
+            ),
+            size: 22,
+          ),
+        );
+      },
     );
   }
 }
