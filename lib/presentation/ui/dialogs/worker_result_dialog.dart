@@ -110,21 +110,22 @@ class WorkerResultDialog extends StatelessWidget {
                 children: [
                   // Avatar
                   Container(
-                    width: 80,
-                    height: 80,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
                       color: rarityColor.withValues(alpha: 0.1),
-                      border: Border.all(color: rarityColor, width: 1),
+                      border: Border.all(color: rarityColor, width: 2),
                       borderRadius: BorderRadius.circular(4),
                       boxShadow: [
                         BoxShadow(
                           color: rarityColor.withValues(alpha: 0.2),
-                          blurRadius: 10,
+                          blurRadius: 15,
+                          spreadRadius: 2,
                         ),
                       ],
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(20.0),
                       child: WorkerIconHelper.buildIcon(
                         worker.era,
                         worker.rarity,
@@ -134,7 +135,7 @@ class WorkerResultDialog extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     worker.displayName.toUpperCase(),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'Orbitron',
                       color: Colors.white,
                       fontSize: 20,
