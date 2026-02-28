@@ -18,7 +18,8 @@ extension WorkerEraLocalization on WorkerEra {
       case WorkerEra.neoTokyo:
         return l10n.neoTokyo;
       case WorkerEra.postSingularity:
-        return l10n.postSingularity;
+        final locale = Localizations.localeOf(context).languageCode;
+        return locale == 'pt' ? 'Singularidade' : 'Singularity';
       case WorkerEra.ancientRome:
         return l10n.ancientRome;
       case WorkerEra.farFuture:
@@ -117,6 +118,9 @@ extension StationTypeLocalization on StationType {
         return l10n.neonCoreName;
       case StationType.riftGenerator:
         return l10n.riftGeneratorName;
+      case StationType.quantumSpire:
+        final locale = Localizations.localeOf(context).languageCode;
+        return locale == 'pt' ? 'Torre Quantica' : 'Quantum Spire';
     }
   }
 }

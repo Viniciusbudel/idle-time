@@ -1393,6 +1393,18 @@ AppIconData _techIconData(String techId) {
       return AppHugeIcons.flash_on;
     case 'virtual_reality':
       return AppHugeIcons.remove_red_eye;
+    case 'neural_mesh':
+      return AppHugeIcons.psychology;
+    case 'probability_compiler':
+      return AppHugeIcons.schedule;
+    case 'nanoforge_cells':
+      return AppHugeIcons.precision_manufacturing;
+    case 'swarm_autonomy':
+      return AppHugeIcons.hub;
+    case 'quantum_hibernation':
+      return AppHugeIcons.schedule;
+    case 'exo_mind_uplink':
+      return AppHugeIcons.psychology;
     default:
       return AppHugeIcons.science;
   }

@@ -72,6 +72,8 @@ class WorkerIconHelper {
         return 'atomic';
       case WorkerEra.cyberpunk80s:
         return 'cyberpunk';
+      case WorkerEra.postSingularity:
+        return 'singularity';
       default:
         return era.id;
     }
