@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/neon_theme.dart';
 import '../../../core/theme/game_theme.dart';
 import '../../../core/constants/colors.dart';
-import '../../../core/utils/worker_icon_helper.dart';
 import '../../../domain/entities/enums.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
@@ -14,6 +13,7 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import '../atoms/merge_effect_overlay.dart';
 import '../atoms/worker_tile.dart';
 import '../dialogs/fit_worker_dialog.dart';
+import '../dialogs/worker_result_dialog.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
 class WorkerManagementSheet extends ConsumerStatefulWidget {
@@ -126,7 +126,10 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
     if (_mergedWorkerResult == null) return;
     showDialog(
       context: context,
-      builder: (context) => _MergeResultDialog(worker: _mergedWorkerResult!),
+      builder: (context) => WorkerResultDialog(
+        worker: _mergedWorkerResult!,
+        title: AppLocalizations.of(context)!.mergeSuccessful,
+      ),
     );
   }
 
@@ -544,227 +547,6 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
       case WorkerRarity.paradox:
         return 'MAX';
     }
-  }
-
-  Color _getRarityColor(WorkerRarity rarity, ThemeColors colors) {
-    switch (rarity) {
-      case WorkerRarity.common:
-        return colors.rarityCommon;
-      case WorkerRarity.rare:
-        return colors.rarityRare;
-      case WorkerRarity.epic:
-        return colors.rarityEpic;
-      case WorkerRarity.legendary:
-        return colors.rarityLegendary;
-      case WorkerRarity.paradox:
-        return colors.rarityParadox;
-    }
-  }
-}
-
-// ─────────────────────────────────────────────
-// Merge Result Dialog — animated entry
-// ─────────────────────────────────────────────
-
-class _MergeResultDialog extends StatefulWidget {
-  final Worker worker;
-
-  const _MergeResultDialog({required this.worker});
-
-  @override
-  State<_MergeResultDialog> createState() => _MergeResultDialogState();
-}
-
-class _MergeResultDialogState extends State<_MergeResultDialog>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scale;
-  late Animation<double> _opacity;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _scale = Tween<double>(
-      begin: 0.5,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
-    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
-      ),
-    );
-    _controller.forward();
-    HapticFeedback.heavyImpact();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    const theme = NeonTheme();
-    final colors = theme.colors;
-    final typography = theme.typography;
-    final rarityColor = _getRarityColor(widget.worker.rarity, colors);
-
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) => Opacity(
-        opacity: _opacity.value,
-        child: Transform.scale(scale: _scale.value, child: child),
-      ),
-      child: Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: colors.background,
-            border: Border.all(color: rarityColor, width: 2),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: rarityColor.withOpacity(0.5),
-                blurRadius: 40,
-                spreadRadius: 4,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Text(
-                AppLocalizations.of(context)!.mergeSuccessful,
-                style: typography.titleLarge.copyWith(
-                  color: colors.accent,
-                  fontSize: 20,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-
-              // Animated Avatar Ring
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      rarityColor.withOpacity(0.3),
-                      rarityColor.withOpacity(0.05),
-                    ],
-                  ),
-                  border: Border.all(color: rarityColor, width: 3),
-                  boxShadow: [
-                    BoxShadow(
-                      color: rarityColor.withOpacity(0.6),
-                      blurRadius: 30,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                ),
-                child: ClipOval(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: WorkerIconHelper.buildIcon(
-                      widget.worker.era,
-                      widget.worker.rarity,
-                      colorFilter: WorkerIconHelper.isSvg(widget.worker.era)
-                          ? ColorFilter.mode(rarityColor, BlendMode.srcIn)
-                          : null,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Worker Name
-              Text(
-                widget.worker.displayName.toUpperCase(),
-                style: typography.titleLarge.copyWith(
-                  color: rarityColor,
-                  fontSize: 18,
-                  letterSpacing: 2,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-
-              // Rarity Badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: rarityColor.withOpacity(0.15),
-                  border: Border.all(color: rarityColor.withOpacity(0.4)),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  widget.worker.rarity.localizedName(context).toUpperCase(),
-                  style: typography.bodySmall.copyWith(
-                    color: rarityColor,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 3,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Production stat
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AppIcon(AppHugeIcons.bolt, color: colors.accent, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${AppLocalizations.of(context)!.production}: ${widget.worker.currentProduction} CE/s',
-                    style: typography.bodyMedium.copyWith(
-                      color: colors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Dismiss button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: rarityColor,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    AppLocalizations.of(context)!.excellent,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Color _getRarityColor(WorkerRarity rarity, ThemeColors colors) {
