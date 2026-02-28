@@ -221,18 +221,25 @@ class _MegaChamberCardState extends ConsumerState<MegaChamberCard>
                 ),
               ),
 
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
 
-              // Station Name
-              Text(
-                widget.station.name.toUpperCase(),
-                style: typography.titleLarge.copyWith(
-                  fontFamily: 'Orbitron',
-                  fontSize: 18,
-                  height: 1.1,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.2,
+              // Station Name (ShaderMask gradient — original design)
+              ShaderMask(
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [Colors.white, colors.primary],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ).createShader(bounds),
+                child: Text(
+                  widget.station.name.toUpperCase().replaceAll(' ', '\n'),
+                  style: typography.titleLarge.copyWith(
+                    fontFamily: 'Orbitron',
+                    fontSize: 24,
+                    height: 1.0,
+                    color: Colors.white, // Required for shader
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
+                  ),
                 ),
               ),
             ],

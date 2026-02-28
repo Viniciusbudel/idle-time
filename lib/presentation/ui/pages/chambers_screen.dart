@@ -5,7 +5,6 @@ import 'package:time_factory/presentation/state/game_state_provider.dart';
 import 'package:time_factory/core/theme/neon_theme.dart';
 import 'package:time_factory/core/theme/game_theme.dart';
 import 'package:time_factory/presentation/ui/pages/loop_chambers_tab.dart';
-import 'package:time_factory/presentation/ui/pages/expeditions_screen.dart';
 import 'package:time_factory/core/constants/spacing.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
@@ -29,9 +28,6 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
     final activeExpeditions = gameState.expeditions
         .where((expedition) => !expedition.resolved)
         .length;
-    final readyExpeditions = gameState.expeditions
-        .where((expedition) => expedition.resolved)
-        .length;
 
     return Container(
       color: Colors.transparent,
@@ -45,7 +41,6 @@ class _ChambersScreenState extends ConsumerState<ChambersScreen> {
             idleCount: idleCount,
             deployedCount: deployedCount,
             activeExpeditions: activeExpeditions,
-            readyExpeditions: readyExpeditions,
           ),
 
           const SizedBox(height: AppSpacing.sm),
@@ -67,7 +62,6 @@ class _ChamberHudHeader extends StatefulWidget {
   final int idleCount;
   final int deployedCount;
   final int activeExpeditions;
-  final int readyExpeditions;
 
   const _ChamberHudHeader({
     required this.colors,
@@ -75,7 +69,6 @@ class _ChamberHudHeader extends StatefulWidget {
     required this.idleCount,
     required this.deployedCount,
     required this.activeExpeditions,
-    required this.readyExpeditions,
   });
 
   @override
@@ -197,7 +190,36 @@ class _ChamberHudHeaderState extends State<_ChamberHudHeader>
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            _buildExpeditionAccess(context, colors, typography),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(3),
+                border: Border.all(
+                  color: colors.primary.withValues(alpha: 0.40),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppIcon(
+                    AppHugeIcons.grid_view,
+                    color: colors.primary,
+                    size: 11,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'ACTIVE',
+                    style: typography.bodyMedium.copyWith(
+                      fontSize: 9,
+                      color: colors.primary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 4),
             Text(
               'SYS.LC1',
@@ -210,71 +232,6 @@ class _ChamberHudHeaderState extends State<_ChamberHudHeader>
           ],
         ),
       ],
-    );
-  }
-
-  /// Expedition access — "EXTERNAL OPS" styled link
-  Widget _buildExpeditionAccess(
-    BuildContext context,
-    ThemeColors colors,
-    ThemeTypography typography,
-  ) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const ExpeditionsScreen()));
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: colors.secondary.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(
-            color: widget.readyExpeditions > 0
-                ? colors.success
-                : colors.secondary.withValues(alpha: 0.50),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppIcon(
-              AppHugeIcons.rocket_launch,
-              color: colors.secondary,
-              size: 12,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              'EXT OPS',
-              style: typography.bodyMedium.copyWith(
-                fontSize: 9,
-                color: colors.secondary,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-              ),
-            ),
-            if (widget.readyExpeditions > 0) ...[
-              const SizedBox(width: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                decoration: BoxDecoration(
-                  color: colors.success.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-                child: Text(
-                  '${widget.readyExpeditions}',
-                  style: typography.bodyMedium.copyWith(
-                    fontSize: 8,
-                    color: colors.success,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 
@@ -377,13 +334,6 @@ class _ChamberHudHeaderState extends State<_ChamberHudHeader>
           icon: AppHugeIcons.rocket_launch,
           typography: typography,
         ),
-        if (widget.readyExpeditions > 0)
-          _buildSystemChip(
-            label: '${widget.readyExpeditions} READY',
-            color: colors.success,
-            icon: AppHugeIcons.check_circle,
-            typography: typography,
-          ),
       ],
     );
   }

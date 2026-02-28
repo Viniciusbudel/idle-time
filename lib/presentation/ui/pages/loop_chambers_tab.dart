@@ -13,6 +13,7 @@ import 'package:time_factory/presentation/ui/organisms/mega_chamber_card.dart';
 import 'package:time_factory/presentation/ui/organisms/worker_management_sheet.dart';
 import 'package:time_factory/l10n/app_localizations.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
+import 'package:time_factory/presentation/ui/pages/expeditions_screen.dart';
 
 class LoopChambersTab extends ConsumerWidget {
   const LoopChambersTab({super.key});
@@ -55,13 +56,10 @@ class LoopChambersTab extends ConsumerWidget {
               isFirstCard: true,
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            // 4. Unit Control Panel (Manage Units — extracted)
-            _UnitControlPanel(
-              colors: theme.colors,
-              typography: theme.typography,
-            ),
+            // 4. Command Hub (Manage Units + Expeditions)
+            _CommandHub(colors: theme.colors, typography: theme.typography),
           ],
         ),
       ),
@@ -212,20 +210,20 @@ class LoopChambersTab extends ConsumerWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Unit Control Panel — Extracted "Manage Units" into its own game-style panel
+// Command Hub — Dual-button panel: Manage Units + Expeditions
 // ---------------------------------------------------------------------------
-class _UnitControlPanel extends StatefulWidget {
+class _CommandHub extends StatefulWidget {
   final ThemeColors colors;
   final ThemeTypography typography;
 
-  const _UnitControlPanel({required this.colors, required this.typography});
+  const _CommandHub({required this.colors, required this.typography});
 
   @override
-  State<_UnitControlPanel> createState() => _UnitControlPanelState();
+  State<_CommandHub> createState() => _CommandHubState();
 }
 
-class _UnitControlPanelState extends State<_UnitControlPanel> {
-  bool _isPressed = false;
+class _CommandHubState extends State<_CommandHub> {
+  int _pressedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -237,89 +235,130 @@ class _UnitControlPanelState extends State<_UnitControlPanel> {
       decoration: BoxDecoration(
         color: const Color(0xFF050A10),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: colors.secondary.withValues(alpha: 0.25)),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Section title
           Text(
-            'UNIT CONTROL',
+            'COMMAND HUB',
             style: typography.bodyMedium.copyWith(
               fontSize: 9,
-              color: colors.secondary.withValues(alpha: 0.55),
+              color: colors.primary.withValues(alpha: 0.50),
               letterSpacing: 2.4,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
-          Container(height: 1, color: colors.secondary.withValues(alpha: 0.12)),
+          Container(height: 1, color: colors.primary.withValues(alpha: 0.10)),
           const SizedBox(height: 10),
 
-          // Game-style action button with press feedback
-          GestureDetector(
-            onTapDown: (_) => setState(() => _isPressed = true),
-            onTapUp: (_) {
-              setState(() => _isPressed = false);
-              HapticFeedback.lightImpact();
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                isScrollControlled: true,
-                builder: (ctx) => const WorkerManagementSheet(),
-              );
-            },
-            onTapCancel: () => setState(() => _isPressed = false),
-            child: AnimatedScale(
-              scale: _isPressed ? 0.96 : 1.0,
-              duration: const Duration(milliseconds: 80),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.secondary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: colors.secondary.withValues(alpha: 0.50),
-                    width: 1.5,
-                  ),
-                  boxShadow: _isPressed
-                      ? [
-                          BoxShadow(
-                            color: colors.secondary.withValues(alpha: 0.25),
-                            blurRadius: 8,
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AppIcon(
-                      AppHugeIcons.person,
-                      color: colors.secondary,
-                      size: 15,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      AppLocalizations.of(context)!.manageUnits,
-                      style: TextStyle(
-                        fontFamily: 'Orbitron',
-                        fontSize: 11,
-                        color: colors.secondary,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
+          // Two-button row
+          Row(
+            children: [
+              // Manage Units button
+              Expanded(
+                child: _buildHubButton(
+                  index: 0,
+                  icon: AppHugeIcons.person,
+                  label: AppLocalizations.of(context)!.manageUnits,
+                  color: colors.secondary,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      isScrollControlled: true,
+                      builder: (ctx) => const WorkerManagementSheet(),
+                    );
+                  },
                 ),
               ),
-            ),
+              const SizedBox(width: 8),
+              // Expeditions button
+              Expanded(
+                child: _buildHubButton(
+                  index: 1,
+                  icon: AppHugeIcons.rocket_launch,
+                  label: 'EXPEDITIONS',
+                  color: colors.accent,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ExpeditionsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHubButton({
+    required int index,
+    required AppIconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final isPressed = _pressedIndex == index;
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressedIndex = index),
+      onTapUp: (_) {
+        setState(() => _pressedIndex = -1);
+        onTap();
+      },
+      onTapCancel: () => setState(() => _pressedIndex = -1),
+      child: AnimatedScale(
+        scale: isPressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 80),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: isPressed ? 0.22 : 0.12),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: color.withValues(alpha: isPressed ? 0.65 : 0.40),
+              width: 1.0,
+            ),
+            boxShadow: isPressed
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.20),
+                      blurRadius: 6,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AppIcon(icon, color: color, size: 14),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontFamily: 'Orbitron',
+                    fontSize: 10,
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
