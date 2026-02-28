@@ -33,16 +33,20 @@ class WorkerTile extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
-          color: isSelected ? rarityColor.withOpacity(0.2) : colors.surface,
+          color: isSelected
+              ? rarityColor.withValues(alpha: 0.2)
+              : const Color(0xFF03070C),
           border: Border.all(
-            color: isSelected ? rarityColor : rarityColor.withOpacity(0.3),
+            color: isSelected
+                ? rarityColor
+                : rarityColor.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(4),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: rarityColor.withOpacity(0.4),
+                    color: rarityColor.withValues(alpha: 0.4),
                     blurRadius: 12,
                     spreadRadius: 1,
                   ),
@@ -61,10 +65,11 @@ class WorkerTile extends StatelessWidget {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: rarityColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(4),
+                        color: rarityColor.withValues(alpha: 0.15),
                       ),
-                      child: ClipOval(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
                         child: Padding(
                           padding: const EdgeInsets.all(6),
                           child: WorkerIconHelper.buildIcon(
@@ -78,11 +83,13 @@ class WorkerTile extends StatelessWidget {
                   const SizedBox(height: 4),
                   // Name
                   Text(
-                    worker.displayName,
+                    worker.displayName.toUpperCase(),
                     style: TextStyle(
+                      fontFamily: 'Orbitron',
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                       color: rarityColor,
+                      letterSpacing: 0.5,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -90,10 +97,12 @@ class WorkerTile extends StatelessWidget {
                   ),
                   // Era
                   Text(
-                    worker.era.displayName,
+                    worker.era.displayName.toUpperCase(),
                     style: TextStyle(
+                      fontFamily: 'Orbitron',
                       fontSize: 7,
-                      color: colors.textSecondary.withOpacity(0.7),
+                      color: colors.textSecondary.withValues(alpha: 0.7),
+                      letterSpacing: 0.5,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -111,7 +120,7 @@ class WorkerTile extends StatelessWidget {
                   width: 18,
                   height: 18,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(4),
                     color: rarityColor,
                   ),
                   child: const AppIcon(
@@ -139,9 +148,11 @@ class WorkerTile extends StatelessWidget {
                   child: const Text(
                     'OLD',
                     style: TextStyle(
+                      fontFamily: 'Orbitron',
                       fontSize: 6,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),

@@ -82,12 +82,12 @@ class _AchievementToastState extends State<AchievementToast>
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0A1520),
+                  color: const Color(0xFF03070C),
                   border: Border.all(
                     color: TimeFactoryColors.voltageYellow,
                     width: 2,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(4),
                   boxShadow: [
                     BoxShadow(
                       color: TimeFactoryColors.voltageYellow.withValues(
@@ -130,9 +130,11 @@ class _AchievementToastState extends State<AchievementToast>
                         children: [
                           Text(
                             '🏆 ACHIEVEMENT UNLOCKED',
-                            style: TimeFactoryTextStyles.bodyMono.copyWith(
+                            style: TextStyle(
+                              fontFamily: 'Orbitron',
                               fontSize: 9,
                               color: TimeFactoryColors.voltageYellow,
+                              fontWeight: FontWeight.bold,
                               letterSpacing: 1.5,
                             ),
                           ),

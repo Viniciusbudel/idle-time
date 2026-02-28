@@ -97,12 +97,15 @@ class _ArtifactDropBannerState extends State<ArtifactDropBanner>
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: const Color(0xFF0A1520),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: rarityColor.withOpacity(0.8), width: 1.5),
+            color: const Color(0xFF03070C),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: rarityColor.withValues(alpha: 0.8),
+              width: 1.5,
+            ),
             boxShadow: [
               BoxShadow(
-                color: rarityColor.withOpacity(0.3),
+                color: rarityColor.withValues(alpha: 0.3),
                 blurRadius: 20,
                 spreadRadius: 2,
               ),
@@ -115,9 +118,9 @@ class _ArtifactDropBannerState extends State<ArtifactDropBanner>
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: rarityColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: rarityColor.withOpacity(0.5)),
+                  color: rarityColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: rarityColor.withValues(alpha: 0.5)),
                 ),
                 child: Center(
                   child: AppIcon(
@@ -136,10 +139,12 @@ class _ArtifactDropBannerState extends State<ArtifactDropBanner>
                   children: [
                     Text(
                       'TEMPORAL ARTIFACT DROPPED!',
-                      style: TimeFactoryTextStyles.bodyMono.copyWith(
+                      style: TextStyle(
+                        fontFamily: 'Orbitron',
                         color: rarityColor,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
                       ),
                     ),
                     const SizedBox(height: 4),

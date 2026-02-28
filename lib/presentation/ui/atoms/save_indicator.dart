@@ -33,9 +33,9 @@ class _SaveIndicatorState extends ConsumerState<SaveIndicator> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity( 0.7),
+          color: const Color(0xFF03070C),
           borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

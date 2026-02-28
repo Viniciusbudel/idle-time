@@ -4,7 +4,7 @@ import 'package:time_factory/core/constants/colors.dart';
 import 'package:time_factory/core/constants/text_styles.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
-class CyberButton extends StatelessWidget {
+class CyberButton extends StatefulWidget {
   final String label;
   final String? subLabel;
   final AppIconData? icon;
@@ -25,55 +25,79 @@ class CyberButton extends StatelessWidget {
   });
 
   @override
+  State<CyberButton> createState() => _CyberButtonState();
+}
+
+class _CyberButtonState extends State<CyberButton> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
+    final bool isActive = widget.onTap != null;
+    final backgroundColor = isActive
+        ? widget.primaryColor.withValues(alpha: _isPressed ? 0.8 : 1.0)
+        : const Color(0xFF1E242B); // Dark grey
+
     return GestureDetector(
-      onTap: () {
-        if (onTap != null) {
-          HapticFeedback.mediumImpact();
-          onTap!();
-        }
-      },
-      child: ClipPath(
-        clipper: _CyberButtonClipper(),
-        child: Container(
-          height: isLarge ? 48 : 36,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: onTap != null ? primaryColor : Colors.grey[800],
-            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+      onTapDown: isActive ? (_) => setState(() => _isPressed = true) : null,
+      onTapUp: isActive
+          ? (_) {
+              setState(() => _isPressed = false);
+              HapticFeedback.mediumImpact();
+              widget.onTap?.call();
+            }
+          : null,
+      onTapCancel: isActive ? () => setState(() => _isPressed = false) : null,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        child: CustomPaint(
+          painter: _CyberButtonPainter(
+            fillColor: backgroundColor,
+            borderColor: isActive
+                ? widget.primaryColor.withValues(alpha: 0.5)
+                : Colors.white24,
+            isPressed: _isPressed,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                AppIcon(icon, size: 16, color: textColor),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                label.toUpperCase(),
-                style: TimeFactoryTextStyles.button.copyWith(
-                  color: textColor,
-                  fontSize: isLarge ? 14 : 12,
-                ),
-              ),
-              if (subLabel != null) ...[
-                Container(
-                  width: 1,
-                  height: 16,
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
-                  color: textColor.withOpacity(0.2),
-                ),
+          child: Container(
+            height: widget.isLarge ? 48 : 36,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.icon != null) ...[
+                  AppIcon(widget.icon!, size: 16, color: widget.textColor),
+                  const SizedBox(width: 8),
+                ],
                 Text(
-                  subLabel!,
-                  style: TimeFactoryTextStyles.bodyMono.copyWith(
-                    fontSize: 10,
-                    color: textColor.withOpacity(0.8),
+                  widget.label.toUpperCase(),
+                  style: TextStyle(
+                    fontFamily: 'Orbitron',
+                    color: widget.textColor,
+                    fontSize: widget.isLarge ? 14 : 12,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
                   ),
                 ),
+                if (widget.subLabel != null) ...[
+                  Container(
+                    width: 1,
+                    height: 16,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    color: widget.textColor.withValues(alpha: 0.2),
+                  ),
+                  Text(
+                    widget.subLabel!,
+                    style: TimeFactoryTextStyles.bodyMono.copyWith(
+                      fontSize: 10,
+                      color: widget.textColor.withValues(alpha: 0.8),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -81,19 +105,48 @@ class CyberButton extends StatelessWidget {
   }
 }
 
-class _CyberButtonClipper extends CustomClipper<Path> {
+class _CyberButtonPainter extends CustomPainter {
+  final Color fillColor;
+  final Color borderColor;
+  final bool isPressed;
+
+  _CyberButtonPainter({
+    required this.fillColor,
+    required this.borderColor,
+    required this.isPressed,
+  });
+
   @override
-  Path getClip(Size size) {
+  void paint(Canvas canvas, Size size) {
     final path = Path();
-    // polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%)
     path.lineTo(size.width, 0);
     path.lineTo(size.width, size.height * 0.7);
-    path.lineTo(size.width * 0.9, size.height);
+    path.lineTo(size.width - (size.height * 0.3), size.height);
     path.lineTo(0, size.height);
     path.close();
-    return path;
+
+    final paint = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+
+    if (!isPressed && fillColor != const Color(0xFF1E242B)) {
+      canvas.drawShadow(path, fillColor.withValues(alpha: 0.5), 4.0, false);
+    }
+
+    canvas.drawPath(path, paint);
+
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    canvas.drawPath(path, borderPaint);
   }
 
   @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+  bool shouldRepaint(covariant _CyberButtonPainter oldDelegate) {
+    return fillColor != oldDelegate.fillColor ||
+        borderColor != oldDelegate.borderColor ||
+        isPressed != oldDelegate.isPressed;
+  }
 }

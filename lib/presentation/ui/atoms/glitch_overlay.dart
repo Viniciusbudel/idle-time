@@ -107,7 +107,7 @@ class _GlitchPainter extends CustomPainter {
         (rng.nextBool()
                 ? TimeFactoryColors.electricCyan
                 : TimeFactoryColors.hotMagenta)
-            .withOpacity( 0.05 * intensity),
+            .withValues(alpha: 0.05 * intensity),
         BlendMode.screen,
       );
     }
@@ -118,11 +118,11 @@ class _GlitchPainter extends CustomPainter {
 
     canvas.drawRect(
       Rect.fromLTWH(offset, 0, size.width, size.height),
-      paint..color = TimeFactoryColors.electricCyan.withOpacity( 0.1),
+      paint..color = TimeFactoryColors.electricCyan.withValues(alpha: 0.1),
     );
     canvas.drawRect(
       Rect.fromLTWH(-offset, 0, size.width, size.height),
-      paint..color = TimeFactoryColors.hotMagenta.withOpacity( 0.1),
+      paint..color = TimeFactoryColors.hotMagenta.withValues(alpha: 0.1),
     );
   }
 
@@ -138,7 +138,7 @@ class _GlitchPainter extends CustomPainter {
             (rng.nextBool()
                     ? TimeFactoryColors.electricCyan
                     : TimeFactoryColors.hotMagenta)
-                .withOpacity( 0.2 * intensity);
+                .withValues(alpha: 0.2 * intensity);
 
       canvas.drawRect(Rect.fromLTWH(xOffset, y, size.width, h), paint);
 
@@ -151,7 +151,7 @@ class _GlitchPainter extends CustomPainter {
             rng.nextDouble() * 100,
             h,
           ),
-          paint..color = Colors.white.withOpacity( 0.3),
+          paint..color = Colors.white.withValues(alpha: 0.3),
         );
       }
     }
@@ -159,7 +159,7 @@ class _GlitchPainter extends CustomPainter {
 
   void _drawNoise(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity( 0.05 * intensity)
+      ..color = Colors.white.withValues(alpha: 0.05 * intensity)
       ..strokeWidth = 1;
 
     for (int i = 0; i < 20; i++) {

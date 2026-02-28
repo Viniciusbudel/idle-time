@@ -146,10 +146,10 @@ class ChronoEnergyDisplay extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: TimeFactoryColors.midnightBlue.withOpacity( 0.8),
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFF03070C).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: TimeFactoryColors.electricCyan.withOpacity( 0.5),
+          color: TimeFactoryColors.electricCyan.withValues(alpha: 0.5),
           width: 1,
         ),
         boxShadow: TimeFactoryColors.neonGlow(
@@ -188,7 +188,7 @@ class ChronoEnergyDisplay extends StatelessWidget {
             Text(
               '+${NumberFormatter.format(perSecond!)}/sec',
               style: TimeFactoryTextStyles.bodySmall.copyWith(
-                color: TimeFactoryColors.electricCyan.withOpacity( 0.8),
+                color: TimeFactoryColors.electricCyan.withValues(alpha: 0.8),
               ),
             ),
         ],
@@ -216,15 +216,15 @@ class TimeShardsDisplay extends StatelessWidget {
         vertical: compact ? AppSpacing.xxs : AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: TimeFactoryColors.midnightBlue.withOpacity( 0.8),
-        borderRadius: BorderRadius.circular(compact ? 4 : 8),
+        color: const Color(0xFF03070C).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: TimeFactoryColors.deepPurple.withOpacity( 0.5),
+          color: TimeFactoryColors.deepPurple.withValues(alpha: 0.5),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: TimeFactoryColors.deepPurple.withOpacity( 0.3),
+            color: TimeFactoryColors.deepPurple.withValues(alpha: 0.3),
             blurRadius: 8,
           ),
         ],
