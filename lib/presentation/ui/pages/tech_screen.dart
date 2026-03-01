@@ -1127,6 +1127,10 @@ class _PanelAmbientBackground extends StatelessWidget {
 // Utility functions
 // ---------------------------------------------------------------------------
 String _formatEraLabel(String eraId) {
+  if (eraId == 'victorian') {
+    return 'Steampunk Era';
+  }
+
   final parts = eraId.split('_');
   return parts
       .where((part) => part.isNotEmpty)

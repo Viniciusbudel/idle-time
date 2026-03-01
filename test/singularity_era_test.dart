@@ -107,14 +107,14 @@ void main() {
           WorkerEra.postSingularity,
           WorkerRarity.rare,
         ),
-        'assets/images/icons/singularity-icon-rare.png',
+        'assets/images/workers/singularity/singularity-icon-rare.png',
       );
       expect(
         WorkerIconHelper.getFlameLoadPath(
           WorkerEra.postSingularity,
           WorkerRarity.common,
         ),
-        'icons/singularity-icon-commum.png',
+        'workers/singularity/singularity-icon-commum.png',
       );
     });
   });

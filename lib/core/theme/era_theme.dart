@@ -16,7 +16,7 @@ class EraTheme {
   final Color warningColor; // Alerts, paradox
 
   // Visual Effects
-  final bool useScanlines; // Cyberpunk scanlines vs Victorian grain
+  final bool useScanlines; // Cyberpunk scanlines vs Steampunk grain
   final double
   particleGlow; // Intensity of glows (high for neon, low for steam)
   final String fontFamily; // Font to use (if different)
@@ -40,7 +40,7 @@ class EraTheme {
 
   // ==================== PRE-DEFINED THEMES ====================
 
-  /// 1. Victorian Era (1890s)
+  /// 1. Steampunk Era (1890s)
   static const victorian = EraTheme(
     id: 'victorian',
     displayName: 'LONDON (1893)',
@@ -197,7 +197,7 @@ class EraTheme {
 /// Animation styles for era backgrounds
 enum EraAnimationType {
   none,
-  fogDrift, // Subtle moving clouds/fog (Victorian, Rome)
+  fogDrift, // Subtle moving clouds/fog (Steampunk, Rome)
   sparkle, // Random twinkling (Roaring 20s)
   radarPulse, // Expanding circles (Atomic Age)
   cyberScan, // Scanlines, glitches (Cyberpunk/NeoTokyo)

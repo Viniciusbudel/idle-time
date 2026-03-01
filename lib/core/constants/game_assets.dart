@@ -3,6 +3,7 @@ class GameAssets {
 
   // ===== IMAGES =====
   static const String _imagesPath = 'assets/images';
+  static const String _reactorsPath = 'assets/icons/reactors';
 
   // UI
   static const String glassPanelUi = '$_imagesPath/ui/glass_panel_ui.png';
@@ -16,12 +17,13 @@ class GameAssets {
   static const String currencyIcon1 = '$_imagesPath/icons/currency_icon_1.png';
   static const String currencyIcon2 = '$_imagesPath/icons/currency_icon_2.png';
   static const String currencyIcon3 = '$_imagesPath/icons/currency_icon_3.png';
-  static const String temporalReactor =
-      'assets/images/icons/temporal-reactor.svg';
-  static const String steampunkReactor =
-      'assets/images/icons/steampunk-reactor.svg';
-  static const String roaring20sReactor = 'assets/images/icons/20s-reactor.svg';
-  static const String atomicReactor = 'assets/images/icons/atomic-reactor.svg';
+  static const String temporalReactor = '$_reactorsPath/temporal-reactor.svg';
+  static const String steampunkReactor = '$_reactorsPath/steampunk-reactor.svg';
+  static const String roaring20sReactor = '$_reactorsPath/20s-reactor.svg';
+  static const String atomicReactor = '$_reactorsPath/atomic-reactor.svg';
+  static const String cyberpunkReactor = '$_reactorsPath/cyberpunk-reactor.svg';
+  static const String singularityReactor =
+      '$_reactorsPath/singularity-reactor.svg';
   static const String lottieReactor =
       'assets/lottie/lottie-reactor_ultra.json.gz';
   static const String lottieSteamPunkReactor =

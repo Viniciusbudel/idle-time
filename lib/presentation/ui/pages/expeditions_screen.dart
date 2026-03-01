@@ -538,7 +538,11 @@ class _ExpeditionsScreenState extends ConsumerState<ExpeditionsScreen> {
                       runSpacing: 6,
                       children: <Widget>[
                         _buildMissionIdentityChip(
-                          label: slot.eraId.replaceAll('_', ' ').toUpperCase(),
+                          label:
+                              (slot.eraId == 'victorian'
+                                      ? 'Steampunk Era'
+                                      : slot.eraId.replaceAll('_', ' '))
+                                  .toUpperCase(),
                           color: eraAccent,
                         ),
                         _buildMissionIdentityChip(

@@ -8,16 +8,17 @@ class WorkerIconHelper {
 
   /// Get the icon path for a worker based on era and rarity.
   ///
-  /// Victorian icons use a lightweight PNG fallback for performance.
+  /// Steampunk icons use a lightweight PNG fallback for performance.
   /// Other eras use per-rarity icon assets, e.g. `20s-icon-rare.png`.
   static String getIconPath(WorkerEra era, WorkerRarity rarity) {
     // Performance fast-path:
-    // Victorian SVGs are expensive to parse on low-end devices and when many
+    // Steampunk SVGs are expensive to parse on low-end devices and when many
     // worker widgets/components are on-screen, so use a lightweight raster icon.
     final rarityStr = rarity == WorkerRarity.common ? 'commum' : rarity.id;
     final prefix = _eraPrefix(era);
+    final folder = _eraFolder(era);
     final ext = _eraExtension(era);
-    return 'assets/images/icons/$prefix-icon-$rarityStr.$ext';
+    return 'assets/images/workers/$folder/$prefix-icon-$rarityStr.$ext';
   }
 
   /// Whether this era's icons are SVG (true) or raster PNG (false).
@@ -27,7 +28,8 @@ class WorkerIconHelper {
   ///
   /// Flame's `Sprite.load` uses the global images prefix (`assets/images/` by
   /// default), so raster paths must be relative to that prefix (e.g.
-  /// `icons/foo.png`). For `Svg.load`, paths should be relative to `assets/`.
+  /// `workers/steampunk/foo.png`). For `Svg.load`, paths should be relative to
+  /// `assets/`.
   static String getFlameLoadPath(WorkerEra era, WorkerRarity rarity) {
     final path = getIconPath(era, rarity);
     final normalized = isSvg(era)
@@ -66,6 +68,23 @@ class WorkerIconHelper {
 
   static String _eraPrefix(WorkerEra era) {
     switch (era) {
+      case WorkerEra.roaring20s:
+        return '20s';
+      case WorkerEra.atomicAge:
+        return 'atomic';
+      case WorkerEra.cyberpunk80s:
+        return 'cyberpunk';
+      case WorkerEra.postSingularity:
+        return 'singularity';
+      default:
+        return era.id;
+    }
+  }
+
+  static String _eraFolder(WorkerEra era) {
+    switch (era) {
+      case WorkerEra.victorian:
+        return 'steampunk';
       case WorkerEra.roaring20s:
         return '20s';
       case WorkerEra.atomicAge:

@@ -60,6 +60,7 @@ flutter:
 
   assets:
     - assets/icons/
+    - assets/icons/reactors/
     - assets/images/
     - assets/sfx/
     - assets/music/
@@ -73,6 +74,11 @@ flutter:
     - assets/images/effects/
     - assets/images/icons/
     - assets/images/workers/
+    - assets/images/workers/steampunk/
+    - assets/images/workers/20s/
+    - assets/images/workers/atomic/
+    - assets/images/workers/cyberpunk/
+    - assets/images/workers/singularity/
     - assets/lottie/
     - assets/data/
     - assets/videos/

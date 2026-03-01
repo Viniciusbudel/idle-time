@@ -337,7 +337,7 @@ class ResolveExpeditionsUseCase {
   }
 
   double _expeditionEraMultiplier(String? eraId) {
-    // Early-game Victorian runs were overpaying CE relative to progression pace.
+    // Early-game Steampunk runs were overpaying CE relative to progression pace.
     if (eraId == WorkerEra.victorian.id) {
       return 0.10;
     }

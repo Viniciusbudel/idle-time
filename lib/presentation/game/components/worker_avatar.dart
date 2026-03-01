@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
-import 'package:flame/particles.dart';
 import 'package:flame_svg/flame_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:time_factory/core/constants/colors.dart';
@@ -9,8 +8,6 @@ import 'package:time_factory/core/utils/app_log.dart';
 import 'package:time_factory/core/utils/worker_icon_helper.dart';
 import 'package:time_factory/domain/entities/worker.dart';
 import 'package:time_factory/domain/entities/enums.dart';
-import 'package:time_factory/presentation/game/components/steampunk_worker_painter.dart';
-import 'package:time_factory/presentation/game/components/art_deco_worker_painter.dart';
 
 class WorkerAvatar extends PositionComponent with HasGameReference {
   final Worker worker;
@@ -109,81 +106,6 @@ class WorkerAvatar extends PositionComponent with HasGameReference {
         stackTrace: stackTrace,
       );
 
-      // Fallback to Procedural Icon based on Era
-      final CustomPainter painter;
-      if (worker.era == WorkerEra.roaring20s) {
-        painter = ArtDecoWorkerPainter(
-          rarity: worker.rarity,
-          neonColor: rarityColor,
-        );
-      } else {
-        // Default to Steampunk (Victorian)
-        painter = SteampunkWorkerPainter(
-          rarity: worker.rarity,
-          neonColor: rarityColor,
-        );
-      }
-
-      add(
-        CustomPainterComponent(
-          painter: painter,
-          size: Vector2.all(40),
-          anchor: Anchor.center,
-          position: size / 2,
-        ),
-      );
-    }
-
-    // 4. Era Year Label (Floating)
-    // add(
-    //   TextComponent(
-    //     text: worker.era.year.toString(),
-    //     textRenderer: TextPaint(
-    //       style: TimeFactoryTextStyles.numbersSmall.copyWith(
-    //         fontSize: 10,
-    //         color: Colors.white,
-    //         shadows: [const Shadow(color: Colors.black, blurRadius: 4)],
-    //       ),
-    //     ),
-    //     anchor: Anchor.center,
-    //     position: size / 2,
-    //   ),
-    // );
-
-    if (!lowPerformanceMode) {
-      // 5. Floating movement
-      _driftOffset = Vector2(
-        (_rng.nextDouble() - 0.5) * 60,
-        (_rng.nextDouble() - 0.5) * 40,
-      );
-      _driftDurationSeconds = 4 + _rng.nextDouble() * 3;
-      _driftElapsedSeconds = 0.0;
-      _lastDriftFactor = 0.0;
-
-      // 6. Data trail particles
-      add(
-        ParticleSystemComponent(
-          particle: Particle.generate(
-            count: 5,
-            lifespan: 1.0,
-            generator: (i) {
-              return AcceleratedParticle(
-                position:
-                    (size / 2) +
-                    Vector2(
-                      (_rng.nextDouble() - 0.5) * 20,
-                      (_rng.nextDouble() - 0.5) * 20,
-                    ),
-                speed: Vector2(0, -10),
-                child: CircleParticle(
-                  radius: 1.0,
-                  paint: Paint()..color = rarityColor.withOpacity(0.4),
-                ),
-              );
-            },
-          ),
-        ),
-      );
     }
   }
 

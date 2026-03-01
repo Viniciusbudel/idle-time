@@ -14,7 +14,7 @@ class GameConstants {
   static const double workerUpgradeCostGrowth = 1.2;
 
   // ===== PRODUCTION =====
-  /// Victorian era base CE/sec production
+  /// Steampunk era base CE/sec production
   static const int victorianBaseProduction = 1;
 
   /// Production multiplier per worker level

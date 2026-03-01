@@ -137,7 +137,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get paradox => 'Paradoxal';
 
   @override
-  String get victorian => 'Era Vitoriana';
+  String get victorian => 'Era Steampunk';
 
   @override
   String get roaring20s => 'Anos 20 Vibrantes';

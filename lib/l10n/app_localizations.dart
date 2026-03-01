@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @victorian.
   ///
   /// In en, this message translates to:
-  /// **'Victorian Era'**
+  /// **'Steampunk Era'**
   String get victorian;
 
   /// No description provided for @roaring20s.

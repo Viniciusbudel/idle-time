@@ -93,7 +93,7 @@ class GameState {
       workerIds: ['worker_$starterId'],
     );
 
-    // Create starter worker (Victorian Era, deployed to station)
+    // Create starter worker (Steampunk Era, deployed to station)
     final starterWorker = Worker(
       id: 'worker_$starterId',
       era: WorkerEra.victorian,

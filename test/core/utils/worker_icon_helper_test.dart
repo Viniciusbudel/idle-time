@@ -6,29 +6,29 @@ void main() {
   test('cyberpunk era resolves new icon prefix for all rarities', () {
     expect(
       WorkerIconHelper.getIconPath(WorkerEra.cyberpunk80s, WorkerRarity.common),
-      'assets/images/icons/cyberpunk-icon-commum.png',
+      'assets/images/workers/cyberpunk/cyberpunk-icon-commum.png',
     );
     expect(
       WorkerIconHelper.getIconPath(WorkerEra.cyberpunk80s, WorkerRarity.rare),
-      'assets/images/icons/cyberpunk-icon-rare.png',
+      'assets/images/workers/cyberpunk/cyberpunk-icon-rare.png',
     );
     expect(
       WorkerIconHelper.getIconPath(WorkerEra.cyberpunk80s, WorkerRarity.epic),
-      'assets/images/icons/cyberpunk-icon-epic.png',
+      'assets/images/workers/cyberpunk/cyberpunk-icon-epic.png',
     );
     expect(
       WorkerIconHelper.getIconPath(
         WorkerEra.cyberpunk80s,
         WorkerRarity.legendary,
       ),
-      'assets/images/icons/cyberpunk-icon-legendary.png',
+      'assets/images/workers/cyberpunk/cyberpunk-icon-legendary.png',
     );
     expect(
       WorkerIconHelper.getIconPath(
         WorkerEra.cyberpunk80s,
         WorkerRarity.paradox,
       ),
-      'assets/images/icons/cyberpunk-icon-paradox.png',
+      'assets/images/workers/cyberpunk/cyberpunk-icon-paradox.png',
     );
   });
 
@@ -42,8 +42,8 @@ void main() {
       WorkerRarity.rare,
     );
 
-    expect(victorianPath, 'icons/victorian-icon-epic.png');
-    expect(cyberpunkPath, 'icons/cyberpunk-icon-rare.png');
+    expect(victorianPath, 'workers/steampunk/victorian-icon-epic.png');
+    expect(cyberpunkPath, 'workers/cyberpunk/cyberpunk-icon-rare.png');
     expect(victorianPath.startsWith('/'), isFalse);
     expect(cyberpunkPath.startsWith('/'), isFalse);
   });
@@ -54,35 +54,35 @@ void main() {
         WorkerEra.postSingularity,
         WorkerRarity.common,
       ),
-      'assets/images/icons/singularity-icon-commum.png',
+      'assets/images/workers/singularity/singularity-icon-commum.png',
     );
     expect(
       WorkerIconHelper.getIconPath(
         WorkerEra.postSingularity,
         WorkerRarity.rare,
       ),
-      'assets/images/icons/singularity-icon-rare.png',
+      'assets/images/workers/singularity/singularity-icon-rare.png',
     );
     expect(
       WorkerIconHelper.getIconPath(
         WorkerEra.postSingularity,
         WorkerRarity.epic,
       ),
-      'assets/images/icons/singularity-icon-epic.png',
+      'assets/images/workers/singularity/singularity-icon-epic.png',
     );
     expect(
       WorkerIconHelper.getIconPath(
         WorkerEra.postSingularity,
         WorkerRarity.legendary,
       ),
-      'assets/images/icons/singularity-icon-legendary.png',
+      'assets/images/workers/singularity/singularity-icon-legendary.png',
     );
     expect(
       WorkerIconHelper.getIconPath(
         WorkerEra.postSingularity,
         WorkerRarity.paradox,
       ),
-      'assets/images/icons/singularity-icon-paradox.png',
+      'assets/images/workers/singularity/singularity-icon-paradox.png',
     );
   });
 }

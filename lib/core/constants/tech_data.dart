@@ -70,7 +70,7 @@ class TechData {
     // TechUpgrade(
     //   id: 'great_exhibition',
     //   name: 'The Great Exhibition',
-    //   description: 'Showcase Victorian might. Unlocks next Era.',
+    //   description: 'Showcase Steampunk might. Unlocks next Era.',
     //   type: TechType.eraUnlock,
     //   baseCost: BigInt.from(10000),
     //   costMultiplier: 2.0,
@@ -478,7 +478,7 @@ class TechData {
   static double calculateAutomationLevel(Map<String, int> techLevels) {
     double clicksPerSecond = 0.0;
 
-    // Jacquard Punch-Cards (Victorian)
+    // Jacquard Punch-Cards (Steampunk)
     // 0.5 clicks/sec per level
     final jacquard = techLevels['jacquard_punchcards'] ?? 0;
     clicksPerSecond += jacquard * 0.5;

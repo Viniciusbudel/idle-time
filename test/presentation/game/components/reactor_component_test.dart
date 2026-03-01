@@ -17,9 +17,23 @@ void main() {
     );
   });
 
-  test('reactor asset falls back to steampunk for other eras', () {
+  test('reactor asset maps cyberpunk_80s to cyberpunk reactor', () {
     expect(
       ReactorComponent.assetForEra('cyberpunk_80s'),
+      GameAssets.cyberpunkReactor,
+    );
+  });
+
+  test('reactor asset maps post_singularity to singularity reactor', () {
+    expect(
+      ReactorComponent.assetForEra('post_singularity'),
+      GameAssets.singularityReactor,
+    );
+  });
+
+  test('reactor asset falls back to steampunk for unknown/null eras', () {
+    expect(
+      ReactorComponent.assetForEra('unknown_era'),
       GameAssets.steampunkReactor,
     );
     expect(ReactorComponent.assetForEra(null), GameAssets.steampunkReactor);

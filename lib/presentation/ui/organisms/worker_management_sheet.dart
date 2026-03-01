@@ -14,6 +14,7 @@ import '../atoms/merge_effect_overlay.dart';
 import '../atoms/worker_tile.dart';
 import '../dialogs/fit_worker_dialog.dart';
 import '../dialogs/worker_result_dialog.dart';
+import '../atoms/game_action_button.dart';
 import 'package:time_factory/core/ui/app_icons.dart';
 
 class WorkerManagementSheet extends ConsumerStatefulWidget {
@@ -174,9 +175,9 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
       children: [
         Container(
           decoration: BoxDecoration(
-            color: colors.background,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(top: BorderSide(color: colors.primary, width: 2)),
+            color: const Color(0xFF03070C),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+            border: Border(top: BorderSide(color: colors.primary, width: 1)),
           ),
           height: MediaQuery.of(context).size.height * 0.75,
           child: Column(
@@ -190,9 +191,14 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                   children: [
                     Flexible(
                       child: Text(
-                        AppLocalizations.of(context)!.workerManagement,
+                        AppLocalizations.of(
+                          context,
+                        )!.workerManagement.toUpperCase(),
                         style: typography.titleLarge.copyWith(
+                          fontFamily: 'Orbitron',
                           color: colors.primary,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -362,18 +368,20 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? color.withOpacity(0.2) : Colors.transparent,
+          color: isActive ? color.withValues(alpha: 0.2) : Colors.transparent,
           border: Border.all(
-            color: isActive ? color : color.withOpacity(0.3),
-            width: isActive ? 1.5 : 1,
+            color: isActive ? color : color.withValues(alpha: 0.3),
+            width: 1,
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
           label,
           style: typography.bodySmall.copyWith(
-            color: isActive ? color : color.withOpacity(0.6),
+            fontFamily: 'Orbitron',
+            color: isActive ? color : color.withValues(alpha: 0.6),
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            letterSpacing: 1,
             fontSize: 11,
           ),
         ),
@@ -397,14 +405,15 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       decoration: BoxDecoration(
-        color: colors.background,
+        color: const Color(0xFF03070C),
         border: Border(
-          top: BorderSide(color: rarityColor.withOpacity(0.5), width: 1),
+          top: BorderSide(color: rarityColor.withValues(alpha: 0.5), width: 1),
         ),
         boxShadow: [
           BoxShadow(
-            color: rarityColor.withOpacity(0.2),
-            blurRadius: 20,
+            color: rarityColor.withValues(alpha: 0.1),
+            blurRadius: 15,
+            spreadRadius: 2,
             offset: const Offset(0, -4),
           ),
         ],
@@ -427,8 +436,8 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                     shape: BoxShape.circle,
                     color: filled ? rarityColor : Colors.transparent,
                     border: Border.all(
-                      color: rarityColor.withOpacity(0.5),
-                      width: 1.5,
+                      color: rarityColor.withValues(alpha: 0.5),
+                      width: 1,
                     ),
                   ),
                 ),
@@ -437,9 +446,11 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
           ),
           const SizedBox(height: 8),
           Text(
-            '${_selectedWorkerIds.length}/3 selected → $nextRarity',
+            '${_selectedWorkerIds.length}/3 SELECTED → $nextRarity',
             style: typography.bodySmall.copyWith(
-              color: colors.textSecondary,
+              fontFamily: 'Orbitron',
+              color: colors.textSecondary.withValues(alpha: 0.8),
+              letterSpacing: 1.5,
               fontSize: 11,
             ),
           ),
@@ -449,85 +460,38 @@ class _WorkerManagementSheetState extends ConsumerState<WorkerManagementSheet>
                   gameState.currentEraId)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: SizedBox(
-                width: double.infinity,
+              child: GameActionButton(
+                label: 'FIT TO ERA',
+                icon: AppHugeIcons.upgrade,
+                color: TimeFactoryColors.voltageYellow,
                 height: 48,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: TimeFactoryColors.voltageYellow,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () {
-                    final worker = gameState.workers[_selectedWorkerIds.first];
-                    if (worker != null) {
-                      showDialog(
-                        context: context,
-                        builder: (_) => FitWorkerDialog(worker: worker),
-                      ).then(
-                        (_) => setState(() {
-                          _selectedWorkerIds
-                              .clear(); // Clear selection after action
-                          _mergeBarController.reverse();
-                        }),
-                      );
-                    }
-                  },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AppIcon(AppHugeIcons.upgrade, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'FIT TO ERA',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                onTap: () {
+                  final worker = gameState.workers[_selectedWorkerIds.first];
+                  if (worker != null) {
+                    showDialog(
+                      context: context,
+                      builder: (_) => FitWorkerDialog(worker: worker),
+                    ).then(
+                      (_) => setState(() {
+                        _selectedWorkerIds
+                            .clear(); // Clear selection after action
+                        _mergeBarController.reverse();
+                      }),
+                    );
+                  }
+                },
               ),
             ),
 
           const SizedBox(height: 12),
           // Merge Button
-          SizedBox(
-            width: double.infinity,
+          GameActionButton(
+            label: AppLocalizations.of(context)!.merge.toUpperCase(),
+            icon: AppHugeIcons.merge_type,
+            color: rarityColor,
             height: 48,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _selectedWorkerIds.length >= 3
-                    ? rarityColor
-                    : rarityColor.withOpacity(0.3),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: _selectedWorkerIds.length >= 3 ? 8 : 0,
-                shadowColor: rarityColor.withOpacity(0.5),
-              ),
-              onPressed: _selectedWorkerIds.length >= 3 ? _performMerge : null,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const AppIcon(AppHugeIcons.merge_type, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    AppLocalizations.of(context)!.merge.toUpperCase(),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            enabled: _selectedWorkerIds.length >= 3,
+            onTap: _selectedWorkerIds.length >= 3 ? _performMerge : () {},
           ),
         ],
       ),

@@ -1,6 +1,6 @@
 /// Worker eras available in the game
 enum WorkerEra {
-  victorian('victorian', 'Victorian Era', 1890),
+  victorian('victorian', 'Steampunk Era', 1890),
   roaring20s('roaring_20s', 'Roaring 20s', 1920),
   atomicAge('atomic_age', 'Atomic Age', 1950),
   cyberpunk80s('cyberpunk_80s', 'Cyberpunk 80s', 1980),

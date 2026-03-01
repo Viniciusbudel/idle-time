@@ -90,8 +90,8 @@ enum AchievementType {
   ),
   maxTechVictorian(
     'max_tech_victorian',
-    'Victorian Master',
-    'Max all Victorian technologies',
+    'Steampunk Master',
+    'Max all Steampunk technologies',
     AppHugeIcons.engineering,
     rewardShards: 15,
   ),

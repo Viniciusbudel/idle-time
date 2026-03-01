@@ -10,7 +10,7 @@ class SteampunkTheme implements GameTheme {
   String get id => 'victorian';
 
   @override
-  String get displayName => 'Victorian Era';
+  String get displayName => 'Steampunk Era';
 
   @override
   ThemeColors get colors => const _SteampunkColors();

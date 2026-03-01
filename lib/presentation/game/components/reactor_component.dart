@@ -90,10 +90,16 @@ class ReactorComponent extends PositionComponent
 
   static String assetForEra(String? eraId) {
     switch (eraId) {
+      case 'victorian':
+        return GameAssets.steampunkReactor;
       case 'roaring_20s':
         return GameAssets.roaring20sReactor;
       case 'atomic_age':
         return GameAssets.atomicReactor;
+      case 'cyberpunk_80s':
+        return GameAssets.cyberpunkReactor;
+      case 'post_singularity':
+        return GameAssets.singularityReactor;
       default:
         return GameAssets.steampunkReactor;
     }
